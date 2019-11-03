@@ -1,0 +1,24 @@
+{
+
+"test" :{
+
+   "model_params" : {},
+   
+   "data_params" :  {},
+
+
+}
+
+
+"prod" :{
+
+   "model_params" : {},
+   
+   "data_params" :  {},
+
+
+}
+
+
+
+}

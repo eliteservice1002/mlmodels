@@ -1,0 +1,70 @@
+{
+
+"test" :{
+
+   "model_params" : {},
+   
+   "data_params" :  {},
+   
+   "optim_params" : {}
+
+
+},
+
+
+"prod" :{
+
+   "model_params" : {},
+   
+   "data_params" :  {},
+
+   "optim_params" : {
+      "engine" : "optuna",
+      ntrials" : 5,
+   
+    "param_range" : {
+  "learning_rate": {
+    "type": "log_uniform",
+    "init": 0.01,
+    "range": [
+      0.001,
+      0.1
+    ]
+  },
+  "num_layers": {
+    "type": "int",
+    "init": 2,
+    "range": [
+      2,
+      4
+    ]
+  },
+  "size_layer": {
+    "type": "categorical",
+    "value": [
+      128,
+      256
+    ]
+  },
+  "timestep": {
+    "type": "categorical",
+    "value": [
+      5
+    ]
+  },
+  "epoch": {
+    "type": "categorical",
+    "value": [
+      100
+    ]
+  }
+}
+   
+   }
+   
+   
+}
+
+
+
+}

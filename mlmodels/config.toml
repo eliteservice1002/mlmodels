@@ -1,0 +1,106 @@
+title = "batch configuration "
+
+
+[prod]
+keypair = 'aws_ec2_ajey'  # remote spot instance
+region  = 'us-west-2'     # oregon west
+
+ami = "ami-0d16a0996debff8d4"  #'ami-0491a657e7ed60af7'
+instance = 't3.small'
+spotprice = 0.05
+waitsec = 60
+max_instance = 2
+max_cpu = 16
+
+spot_cfg_file = '/tmp/ec_spot_config'
+
+reset_global_task_file = 0
+
+
+
+log_file = "/home/ubuntu/zlog/batch_autoscale.log"
+
+
+  ### global shared drive
+  task_folder    = "/home/ubuntu/zs3drive/tasks/"
+  task_s3_folder    = "/home/ubuntu/zs3drive/tasks/"
+  backup_s3_folder  = "/home/ubuntu/zs3drive/backup/"
+  taskout_s3_folder = "/home/ubuntu/zs3drive/tasks_out/"
+  
+  
+  ### local to each instance
+  task_reponame ="tasks"
+  task_repobranch = "dev" #test
+
+  task_repourl      = "https://github.com/arita37/tasks.git"
+  task_local_folder = "/home/ubuntu/data/github_tasks/"
+
+  
+  taskout_reponame ="tasks_out"
+  taskout_repobranch = "dev"
+  
+  taskout_repourl      = "https://github.com/arita37/tasks_out.git"
+  taskout_local_folder = "/home/ubuntu/data/github_tasks_out/"
+
+
+
+  folder_to_backup  = ["/home/ubuntu/zlog/", "/home/ubuntu/tasks_out/" ]
+
+  ### record the running/done tasks on s3 drive, global file system  #############
+  global_task_file = "/home/ubuntu/zs3drive/global_task.json" 
+
+
+
+
+
+
+[test]
+
+keypair = 'aws_ec2_ajey'  # remote spot instance
+region  = 'us-west-2'     # oregon west
+
+ami = "ami-0d16a0996debff8d4"  #'ami-0491a657e7ed60af7'
+instance = 't3.small'
+spotprice = 0.05
+waitsec = 60
+max_instance = 2
+max_cpu = 16
+
+spot_cfg_file = '/tmp/ec_spot_config'
+
+reset_global_task_file = 1
+
+
+log_file = "/home/ubuntu/zlog/ztest/batch_autoscale_test.log"
+
+
+  ### global shared drive
+  task_folder       = "/home/ubuntu/zs3drive/ztest/tasks/"  
+  task_s3_folder    = "/home/ubuntu/zs3drive/ztest/tasks/"
+  backup_s3_folder  = "/home/ubuntu/zs3drive/ztest/backup/"
+  taskout_s3_folder = "/home/ubuntu/zs3drive/ztest/tasks_out/"
+
+  ### local to each instance
+  task_reponame ="tasks_out"
+  task_repobranch = "dev" #test
+
+  taskout_reponame ="tasks_out"
+  taskout_repobranch = "dev" #test
+  
+  
+  taskout_repourl      = "https://github.com/arita37/tasks_out.git"
+  taskout_local_folder = "/home/ubuntu/data/ztest/github_tasks_out/"
+
+  task_repourl      = "https://github.com/arita37/tasks.git"
+  task_local_folder = "/home/ubuntu/data/ztest/github_tasks/"
+
+  folder_to_backup  = ["/home/ubuntu/zlog/", "/home/ubuntu/tasks_out/" ]
+
+
+  ### record the running/done tasks on s3 drive, global file system  #############
+  global_task_file = "/home/ubuntu/zs3drive/ztest/global_task.json" 
+
+
+
+
+
