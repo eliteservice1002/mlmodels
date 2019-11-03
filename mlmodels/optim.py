@@ -31,11 +31,12 @@ import os
 import re
 from importlib import import_module
 import json
+
+
 import pandas as pd
 from sklearn.preprocessing import MinMaxScaler
 import tensorflow as tf
 import pandas as pd
-
 
 import optuna
 ####################################################################################################
@@ -46,22 +47,36 @@ from models import create, module_load, save
 ####################################################################################################
 
 
+
 def optim(modelname="model_tf.1_lstm.py",
                  model_params= {},
                  data_params = {},
                  optim_params={"method": "normal/prune"},
                  save_folder="/mymodel/", log_folder="", ntrials=2) :
     """
-    Generic interface of  Hyper-optimize
-    :param modelname:
-    :param pars:
-    :param df:
-    :param optim_engine:
-    :param optim_method:
-    :param save_folder:
-    :param log_folder:
-    :param ntrials:
-    :return:
+    Generic optimizer for hyperparamters
+    Parameters
+    ----------
+    modelname : TYPE, optional
+        DESCRIPTION. The default is "model_tf.1_lstm.py".
+    model_params : TYPE, optional
+        DESCRIPTION. The default is {}.
+    data_params : TYPE, optional
+        DESCRIPTION. The default is {}.
+    optim_params : TYPE, optional
+        DESCRIPTION. The default is {"method": "normal/prune"}.
+    save_folder : TYPE, optional
+        DESCRIPTION. The default is "/mymodel/".
+    log_folder : TYPE, optional
+        DESCRIPTION. The default is "".
+    ntrials : TYPE, optional
+        DESCRIPTION. The default is 2.
+
+    Returns : None
+    -------
+    TYPE
+        DESCRIPTION.
+
     """
     print(model_params)
     if optim_params["engine"] == "optuna" :
@@ -93,6 +108,35 @@ def optim_optuna(modelname="model_tf.1_lstm.py",
     dropout_rate = trial.suggest_uniform('dropout_rate', 0.0, 1.0)      # Uniform parameter
     learning_rate = trial.suggest_loguniform('learning_rate', 1e-5, 1e-2)      # Loguniform parameter
     drop_path_rate = trial.suggest_discrete_uniform('drop_path_rate', 0.0, 1.0, 0.1) # Discrete-uniform parameter
+    
+
+    Parameters
+    ----------
+    modelname : TYPE, optional
+        DESCRIPTION. The default is "model_tf.1_lstm.py".
+    model_params : TYPE, optional
+        DESCRIPTION. The default is {}.
+    data_params : TYPE, optional
+        DESCRIPTION. The default is {}.
+    optim_params : TYPE, optional
+        DESCRIPTION. The default is {"method" : "normal/prune"}.
+    save_folder : TYPE, optional
+        DESCRIPTION. The default is "/mymodel/".
+    log_folder : TYPE, optional
+        DESCRIPTION. The default is "".
+    ntrials : TYPE, optional
+        DESCRIPTION. The default is 2.
+
+    Raises
+    ------
+    Exception
+        DESCRIPTION.
+
+    Returns
+    -------
+    TYPE
+        DESCRIPTION.
+
     """
     module = module_load(modelname)
 
@@ -174,7 +218,68 @@ def optim_optuna(modelname="model_tf.1_lstm.py",
 
 
 
-##########################################################################################################
+
+def data_loader(data_params):
+    if data_params["data_type"] == "pandas" :
+      df = pd.read_csv(data_params["data_path"])
+
+    date_ori = pd.to_datetime(df.iloc[:, 0]).tolist()
+
+    minmax = MinMaxScaler().fit(df.iloc[:, 1:].astype('float32'))
+    df_log = minmax.transform(df.iloc[:, 1:].astype('float32'))
+    df_log = pd.DataFrame(df_log)
+    return df_log
+
+
+
+
+
+
+
+####################################################################################################
+def test_all():
+    pars =  {
+        "learning_rate": {"type": "log_uniform", "init": 0.01,  "range" :(0.001, 0.1)},
+        "num_layers":    {"type": "int", "init": 2,  "range" :(2, 4)},
+        "size_layer":    {"type" : 'categorical', "value": [128, 256 ] },
+        "timestep":      {"type" : 'categorical', "value": [5] },
+        "epoch":         {"type" : 'categorical', "value": [2] },
+    }
+
+    res = optim('model_tf.1_lstm', model_params=pars,
+                data_params={"data_path": 'dataset/GOOG-year.csv', "data_type": "pandas"},
+                ntrials=3,
+                optim_params={"engine": "optuna" ,  "method" : "prune"} )
+
+    print("\n#############  Finished OPTIMIZATION  ###############")
+    print(res)
+
+
+
+
+def test_fast():
+    # df_log = data_loader('dataset/GOOG-year_small.csv')
+    pars =  {
+        "learning_rate": {"type": "log_uniform", "init": 0.01,  "range" :(0.001, 0.1)},
+        "num_layers":    {"type": "int", "init": 2,  "range" :(2, 4)},
+        "size_layer":    {"type" : 'categorical', "value": [128, 256 ] },
+        "timestep":      {"type" : 'categorical', "value": [5] },
+        "epoch":         {"type" : 'categorical', "value": [2] },
+    }
+
+    res = optim('model_tf.1_lstm', model_params=pars,
+                data_params={"data_path": 'dataset/GOOG-year_small.csv', "data_type": "pandas"},
+                ntrials=3,
+                optim_params={"engine": "optuna" ,  "method" : "prune"} )
+
+    print("\n#############  Finished OPTIMIZATION  ###############")
+    print(res)
+
+
+
+
+####################################################################################################
+####################################################################################################
 def load_arguments(config_file= None ):
     """
         Load CLI input, load config.toml , overwrite config.toml by CLI Input
@@ -213,49 +318,6 @@ def load_arguments(config_file= None ):
 
 
 
-def data_loader(data_params):
-    if data_params["data_type"] == "pandas" :
-      df = pd.read_csv(data_params["data_path"])
-
-    date_ori = pd.to_datetime(df.iloc[:, 0]).tolist()
-
-    minmax = MinMaxScaler().fit(df.iloc[:, 1:].astype('float32'))
-    df_log = minmax.transform(df.iloc[:, 1:].astype('float32'))
-    df_log = pd.DataFrame(df_log)
-    return df_log
-
-
-
-def test_all():
-    df_log = data_loader()
-    pars =  {
-        "learning_rate": {"type": "log_uniform", "init": 0.01,  "range" :(0.001, 0.1)},
-        "num_layers":    {"type": "int", "init": 2,  "range" :(2, 4)},
-        "size_layer":    {"type" : 'categorical', "value": [128, 256 ] },
-        "timestep":      {"type" : 'categorical', "value": [5] },
-        "epoch":        {"type" : 'categorical', "value": [5] },
-    }
-    res = optim('model_tf.1_lstm', pars=pars, df = df_log,ntrials=7 )
-    print(res)
-
-
-def test_fast():
-    df_log = data_loader('dataset/GOOG-year_small.csv')
-    pars =  {
-        "learning_rate": {"type": "log_uniform", "init": 0.01,  "range" :(0.001, 0.1)},
-        "num_layers":    {"type": "int", "init": 2,  "range" :(2, 4)},
-        "size_layer":    {"type" : 'categorical', "value": [128, 256 ] },
-        "timestep":      {"type" : 'categorical', "value": [5] },
-        "epoch":         {"type" : 'categorical', "value": [2] },
-    }
-
-    res = optim('model_tf.1_lstm', pars=pars, df = df_log,ntrials=3,
-                optim_params={"method" : "prune", )
-    print("\n#############  Finished OPTIMIZATION  ###############")
-    print(res)
-
-
-
 if __name__ == "__main__":
     #test_all() # tot test all te modules inside model_tf
     arg = load_arguments()
@@ -265,6 +327,7 @@ if __name__ == "__main__":
 
     if arg.do == "test"  :
         test_fast()
+
 
     if arg.do == "test_all"  :
         test_all()

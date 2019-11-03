@@ -2,7 +2,7 @@
 
 ```
 #### Docs here:
-https://dsa.readthedocs.io/en/latest/
+https://mlmodels.readthedocs.io/en/latest/
 
 
 
@@ -23,6 +23,12 @@ pip install -e .
 from mlmodels.mlmodels import ztest
 ztest.run()
 
+##Run test model
+python models.py --do test
+
+python optim.py --do test
+
+
 
 
 
@@ -33,21 +39,6 @@ ztest.run()
 
 ###############################################################################
 Naming convention for functions, arguments :
-
-For module file has LIMITED dependency and logic flow :
-   util_feature.py  :  Input/Outout should be pandas, pandas-like
-   util_model.py :     Input/Output should be numpy, all model evaluation related.
-   util_plot.py   :    Input * mostly numpy or pandas
-   util_date.py :      for dates related, mostly for pandas processing
-
-
-#### Dependencies and usage ###########################################
-pandas, numpy, scipy, sklearn
-from util_feature import *
-from util_date import *
-
-
-
 
 ## Function naming   ##################################################
 pd_   :  input is pandas dataframe

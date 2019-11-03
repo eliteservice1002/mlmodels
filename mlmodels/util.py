@@ -73,6 +73,17 @@ def os_folder_parent(f):
 
 
 
+def get_recursive_folder(folderPath, ext):
+    results = os.listdir(folderPath)
+    outFiles = []
+    for file in results:
+      if os.path.isdir(os.path.join(folderPath, file)):
+        outFiles += get_recursive_files(os.path.join(folderPath, file), ext)
+      elif re.match(ext, file):
+        outFiles.append(file)
+  
+    return outFiles
+
   
 
 

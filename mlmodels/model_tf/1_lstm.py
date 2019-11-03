@@ -14,7 +14,7 @@ import tensorflow as tf
 from sklearn.preprocessing import MinMaxScaler
 
 
-from util import set_root_dir
+# from util import set_root_dir
 ####################################################################################################
 class Model:
     def __init__(self,
@@ -154,6 +154,18 @@ def get_params(choice="test", ncol_input=1, ncol_output=1):
 
 def reset_model():
     tf.reset_default_graph()
+
+
+
+
+def set_root_dir():
+    current_dir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
+    parent_dir = os.path.dirname(current_dir)
+    sys.path.insert(0, parent_dir)
+    return parent_dir
+
+
+
 
 
 def test(data_path="dataset/GOOG-year.csv", reset=True):

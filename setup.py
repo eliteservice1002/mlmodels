@@ -1,3 +1,9 @@
+# pylint: disable=C0321,C0103,C0301,E1305,E1121,C0302,C0330,C0111,W0613,W0611,R1705
+# -*- coding: utf-8 -*-
+"""
+
+
+"""
 import io
 import os
 import subprocess
@@ -16,7 +22,7 @@ gpu_available = len(out) > 0
 
 
 ##### Version
-version ='0.0.1'
+version ='0.1.1'
 """"
 with io.open(os.path.join(root, 'nlp_architect', 'version.py'), encoding='utf8') as f:
     version_f = {}
@@ -39,7 +45,7 @@ scripts = []
 
 
 setup(
-    name="dsa",
+    name="mlmodels",
     version=version,
     description="Generic model API, Model Zoo in Tensorflow, Keras, Pytorch, Hyperparamter search",
     author="Kevin Noel",

@@ -1,5 +1,4 @@
 {
-
 "test" :{
 
    "model_params" : {},
@@ -7,7 +6,7 @@
    "data_params" :  {},
 
 
-}
+},
 
 
 "prod" :{

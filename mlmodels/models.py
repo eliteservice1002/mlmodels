@@ -4,6 +4,14 @@ Lightweight Functional interface to wrap access to Deep Learning, RLearning mode
 Logic follows Scikit Learn API and simple for easy extentions.Logic
 
 Models are stored in model/
+folder/mymodel.py
+
+   Class Model( )
+   def fit(model, )
+   def predict(model, sess, )
+   def test()
+
+
 
 ######### Code sample  ##########################################################
 from models import create
@@ -44,6 +52,7 @@ import glob
 import os
 import re
 from importlib import import_module
+import json
 
 # from aapackage.mlmodel import util
 # import pandas as pd
@@ -52,7 +61,7 @@ from importlib import import_module
 
 
 #################################################################################
-from util import load_config, get_recursive_files
+from util import load_config, get_recursive_files, get_recursive_folder
 
 
 
@@ -76,7 +85,6 @@ def module_load(modelname=""):
 def create(module, model_params=None):
     """
       Create Instance of the model from loaded module
-      module *****/myfile.py
       model_params : dict params
     """
     if model_params is None :
@@ -96,15 +104,15 @@ def create_full(modelname="", model_params=None, choice=['module', "model"]):
     return module, model
 
 
-def fit(model, module, data_params, **kwargs):
-    return module.fit(model, data_params, **kwargs)
+def fit(model, module, data_params, **kwarg):
+    return module.fit(model, data_params, **kwarg)
 
 
-def predict(model, module, sess=None, data_params=None, **kwargs):
-    return module.predict(model, sess, data_params, **kwargs)
+def predict(model, module, sess=None, data_params=None, **kwarg):
+    return module.predict(model, sess, data_params, **kwarg)
 
 
-def load(folder_name, model_type="tf", filename=None, **kwargs):
+def load(folder_name, model_type="tf", filename=None, **kwarg):
     if model_type == "tf" :
         return load_tf(folder_name)
 
@@ -115,7 +123,7 @@ def load(folder_name, model_type="tf", filename=None, **kwargs):
         return load_pkl(folder_name)
 
 
-def save(folder_name, modelname=None, model_type="tf", ** kwargs):
+def save(folder_name, modelname=None, model_type="tf", ** kwarg):
     if model_type == "tf":
       #save_folder = save_folder + "/" + modelname
       if not(os.path.isdir(folder_name)):
@@ -135,19 +143,21 @@ def save(folder_name, modelname=None, model_type="tf", ** kwargs):
 
 
 
-########## TF specific ################################################################################
+########## TF specific #############################################################################
 def load_tf(foldername, filename):
+    import tensorflow as tf
     return 1
 
 
 def save_tf(sess, file_path):
+    import tensorflow as tf
     saver = tf.train.Saver()
     return saver.save(sess, file_path)
 
 
 
 
-########## pyTorch specific ##########################################################################
+########## pyTorch specific ########################################################################
 def load_tch(foldername, filename):
     return 1
 
@@ -158,17 +168,11 @@ def save_tch(foldername, filename):
 
 
 
-########## Other model specific #####################################################################
+########## Other model specific ####################################################################
 def load_pkl(folder_name, filename=None) :
     pass
 
 
-def predict_file(model, foldername=None, fileprefix=None):
-    pass
-
-
-def fit_file(model, foldername=None, fileprefix=None):
-    pass
 
 
 
@@ -176,7 +180,7 @@ def fit_file(model, foldername=None, fileprefix=None):
 ####################################################################################################
 ####################################################################################################
 def test_all(folder=None):
-    if folder is None ;
+    if folder is None :
        folder =  folder_file() +  "/model_tf/"
             
     module_names = get_recursive_files(folder, r"[0-9]+_.+\.py$")
@@ -185,7 +189,7 @@ def test_all(folder=None):
 
     failed_scripts = []
 
-    if parent_folder == "model_tf" :
+    if folder == "model_tf" :
        import tensorflow as tf
 
     for module_name in module_names:
@@ -193,11 +197,22 @@ def test_all(folder=None):
         print(module_name)
         print("#######################")
         try :
-          module = import_module(f'{parent_folder}.{module_name.replace(".py", "")}')
+          module = import_module(f'{folder}.{module_name.replace(".py", "")}')
           module.test()
           del module
         except Exception as e:
           print("Failed", e)
+
+
+
+def test(modelname):
+        try :
+          module = import_module( modelname )
+          module.test()
+          del module
+        except Exception as e:
+          print("Failed", e)
+
 
 
 
@@ -224,13 +239,14 @@ def load_arguments(config_file= None ):
     p.add_argument("--save_folder", default="ztest/",  help=".")
     p.add_argument("--load_folder", default="ztest/",  help=".")
                                  
-    args = p.parse_args()
-    args = load_config(args, args.config_file, args.config_mode, verbose=0)
-    return args
+    arg = p.parse_args()
+    # arg = load_config(arg, arg.config_file, arg.config_mode, verbose=0)
+    return arg
 
 
                                  
-def get_params(arg) :    
+def get_params(arg) :
+
    js = json.load(open(arg.config_file, 'r'))  #Config     
    js = js[arg.config_mode]  #test /uat /prod                              
    model_params = js.get("model_params")                          
@@ -247,40 +263,38 @@ def folder_file() :
                                  
 if __name__ == "__main__":
     # test_all() # tot test all te modules inside model_tf
-    args = load_arguments()
-    print(args.do)
+    arg = load_arguments()
+    print(arg.do)
 
-    if args.do == "model_list"  :  #list all models
+    if arg.do == "model_list"  :  #list all models
         folder = folder_file()                         
         module_names = get_recursive_folder(folder, r"model*/*.py" )                       
-        for t in moddule_names :
+        for t in module_names :
             print(t)
                     
                                  
-    if args.do == "testall"  :    
+    if arg.do == "testall"  :    
         test_all(folder=None)
 
                                  
-    if args.do == "test"  :
-        module = module_load(args.modelname)  # '1_lstm'
-        print(module)
-        module.test()
+    if arg.do == "test"  :
+        test(arg.modelname.replace(".py", "" ))  # '1_lstm'
 
 
-    if args.do == "fit"  :
-        model_params, data_params = get_params(args)                          
+    if arg.do == "fit"  :
+        model_params, data_params = get_params(arg)                          
                                  
-        module = module_load(args.modelname)  # '1_lstm'
+        module = module_load(arg.modelname)  # '1_lstm'
         model = module.create(**model_params)                         
         sess = module.fit(model, data_params)
-        save(sess, args.save_folder)
+        save(sess, arg.save_folder)
 
                                  
-    if args.do == "predict"  :
-        model_params, data_params = get_params(args)      
+    if arg.do == "predict"  :
+        model_params, data_params = get_params(arg)      
                                  
-        module = module_load(args.modelname)  # '1_lstm'
-        model = load(folder_name)                         
+        module = module_load(arg.modelname)  # '1_lstm'
+        model = load(arg.load_folder)
         module.predict(model, data_params, data_params["target_folder"] )
 
 
