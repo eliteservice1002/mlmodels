@@ -22,7 +22,7 @@ gpu_available = len(out) > 0
 
 
 ##### Version
-version ='0.1.1'
+version ='0.2.1'
 """"
 with io.open(os.path.join(root, 'nlp_architect', 'version.py'), encoding='utf8') as f:
     version_f = {}

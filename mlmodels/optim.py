@@ -211,7 +211,7 @@ def optim_optuna(modelname="model_tf.1_lstm.py",
     study_trials.to_csv(f"{save_folder}/{modelname}_study.csv")
 
     param_dict["best_value"] = study.best_value
-    param_dict["file_path"] = file_path
+    # param_dict["file_path"] = file_path
     json.dump( param_dict,  f"{save_folder}/{modelname}_params.json" )
 
     return param_dict
@@ -318,6 +318,25 @@ def load_arguments(config_file= None ):
 
 
 
+def get_params(arg) :
+
+   js = json.load(open(arg.config_file, 'r'))  #Config     
+   js = js[arg.config_mode]  #test /uat /prod
+   model_params = js.get(["model_params"])
+   data_params = js.get(["data_params"])
+   optim_params = js.get(["optim_params"])
+
+   model_params  = {} if model_params is None else model_params
+   data_params  = { "data_path" : arg.data_path, "data_type": "pandas" } if data_params is None else data_params
+   optim_params = { 'engine': "optuna", "method" : 'prune' }  if optim_params is None else optim_params
+
+
+   return model_params, data_params, optim_params
+
+
+
+
+
 if __name__ == "__main__":
     #test_all() # tot test all te modules inside model_tf
     arg = load_arguments()
@@ -334,15 +353,7 @@ if __name__ == "__main__":
 
 
     if arg.do == "search"  :
-        js = json.load(open(arg.config_file, 'r'))  #Config
-
-        model_params = js.get(["model_params"])
-        data_params = js.get(["data_params"])
-        optim_params = js.get(["optim_params"])
-
-        model_params  = {} if model_params is None
-        data_params  = { "data_path" : arg.data_path, "data_type": "pandas" } if data_params is None
-        optim_params = { 'engine': "optuna", "method" : 'prune' }  if optim_params is None
+        model_params, data_params, optim_params = get_params(arg)
 
         res = optim(arg.modelname,
                     model_params,
