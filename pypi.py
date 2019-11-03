@@ -6,9 +6,6 @@ Pypi Uploader
 
 python pypi.py
 
-
-
-
 Usage:
 First of all, you need to copy the script to /usr/bin directory 
 and mark it as an executable, like so:

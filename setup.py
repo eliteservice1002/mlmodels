@@ -16,7 +16,7 @@ gpu_available = len(out) > 0
 
 
 ##### Version
-version ='13.3.0'
+version ='0.0.1'
 """"
 with io.open(os.path.join(root, 'nlp_architect', 'version.py'), encoding='utf8') as f:
     version_f = {}
@@ -31,7 +31,7 @@ with open("README.md", "r") as fh:
 
 
 ### Packages  ####################################################
-packages = ["dsa"] + ["dsa." + p for p in find_packages("dsa")]
+packages = ["mlmodels"] + ["mlmodels." + p for p in find_packages("dsa")]
 
 
 ### CLI Scripts
@@ -41,10 +41,10 @@ scripts = []
 setup(
     name="dsa",
     version=version,
-    description="Data Science Library, (automation, dataset shift, ..)",
+    description="Generic model API, Model Zoo in Tensorflow, Keras, Pytorch, Hyperparamter search",
     author="Kevin Noel",
     author_email="brookm291@gmail.com",
-    url="https://github.com/arita37/",
+    url="https://github.com/arita37/mlmodels",
     install_requires=[ ],
     packages=packages,
     scripts=scripts,

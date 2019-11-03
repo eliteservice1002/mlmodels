@@ -1,15 +1,8 @@
-# da
+# mlmodels
 
 ```
-
-#### Forum ####################################################################
-https://gitter.im/arita37/data_science_library#
-
-
 #### Docs here:
 https://dsa.readthedocs.io/en/latest/
-
-
 
 
 
@@ -18,29 +11,21 @@ Install as editable package   ONLY dev branch
 
 
 cd yourfolder
-git clone https://github.com/arita37/dsa.git dsa
+git clone https://github.com/arita37/mlmodels.git dsa
 cd dsa
 git checkout dev     
 
 pip install -e .
 
 
+
 ###### In Jupyter / python Editor   ###########################################
-from dsa.da import util_feature 
-util_feature.ztest()
-
-
-
-Sample usage , please open 
-
-dsa/dsa/aaa_baseline.ipynb
+from mlmodels.mlmodels import ztest
+ztest.run()
 
 
 
 
-
-#### Doc creations
-https://readthedocs.org/projects/dsa/builds/9658212/
 
 
 
@@ -108,9 +93,12 @@ black --line-length 100
 https://pypi.org/project/publish-sphinx-docs/
 
 
+#### Doc creations
+https://readthedocs.org/projects/dsa/builds/9658212/
 
 
-#########Conda install
+
+#########Conda install    ##################################################
 conda create -n py36_tf13 python=3.6.5  -y
 source activate py36_tf13
 conda install  -c anaconda  tensorflow=1.13.1
