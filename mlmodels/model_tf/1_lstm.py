@@ -23,11 +23,11 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 ####################################################################################################
 class Model:
     def __init__(self,
-        learning_rate,
-        num_layers,
-        size,
-        size_layer,
-        output_size,
+        learning_rate=0.001,
+        num_layers=2,
+        size=None,
+        size_layer=128,
+        output_size=None,
         forget_bias=0.1,
         timestep=5,
         epoch=5,

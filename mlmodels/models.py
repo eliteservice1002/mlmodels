@@ -287,12 +287,6 @@ def get_params(arg) :
    model_p = js.get("model_params")
    data_p = js.get("data_params")
 
-   #if len(model_p["input_size"] ) == 0 :
-   #  model_p["input_size"] = data_p["input_size"]
-
-   #if len(model_p["output_size"] ) == 0 :
-   # model_p["output_size"] = data_p["output_size"]
-
    return model_p, data_p
                                  
 
@@ -306,11 +300,17 @@ def folder_file() :
                                  
                                  
 def generate_config_file(modelname, to_folder="ztest/") :
+  """
+    Generate config file from code source
+
+    generate_config_file("model_tf.1_lstm", to_folder="ztest/")
+
+  """
   import inspect                               
-  module = modul_load(modelname)   
+  module = module_load(modelname)
   signature = inspect.signature( module.Model )
   args = {
-        k: v.default
+        k: v.default if v.default is not inspect.Parameter.empty else None
         for k, v in signature.parameters.items()
         # if v.default is not inspect.Parameter.empty
   }
@@ -320,7 +320,14 @@ def generate_config_file(modelname, to_folder="ztest/") :
                   "data_params" : {},
                   "optim_params": {}                 
                  }
-  return model_params                               
+
+  modelname.replace(".", "")
+  fname = f"{to_folder}/{modelname}_config.json"
+  json.dump(model_params, open( fname, mode="w"))
+  print(fname)
+
+
+
 
                                  
                                  
@@ -369,7 +376,7 @@ if __name__ == "__main__":
 
     if arg.do == "generate_config"  :
         generate_config_file(arg.modelname, to_folder= arg.save_folder) 
-        print( arg.save_folder )
+
 
 
 
