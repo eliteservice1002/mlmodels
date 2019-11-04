@@ -146,9 +146,23 @@ def save(folder_name, modelname=None,  sess=None, ** kwarg):
 
 ########## TF specific #############################################################################
 def load_tf(foldername, filename):
+    """
+    https://www.mlflow.org/docs/latest/python_api/mlflow.tensorflow.html#
+    
+    
+   """
+    import mlflow.tensorflow
     import tensorflow as tf
-    return 1
-
+    tf_graph = tf.Graph()
+    tf_sess = tf.Session(graph=tf_graph)
+    with tf_graph.as_default():
+        signature_definition = mlflow.tensorflow.load_model(model_uri="model_uri",
+                               tf_sess=tf_sess)
+        input_tensors = [tf_graph.get_tensor_by_name(input_signature.name)
+                        for _, input_signature in signature_def.inputs.items()]
+        output_tensors = [tf_graph.get_tensor_by_name(output_signature.name)
+                          for _, output_signature in signature_def.outputs.items()]
+    
 
 def save_tf(sess, file_path):
     import tensorflow as tf
