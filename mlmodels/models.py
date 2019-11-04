@@ -11,6 +11,14 @@ folder/mymodel.py
    def predict(model, sess, )
    def test()
 
+######### CLI sample  ##########################################################
+python models.py  --do test
+
+python models.py  --do generate_config  --modelname model_tf.1_lstm.py  --save_folder "c:\myconfig\"
+
+
+
+
 
 
 ######### Code sample  ##########################################################
