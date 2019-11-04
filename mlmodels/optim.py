@@ -122,16 +122,6 @@ def optim_optuna(modelname="model_tf.1_lstm.py",
     drop_path_rate = trial.suggest_discrete_uniform('drop_path_rate', 0.0, 1.0, 0.1) # Discrete-uniform parameter
     
 
-    Raises
-    ------
-    Exception
-        DESCRIPTION.
-
-    Returns
-    -------
-    TYPE
-        DESCRIPTION.
-
     """
     module = module_load(modelname)
 
@@ -143,15 +133,25 @@ def optim_optuna(modelname="model_tf.1_lstm.py",
             #p = model_params[t]
             x = p['type']
 
-            pres = {'log_uniform': trial.suggest_loguniform(t,p['range'][0], p['range'][1]),
-                    'int': trial.suggest_int(t,p['range'][0], p['range'][1])
-                    'categorical':  trial.suggest_categorical(t,p['value'])
-                    'discrete_uniform' : trial.suggest_discrete_uniform(t, p['init'],p['range'][0],p['range'][1])
-                    'uniform':  trial.suggest_uniform(t,p['range'][0], p['range'][1])
-                   }.get(x)
 
-            if pres is None :
+            if x=='log_uniform':
+                pres = trial.suggest_loguniform(t,p['range'][0], p['range'][1])
+
+            elif x=='int':
+                pres = trial.suggest_int(t,p['range'][0], p['range'][1])
+
+            elif x=='categorical':
+                pres = trial.suggest_categorical(t,p['value'])
+
+            elif x=='discrete_uniform':
+                pres = trial.suggest_discrete_uniform(t, p['init'],p['range'][0],p['range'][1])
+
+            elif x=='uniform':
+                pres = trial.suggest_uniform(t,p['range'][0], p['range'][1])
+
+            else:
                 raise Exception('Not supported type {}'.format(p['type']))
+                pres = None
 
             param_dict[t] = pres
 
