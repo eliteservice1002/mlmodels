@@ -1,6 +1,13 @@
-Usage :
+```
+#### Usage :
+python models.py  --do test
 
-Install :
+python optim.py  --do test
+
+
+
+
+### Install :
 
  pip install -e git
  
@@ -36,7 +43,7 @@ Install :
 *How to run hyperparameter search ?*
       
 
-
+```
 
 
 
