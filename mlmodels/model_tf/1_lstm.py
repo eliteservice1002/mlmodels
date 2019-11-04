@@ -14,6 +14,11 @@ import tensorflow as tf
 from sklearn.preprocessing import MinMaxScaler
 
 
+tf.get_logger().setLevel('INFO')
+# **** change the warning level ****
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
+
+
 # from util import set_root_dir
 ####################################################################################################
 class Model:
@@ -56,21 +61,11 @@ class Model:
 
 
 
-def get_dataset(filename="dataset/GOOG-year.csv"):
-    set_root_dir()
+def fit(model, data_params):
+    df = get_dataset(data_params)
 
-    df = pd.read_csv(filename)
-    date_ori = pd.to_datetime(df.iloc[:, 0]).tolist()
-    print( filename )
-    print(df.head(5))
-
-    minmax = MinMaxScaler().fit(df.iloc[:, 1:].astype("float32"))
-    df_log = minmax.transform(df.iloc[:, 1:].astype("float32"))
-    df_log = pd.DataFrame(df_log)
-    return df_log
-
-
-def fit(model, df, nfreq=100):
+    #########
+    nlog_freq=100
     sess = tf.InteractiveSession()
     sess.run(tf.global_variables_initializer())
     for i in range(model.epoch):
@@ -95,7 +90,7 @@ def fit(model, df, nfreq=100):
         total_loss /= df.shape[0] // model.timestep
         model.stats["loss"] = total_loss
 
-        if (i + 1) % nfreq == 0:
+        if (i + 1) % nlog_freq == 0:
             print("epoch:", i + 1, "avg loss:", total_loss)
     return sess
 
@@ -108,7 +103,11 @@ def stats_compute(model, sess, df, get_hidden_state=False, init_value=None):
 
 
 
-def predict(model, sess, df, get_hidden_state=False, init_value=None):
+def predict(model, sess, data_params, get_hidden_state=False, init_value=None):
+
+    df = get_dataset(data_params)
+
+
     if init_value is None:
         init_value = np.zeros((1, model.hidden_layer_size))
     output_predict = np.zeros((df.shape[0], df.shape[1]))
@@ -138,26 +137,13 @@ def predict(model, sess, df, get_hidden_state=False, init_value=None):
     return output_predict
 
 
-def get_params(choice="test", ncol_input=1, ncol_output=1):
-    # output parms
-    if choice=="test":
-        return         {
-            "learning_rate": 0.001,
-            "num_layers": 1,
-            "size": ncol_input,
-            "size_layer": 128,
-            "output_size": ncol_output,
-            "timestep": 4,
-            "epoch": 2,
-        }
-
 
 def reset_model():
     tf.reset_default_graph()
 
 
 
-
+####################################################################################################
 def set_root_dir():
     current_dir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
     parent_dir = os.path.dirname(current_dir)
@@ -166,33 +152,78 @@ def set_root_dir():
 
 
 
+def get_dataset(data_params=None):
+    """
+      JSON data_params  to  actual dataframe of data
+    """
+
+    filename = data_params["data_path"]  #
+
+    ##### Specific   ######################################################
+    set_root_dir()
+
+    df = pd.read_csv(filename)
+    date_ori = pd.to_datetime(df.iloc[:, 0]).tolist()
+    print( filename )
+    print(df.head(5))
+
+    minmax = MinMaxScaler().fit(df.iloc[:, 1:].astype("float32"))
+    df_log = minmax.transform(df.iloc[:, 1:].astype("float32"))
+    df_log = pd.DataFrame(df_log)
+    return df_log
 
 
+def get_params(choice="test", **kwargs):
+    # output parms
+    # print(kwargs)
+    if choice=="test":
+        p=         { "learning_rate": 0.001,
+            "num_layers": 1,
+            "size": None,
+            "size_layer": 128,
+            "output_size": None,
+            "timestep": 4,
+            "epoch": 2,
+        }
+
+        ### Overwrite by manual input
+        for k,x in kwargs.items() :
+            p[k] = x
+
+        return p
+
+
+
+####################################################################################################
 def test(data_path="dataset/GOOG-year.csv", reset=True):
     set_root_dir()
-    df = get_dataset(data_path)
+    data_params = { "data_path" : data_path, "data_type" : "pandas" }
+
+    df = get_dataset(data_params)
+    model_params = get_params("test", size=df.shape[1], output_size=df.shape[1] )
+
 
     from models import create_full, fit, predict
-    module, model = create_full(
-        "model_tf.1_lstm",  #replace by generic name catching
-        get_params("test", ncol_input= df.shape[1], ncol_output= df.shape[1] )
-    )
+    module, model = create_full( "model_tf.1_lstm", model_params)
 
-    sess = fit(model, module, df)
-    predictions = predict(model, module, sess, df)
+    sess = fit(model, module, data_params)
+    predictions = predict(model, sess, data_params)
     print(predictions)
     tf.reset_default_graph()
 
 
-def test2(data_path="dataset/GOOG-year.csv"):
-    df_log = get_dataset(data_path)
-    p      = get_params("test", ncol_input=df_log.shape[1], ncol_output=df_log.shape[1] )
 
-    model = Model(**p)
-    sess  = fit(model, df_log)
-    predictions = predict(model, sess, df_log)
+def test2( data_path="dataset/GOOG-year.csv" ):
+    data_params = { "data_path" : data_path, "data_type" : "pandas" }
+
+    df = get_dataset(data_params)
+    model_params = get_params("test", size=df.shape[1], output_size=df.shape[1] )
+
+    model = Model(**model_params)
+    sess  = fit(model, data_params)
+    predictions = predict(model, sess, data_params)
     print(predictions)
-
+    tf.reset_default_graph()
 
 
 

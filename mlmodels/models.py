@@ -63,7 +63,8 @@ import json
 #################################################################################
 from util import load_config, get_recursive_files, get_recursive_folder
 
-
+def log(*args):
+    print(  ",".join( [  x for x in args   ]  ))
 
 
 #################################################################################
@@ -123,8 +124,8 @@ def load(folder_name, model_type="tf", filename=None, **kwarg):
         return load_pkl(folder_name)
 
 
-def save(folder_name, modelname=None, model_type="tf", ** kwarg):
-    if model_type == "tf":
+def save(folder_name, modelname=None,  sess=None, ** kwarg):
+    if "model_tf" in modelname :
       #save_folder = save_folder + "/" + modelname
       if not(os.path.isdir(folder_name)):
         os.makedirs(folder_name)
@@ -195,7 +196,6 @@ def test_all(folder=None):
     for module_name in module_names:
         print("#######################")
         print(module_name)
-        print("#######################")
         try :
           module = import_module(f'{folder}.{module_name.replace(".py", "")}')
           module.test()
@@ -246,13 +246,24 @@ def load_arguments(config_file= None ):
 
                                  
 def get_params(arg) :
+   """  From CLI Input to JSON format
+      JSON should map EXACTLY the model input
+        self.X = tf.placeholder(tf.float32, (None, None, size))
+        self.Y = tf.placeholder(tf.float32, (None, output_size))
 
+   """
    js = json.load(open(arg.config_file, 'r'))  #Config     
    js = js[arg.config_mode]  #test /uat /prod                              
-   model_params = js.get("model_params")                          
-   data_params = js.get("data_params")  
-                                                              
-   return model_params, data_params                              
+   model_p = js.get("model_params")
+   data_p = js.get("data_params")
+
+   #if len(model_p["input_size"] ) == 0 :
+   #  model_p["input_size"] = data_p["input_size"]
+
+   #if len(model_p["output_size"] ) == 0 :
+   # model_p["output_size"] = data_p["output_size"]
+
+   return model_p, data_p
                                  
                                  
 def folder_file() :
@@ -282,12 +293,16 @@ if __name__ == "__main__":
 
 
     if arg.do == "fit"  :
-        model_params, data_params = get_params(arg)                          
-                                 
-        module = module_load(arg.modelname)  # '1_lstm'
-        model = module.create(**model_params)                         
+        model_params, data_params = get_params(arg)
+        module = module_load(arg.modelname)  # '1_lstm.py
+
+        model = module.Model(**model_params)   #Exact map JSON and paramters
+
+        log("Fit")
         sess = module.fit(model, data_params)
-        save(sess, arg.save_folder)
+
+        log("Save")
+        save(f"{arg.save_folder}/{arg.modelname}", arg.modelname, sess )
 
                                  
     if arg.do == "predict"  :
