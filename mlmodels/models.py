@@ -294,7 +294,27 @@ def folder_file() :
   from pathlib import Path
   return Path().absolute()  
 
+                                 
+                                 
+                                 
+def generate_config_file(modelname, to_folder="ztest/") :
+  import inspect                               
+  module = modul_load(modelname)   
+  signature = inspect.signature( module.Model )
+  args = {
+        k: v.default
+        for k, v in signature.parameters.items()
+        # if v.default is not inspect.Parameter.empty
+  }
+                                 
+  # args = inspect.getargspec(module.Model)
+  model_params = {"model_params" : args,
+                  "data_params" : {},
+                  "optim_params": {}                 
+                 }
+  return model_params                               
 
+                                 
                                  
 if __name__ == "__main__":
     # test_all() # tot test all te modules inside model_tf
@@ -339,9 +359,9 @@ if __name__ == "__main__":
 
 
 
-
-
-
+    if arg.do == "generate_config"  :
+        generate_config_file(arg.modelname, to_folder= arg.save_folder) 
+        print( arg.save_folder )
 
 
 
