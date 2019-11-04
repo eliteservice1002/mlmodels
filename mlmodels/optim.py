@@ -2,25 +2,31 @@
 """
 Lightweight Functional interface to wrap Hyper-parameter Optimization
 
-1st engine is optuna
-https://optuna.readthedocs.io/en/stable/installation.html
-https://github.com/pfnet/optuna/blob/master/examples/tensorflow_estimator_simple.py
-https://github.com/pfnet/optuna/tree/master/examples
+
+###### Model param search test
+python optim.py --do test
 
 
-###### Model param search
+##### #for normal optimization search method
+python optim.py --do search --ntrials 1  --config_file optim_config.json --optim_method normal
 
-#for normal optimization search method
-python optim.py --do search --ntrials 1  --config_file data.json --optim_method normal
 
-# for pruning method
-python optim.py --do search --ntrials 1  --config_file data.json --optim_method prune
+###### for pruning method
+python optim.py --do search --ntrials 1  --config_file optim_config.json --optim_method prune
+
 
 
 ###### HyperParam standalone run
 python optim.py --modelname model_tf.1_lstm.py  --do test
 
 python optim.py --modelname model_tf.1_lstm.py  --do search
+
+
+
+###### 1st engine is optuna
+https://optuna.readthedocs.io/en/stable/installation.html
+https://github.com/pfnet/optuna/blob/master/examples/tensorflow_estimator_simple.py
+https://github.com/pfnet/optuna/tree/master/examples
 
 
 
@@ -34,9 +40,8 @@ import json
 
 
 import pandas as pd
-from sklearn.preprocessing import MinMaxScaler
-import tensorflow as tf
-import pandas as pd
+
+
 
 import optuna
 ####################################################################################################
@@ -46,36 +51,34 @@ from util import load_config, to_namespace
 from models import create, module_load, save
 ####################################################################################################
 
+from tensorflow.python.util import deprecation
+deprecation._PRINT_DEPRECATION_WARNINGS = False
 
 
+
+
+
+
+####################################################################################################
 def optim(modelname="model_tf.1_lstm.py",
-                 model_params= {},
-                 data_params = {},
-                 optim_params={"method": "normal/prune"},
-                 save_folder="/mymodel/", log_folder="", ntrials=2) :
+          model_params= {},
+          data_params = {},
+          optim_params={"method": "normal/prune"},
+          save_folder="/mymodel/", log_folder="", ntrials=2) :
     """
     Generic optimizer for hyperparamters
     Parameters
     ----------
-    modelname : TYPE, optional
-        DESCRIPTION. The default is "model_tf.1_lstm.py".
+    modelname : The default is "model_tf.1_lstm.py".
     model_params : TYPE, optional
-        DESCRIPTION. The default is {}.
     data_params : TYPE, optional
-        DESCRIPTION. The default is {}.
     optim_params : TYPE, optional
-        DESCRIPTION. The default is {"method": "normal/prune"}.
-    save_folder : TYPE, optional
-        DESCRIPTION. The default is "/mymodel/".
-    log_folder : TYPE, optional
-        DESCRIPTION. The default is "".
-    ntrials : TYPE, optional
-        DESCRIPTION. The default is 2.
+    DESCRIPTION. The default is {"method": "normal/prune"}.
+    save_folder : TYPE, optional The default is "/mymodel/".
+    log_folder : TYPE, optional. The default is "".
+    ntrials : TYPE, optional. The default is 2.
 
     Returns : None
-    -------
-    TYPE
-        DESCRIPTION.
 
     """
     print(model_params)
@@ -110,23 +113,6 @@ def optim_optuna(modelname="model_tf.1_lstm.py",
     drop_path_rate = trial.suggest_discrete_uniform('drop_path_rate', 0.0, 1.0, 0.1) # Discrete-uniform parameter
     
 
-    Parameters
-    ----------
-    modelname : TYPE, optional
-        DESCRIPTION. The default is "model_tf.1_lstm.py".
-    model_params : TYPE, optional
-        DESCRIPTION. The default is {}.
-    data_params : TYPE, optional
-        DESCRIPTION. The default is {}.
-    optim_params : TYPE, optional
-        DESCRIPTION. The default is {"method" : "normal/prune"}.
-    save_folder : TYPE, optional
-        DESCRIPTION. The default is "/mymodel/".
-    log_folder : TYPE, optional
-        DESCRIPTION. The default is "".
-    ntrials : TYPE, optional
-        DESCRIPTION. The default is 2.
-
     Raises
     ------
     Exception
@@ -141,8 +127,9 @@ def optim_optuna(modelname="model_tf.1_lstm.py",
     module = module_load(modelname)
 
     def objective(trial):
-        param_dict =  module.get_params(choice="test", ncol_input=data_params.shape[1],
-                                        ncol_output=data_params.shape[1])
+        param_dict =  module.get_params(choice="test",)
+        # print([param_dict])
+
         for t,p  in model_params.items():
             pres = None
             #p = model_params[t]
@@ -170,8 +157,8 @@ def optim_optuna(modelname="model_tf.1_lstm.py",
 
         model = module.Model(**param_dict)
 
-        df = data_loader(data_params)
-        sess = module.fit(model, df)
+        # df = data_loader(data_params)
+        sess = module.fit(model, data_params)
         stats = model.stats["loss"]
         del sess
         del model
@@ -183,6 +170,7 @@ def optim_optuna(modelname="model_tf.1_lstm.py",
 
         return stats
 
+
     ###### Hyper-optimization through study   ####################################
     if optim_params["method"] =='prune':
         study = optuna.create_study(pruner=optuna.pruners.MedianPruner())
@@ -191,19 +179,17 @@ def optim_optuna(modelname="model_tf.1_lstm.py",
 
     study.optimize(objective, n_trials=ntrials)  # Invoke optimization of the objective function.
     param_dict =  study.best_params
-    param_dict.update(module.get_params(choice="test", ncol_input=data_params.shape[1],
-                                        ncol_output=data_params.shape[1]))
+    # param_dict.update(module.get_params(choice="test", )
 
 
     ### Run Model with best   ###################################################
     model = module.Model(**param_dict)
-    df = data_loader(data_params)
-    sess = module.fit(model,  df)
+    sess = module.fit(model,  data_params)
 
 
     #### Saving     #############################################################
     modelname = modelname.replace(".", "-") # this is the module name which contains .
-    module.save( save_folder, modelname, sess, model )
+    save( save_folder, modelname, sess, model=model )
 
 
     ### Save Stats   ############################################################
@@ -212,24 +198,9 @@ def optim_optuna(modelname="model_tf.1_lstm.py",
 
     param_dict["best_value"] = study.best_value
     # param_dict["file_path"] = file_path
-    json.dump( param_dict,  f"{save_folder}/{modelname}_params.json" )
+    json.dump( param_dict, open(f"{save_folder}/{modelname}_best-params.json", mode="w") )
 
     return param_dict
-
-
-
-
-def data_loader(data_params):
-    if data_params["data_type"] == "pandas" :
-      df = pd.read_csv(data_params["data_path"])
-
-    date_ori = pd.to_datetime(df.iloc[:, 0]).tolist()
-
-    minmax = MinMaxScaler().fit(df.iloc[:, 1:].astype('float32'))
-    df_log = minmax.transform(df.iloc[:, 1:].astype('float32'))
-    df_log = pd.DataFrame(df_log)
-    return df_log
-
 
 
 
@@ -239,37 +210,46 @@ def data_loader(data_params):
 ####################################################################################################
 def test_all():
     pars =  {
-        "learning_rate": {"type": "log_uniform", "init": 0.01,  "range" :(0.001, 0.1)},
-        "num_layers":    {"type": "int", "init": 2,  "range" :(2, 4)},
-        "size_layer":    {"type" : 'categorical', "value": [128, 256 ] },
-        "timestep":      {"type" : 'categorical', "value": [5] },
-        "epoch":         {"type" : 'categorical', "value": [2] },
+        "learning_rate": {"type": "log_uniform", "init": 0.01,  "range" : [0.001, 0.1] },
+        "num_layers":    {"type": "int", "init": 2,  "range" :[2, 4] },
+        "size":    {"type": "int", "init": 6,  "range" :[6, 6] },
+        "output_size":    {"type": "int", "init": 6,  "range" : [6, 6] },
+
+        "size_layer":    {"type" : "categorical", "value": [128, 256 ] },
+        "timestep":      {"type" : "categorical", "value": [5] },
+        "epoch":         {"type" : "categorical", "value": [2] }
     }
 
-    res = optim('model_tf.1_lstm', model_params=pars,
-                data_params={"data_path": 'dataset/GOOG-year.csv', "data_type": "pandas"},
-                ntrials=3,
-                optim_params={"engine": "optuna" ,  "method" : "prune"} )
-
-    print("\n#############  Finished OPTIMIZATION  ###############")
-    print(res)
-
-
-
-
-def test_fast():
-    # df_log = data_loader('dataset/GOOG-year_small.csv')
-    pars =  {
-        "learning_rate": {"type": "log_uniform", "init": 0.01,  "range" :(0.001, 0.1)},
-        "num_layers":    {"type": "int", "init": 2,  "range" :(2, 4)},
-        "size_layer":    {"type" : 'categorical', "value": [128, 256 ] },
-        "timestep":      {"type" : 'categorical', "value": [5] },
-        "epoch":         {"type" : 'categorical', "value": [2] },
-    }
 
     res = optim('model_tf.1_lstm', model_params=pars,
                 data_params={"data_path": 'dataset/GOOG-year_small.csv', "data_type": "pandas"},
-                ntrials=3,
+                ntrials=2,
+                save_folder="ztest/optuna_1lstm/",
+                log_folder="ztest/optuna_1lstm/",
+                optim_params={"engine": "optuna" ,  "method" : "prune"} )
+
+    return res
+
+
+def test_fast():
+    pars = {
+        "learning_rate": {"type": "log_uniform", "init": 0.01,  "range" : [0.001, 0.1] },
+        "num_layers":    {"type": "int", "init": 2,  "range" :[2, 4] },
+        "size":    {"type": "int", "init": 6,  "range" :[6, 6] },
+        "output_size":    {"type": "int", "init": 6,  "range" : [6, 6] },
+
+        "size_layer":    {"type" : "categorical", "value": [128, 256 ] },
+        "timestep":      {"type" : "categorical", "value": [5] },
+        "epoch":         {"type" : "categorical", "value": [2] }
+    }
+
+
+    res = optim('model_tf.1_lstm',
+                model_params = pars,
+                data_params = {"data_path": 'dataset/GOOG-year_small.csv', "data_type": "pandas"},
+                ntrials=2,
+                save_folder="ztest/optuna_1lstm/",
+                log_folder="ztest/optuna_1lstm/",
                 optim_params={"engine": "optuna" ,  "method" : "prune"} )
 
     print("\n#############  Finished OPTIMIZATION  ###############")
@@ -286,8 +266,8 @@ def load_arguments(config_file= None ):
     """
     if config_file is None  :
       cur_path = os.path.dirname(os.path.realpath(__file__))
-      config_file = os.path.join(cur_path, "optim_config_default.json")
-    print(config_file)
+      config_file = os.path.join(cur_path, "optim_config.json")
+    # print(config_file)
 
     p = argparse.ArgumentParser()
     p.add_argument("--config_file", default=config_file, help="Params File")
@@ -300,7 +280,7 @@ def load_arguments(config_file= None ):
     p.add_argument("--ntrials", default=100, help='number of trials during the hyperparameters tuning')
     p.add_argument('--optim_engine', default='optuna',help='Optimization engine')
     p.add_argument('--optim_method', default='normal/prune',help='Optimization method')
-    p.add_argument('--save_folder', default='model_save',help='folder that will contain saved version of best model')
+    p.add_argument('--save_folder', default='ztest/search_save/',help='folder that will contain saved version of best model')
 
 
     ## model_params
@@ -313,7 +293,7 @@ def load_arguments(config_file= None ):
 
 
     args = p.parse_args()
-    args = load_config(args, args.config_file, args.config_mode, verbose=0)
+    # args = load_config(args, args.config_file, args.config_mode, verbose=0)
     return args
 
 
@@ -322,14 +302,9 @@ def get_params(arg) :
 
    js = json.load(open(arg.config_file, 'r'))  #Config     
    js = js[arg.config_mode]  #test /uat /prod
-   model_params = js.get(["model_params"])
-   data_params = js.get(["data_params"])
-   optim_params = js.get(["optim_params"])
-
-   model_params  = {} if model_params is None else model_params
-   data_params  = { "data_path" : arg.data_path, "data_type": "pandas" } if data_params is None else data_params
-   optim_params = { 'engine': "optuna", "method" : 'prune' }  if optim_params is None else optim_params
-
+   model_params = js.get("model_params")
+   data_params = js.get("data_params")
+   optim_params = js.get("optim_params")
 
    return model_params, data_params, optim_params
 
@@ -338,11 +313,10 @@ def get_params(arg) :
 
 
 if __name__ == "__main__":
-    #test_all() # tot test all te modules inside model_tf
     arg = load_arguments()
 
-    import logging
-    logging.getLogger("tensorflow").setLevel(logging.ERROR)
+    # import logging
+    # logging.getLogger("tensorflow").setLevel(logging.ERROR)
 
     if arg.do == "test"  :
         test_fast()
@@ -354,18 +328,45 @@ if __name__ == "__main__":
 
     if arg.do == "search"  :
         model_params, data_params, optim_params = get_params(arg)
+        print(model_params, data_params, optim_params)
 
         res = optim(arg.modelname,
-                    model_params,
-                    ntrials=int(arg.ntrials),
-                    optim_params= optim_params,
-                    data_params= data_params,
-                    save_folder= arg.save_folder)  # '1_lstm'
+                    model_params = model_params,
+                    ntrials = int(arg.ntrials),
+                    optim_params = optim_params,
+                    data_params  = data_params,
+                    save_folder  = arg.save_folder,
+                    log_folder   = arg.log_file)  # '1_lstm'
 
         print("#############  Finished OPTIMIZATION  ###############")
         print(res)
 
 
+
+
+
+
+
+####################################################################################################
+####################################################################################################
+
+
+"""
+import tensorflow as tf
+
+from sklearn.preprocessing import MinMaxScaler
+
+def data_loader(data_params):
+    if data_params["data_type"] == "pandas" :
+      df = pd.read_csv(data_params["data_path"])
+
+    date_ori = pd.to_datetime(df.iloc[:, 0]).tolist()
+
+    minmax = MinMaxScaler().fit(df.iloc[:, 1:].astype('float32'))
+    df_log = minmax.transform(df.iloc[:, 1:].astype('float32'))
+    df_log = pd.DataFrame(df_log)
+    return df_log
+"""
 
 
 
