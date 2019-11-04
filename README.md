@@ -11,8 +11,8 @@ Install as editable package   ONLY dev branch
 
 
 cd yourfolder
-git clone https://github.com/arita37/mlmodels.git dsa
-cd dsa
+git clone https://github.com/arita37/mlmodels.git mlmodels
+cd mlmodels
 git checkout dev     
 
 pip install -e .
@@ -20,15 +20,61 @@ pip install -e .
 
 
 ###### In Jupyter / python Editor   ###########################################
-from mlmodels.mlmodels import ztest
+from mlmodels.util import load_config, to_namespace
+from mlmodels.models import create, module_load, save
+
+from mlmodels import ztest
 ztest.run()
 
-##Run test model
+
+
+##Run test model    ##########################################################
 python models.py --do test
 
 python optim.py --do test
 
 
+###### CLI for pruning method
+python optim.py --do search --ntrials 1  --config_file optim_config.json --optim_method prune
+
+
+
+
+
+
+
+#### Usage :   ###############################################################
+python models.py  --do test
+
+python optim.py  --do test
+
+
+
+
+### Install :
+
+ pip install -e git
+ 
+ 
+ import mlmodel
+ mlmodel.test()
+ 
+
+
+*How to define a model ?*
+
+   create file mymodel.py
+      Class Model()
+            __init__(model_param):
+                        
+      def fit(model, )       :  train the model
+      def predict(model,sess, )  : predic the results
+      def get_params() : example of parameters of the model
+      def save()   : save the model
+      def load()   : load the trained model
+      def test()   : example running the model
+     
+      def data_loader(data_params)
 
 
 

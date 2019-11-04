@@ -56,9 +56,11 @@ import optuna
 ####################################################################################################
 
 
-from util import load_config, to_namespace
-from models import create, module_load, save
+from mlmodels.util import load_config, to_namespace
+from mlmodels.models import create, module_load, save
 ####################################################################################################
+
+
 
 from tensorflow.python.util import deprecation
 deprecation._PRINT_DEPRECATION_WARNINGS = False
