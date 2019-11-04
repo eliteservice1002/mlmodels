@@ -54,6 +54,8 @@ import re
 from importlib import import_module
 import json
 
+
+
 # from aapackage.mlmodel import util
 # import pandas as pd
 # import tensorflow as tf
@@ -95,7 +97,7 @@ def create(module, model_params=None):
     return model
 
 
-def create_full(modelname="", model_params=None, choice=['module', "model"]):
+def create_full(modelname="", model_params=None, choice=None):
     """
       Create Instance of the model, module
       modelname:  model_tf.1_lstm.py
@@ -135,11 +137,15 @@ def save(folder_name, modelname=None,  sess=None, ** kwarg):
       return 1      
 
 
-    if model_type == "tch":
+    if  "model_tch" in modelname :
         return 1
 
 
-    if model_type == "pkl":
+    if  "model_keras" in modelname :
+        return 1
+
+
+    if  "model_" in modelname :
         return 1
 
 
@@ -156,13 +162,15 @@ def load_tf(foldername, filename):
     tf_graph = tf.Graph()
     tf_sess = tf.Session(graph=tf_graph)
     with tf_graph.as_default():
-        signature_definition = mlflow.tensorflow.load_model(model_uri="model_uri",
+        signature_def = mlflow.tensorflow.load_model(model_uri="model_uri",
                                tf_sess=tf_sess)
         input_tensors = [tf_graph.get_tensor_by_name(input_signature.name)
                         for _, input_signature in signature_def.inputs.items()]
         output_tensors = [tf_graph.get_tensor_by_name(output_signature.name)
                           for _, output_signature in signature_def.outputs.items()]
-    
+    return input_tensors, output_tensors
+
+
 
 def save_tf(sess, file_path):
     import tensorflow as tf
@@ -279,8 +287,10 @@ def get_params(arg) :
 
    return model_p, data_p
                                  
-                                 
+
+
 def folder_file() :
+  # Path of current file
   from pathlib import Path
   return Path().absolute()  
 
@@ -318,13 +328,27 @@ if __name__ == "__main__":
         log("Save")
         save(f"{arg.save_folder}/{arg.modelname}", arg.modelname, sess )
 
+
                                  
     if arg.do == "predict"  :
         model_params, data_params = get_params(arg)      
                                  
         module = module_load(arg.modelname)  # '1_lstm'
         model = load(arg.load_folder)
-        module.predict(model, data_params, data_params["target_folder"] )
+        module.predict(model, data_params, data_params )
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
