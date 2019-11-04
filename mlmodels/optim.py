@@ -23,6 +23,15 @@ python optim.py --modelname model_tf.1_lstm.py  --do search
 
 
 
+### Distributed
+https://optuna.readthedocs.io/en/latest/tutorial/distributed.html
+{ 'distributed' : 1,
+  'study_name' : 'ok' , 
+  'storage' : 'sqlite'
+}                                       
+                                       
+
+
 ###### 1st engine is optuna
 https://optuna.readthedocs.io/en/stable/installation.html
 https://github.com/pfnet/optuna/blob/master/examples/tensorflow_estimator_simple.py
@@ -131,26 +140,17 @@ def optim_optuna(modelname="model_tf.1_lstm.py",
         # print([param_dict])
 
         for t,p  in model_params.items():
-            pres = None
             #p = model_params[t]
             x = p['type']
 
-            if x=='log_uniform':
-                pres = trial.suggest_loguniform(t,p['range'][0], p['range'][1])
+            pres = {'log_uniform': trial.suggest_loguniform(t,p['range'][0], p['range'][1]),
+                    'int': trial.suggest_int(t,p['range'][0], p['range'][1])
+                    'categorical':  trial.suggest_categorical(t,p['value'])
+                    'discrete_uniform' : trial.suggest_discrete_uniform(t, p['init'],p['range'][0],p['range'][1])
+                    'uniform':  trial.suggest_uniform(t,p['range'][0], p['range'][1])
+                   }.get(x)
 
-            elif x=='int':
-                pres = trial.suggest_int(t,p['range'][0], p['range'][1])
-
-            elif x=='categorical':
-                pres = trial.suggest_categorical(t,p['value'])
-
-            elif x=='discrete_uniform':
-                pres = trial.suggest_discrete_uniform(t, p['init'],p['range'][0],p['range'][1])
-
-            elif x=='uniform':
-                pres = trial.suggest_uniform(t,p['range'][0], p['range'][1])
-
-            else:
+            if pres is None :
                 raise Exception('Not supported type {}'.format(p['type']))
 
             param_dict[t] = pres
@@ -172,10 +172,19 @@ def optim_optuna(modelname="model_tf.1_lstm.py",
 
 
     ###### Hyper-optimization through study   ####################################
-    if optim_params["method"] =='prune':
-        study = optuna.create_study(pruner=optuna.pruners.MedianPruner())
-    else:
-        study = optuna.create_study()  # Create a new study.
+    pruner = optuna.pruners.MedianPruner() if optim_params["method"] =='prune' else None
+          
+    if optim_params.get("distributed") is not None :
+          # study = optuna.load_study(study_name='distributed-example', storage='sqlite:///example.db')
+          try :
+             study = optuna.load_study(study_name= optim_params['study_name'] , 
+                                       storage=optim_params['storage'] )
+          except:
+             study = optuna.create_study(pruner=pruner, study_name= optim_params['study_name'] , 
+                                         storage=optim_params['storage'] )      
+    else :           
+         study = optuna.create_study(pruner=pruner)
+
 
     study.optimize(objective, n_trials=ntrials)  # Invoke optimization of the objective function.
     param_dict =  study.best_params
