@@ -67,6 +67,8 @@ python optim.py  --do test
       Class Model()
             __init__(model_param):
                         
+
+      def load_dataset()                  
       def fit(model, )       :  train the model
       def predict(model,sess, )  : predic the results
       def get_params() : example of parameters of the model

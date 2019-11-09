@@ -22,7 +22,7 @@ gpu_available = len(out) > 0
 
 
 ##### Version
-version ='0.3.1'
+version ='0.4.1'
 """"
 with io.open(os.path.join(root, 'nlp_architect', 'version.py'), encoding='utf8') as f:
     version_f = {}
@@ -33,6 +33,52 @@ with io.open(os.path.join(root, 'nlp_architect', 'version.py'), encoding='utf8')
 
 with open("README.md", "r") as fh:
     long_description = fh.read()
+
+
+long_description =  """
+Include models :
+
+
+encoder_vanilla
+bidirectional_vanilla
+vanilla_2path
+lstm_seq2seq
+lstm_attention
+lstm_seq2seq_attention
+lstm_seq2seq_bidirectional
+lstm_seq2seq_bidirectional_attention
+lstm_attention_scaleddot
+lstm_dilated
+lstm.py models 
+only_attention
+multihead_attention
+lstm_bahdanau
+lstm_luong
+lstm_luong_bahdanau
+dnc
+lstm_residual
+byte_net
+attention_is_all_you_need
+fairseq
+encoder_lstm
+bidirectional_lstm
+lstm_2path
+lstm attention
+gru
+encoder_gru
+bidirectional_gru
+gru_2path
+vanilla
+autoencoder
+nbeats  time series
+deepar time series
+
+
+
+
+
+
+"""
 
 
 
@@ -54,6 +100,8 @@ setup(
     install_requires=[ ],
     packages=packages,
     scripts=scripts,
+    long_description=long_description,
+    long_description_content_type="text/markdown",
 )
 
 
