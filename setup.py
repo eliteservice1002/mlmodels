@@ -22,7 +22,7 @@ gpu_available = len(out) > 0
 
 
 ##### Version
-version ='0.4.1'
+version ='0.5.1'
 """"
 with io.open(os.path.join(root, 'nlp_architect', 'version.py'), encoding='utf8') as f:
     version_f = {}
@@ -36,6 +36,9 @@ with open("README.md", "r") as fh:
 
 
 long_description =  """
+
+```
+
 Include models :
 
 
@@ -75,7 +78,7 @@ deepar time series
 
 
 
-
+```
 
 
 """
