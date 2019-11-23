@@ -39,7 +39,7 @@ mpirun -np $n_node \
     -x NCCL_DEBUG=INFO -x LD_LIBRARY_PATH -x PATH \
     -mca pml ob1 -mca btl ^openib \
     python  distri_tch.py --model "$model"  \
-                          --model_params_name $model_param
+                          --model_pars_name $model_param
     
     
     

@@ -160,7 +160,7 @@ def test(filename="dataset/GOOG-year.csv"):
     df_log = minmax.transform(df.iloc[:, 1:].astype("float32"))
     df_log = pd.DataFrame(df_log)
 
-    module, model = create(
+    module, model = model_create(
         "7_bidirectional_gru.py",
         {
             "learning_rate": 0.001,

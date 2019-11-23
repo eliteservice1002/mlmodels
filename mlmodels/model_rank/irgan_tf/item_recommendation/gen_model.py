@@ -12,7 +12,7 @@ class GEN():
         self.param = param
         self.initdelta = initdelta
         self.learning_rate = learning_rate
-        self.g_params = []
+        self.g_pars = []
 
         with tf.variable_scope('generator'):
             if self.param == None:
@@ -28,7 +28,7 @@ class GEN():
                 self.item_embeddings = tf.Variable(self.param[1])
                 self.item_bias = tf.Variable(param[2])
 
-            self.g_params = [self.user_embeddings, self.item_embeddings, self.item_bias]
+            self.g_pars = [self.user_embeddings, self.item_embeddings, self.item_bias]
 
         self.u = tf.placeholder(tf.int32)
         self.i = tf.placeholder(tf.int32)
@@ -47,12 +47,12 @@ class GEN():
             tf.nn.l2_loss(self.u_embedding) + tf.nn.l2_loss(self.i_embedding) + tf.nn.l2_loss(self.i_bias))
 
         g_opt = tf.train.GradientDescentOptimizer(self.learning_rate)
-        self.gan_updates = g_opt.minimize(self.gan_loss, var_list=self.g_params)
+        self.gan_updates = g_opt.minimize(self.gan_loss, var_list=self.g_pars)
 
         # for test stage, self.u: [batch_size]
         self.all_rating = tf.matmul(self.u_embedding, self.item_embeddings, transpose_a=False,
                                     transpose_b=True) + self.item_bias
 
     def save_model(self, sess, filename):
-        param = sess.run(self.g_params)
+        param = sess.run(self.g_pars)
         cPickle.dump(param, open(filename, 'w'))

@@ -139,7 +139,7 @@ def test(filename="dataset/GOOG-year.csv"):
     }
     controller_config = {"hidden_size": 128}
 
-    module, model = create(
+    module, model = model_create(
         "25_dnc.py",
         {
             "learning_rate": 0.01,

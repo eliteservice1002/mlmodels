@@ -3,7 +3,7 @@ import toml
 import os, sys
 
 
-##########################################################################
+####################################################################################################
 class to_namespace(object):
   def __init__(self, adict):
     self.__dict__.update(adict)
@@ -15,26 +15,79 @@ class to_namespace(object):
 
 
 
+
+
+########## TF specific #############################################################################
+def load_tf(foldername, filename):
+  """
+  https://www.mlflow.org/docs/latest/python_api/mlflow.tensorflow.html#
+
+ """
+  import mlflow.tensorflow
+  import tensorflow as tf
+  
+  model_uri = foldername + "/" + filename
+  tf_graph = tf.Graph()
+  tf_sess = tf.Session(graph=tf_graph)
+  with tf_graph.as_default():
+    signature_def = mlflow.tensorflow.load_model(model_uri=model_uri,
+                                                 tf_sess=tf_sess)
+    input_tensors = [tf_graph.get_tensor_by_name(input_signature.name)
+                     for _, input_signature in signature_def.inputs.items()]
+    output_tensors = [tf_graph.get_tensor_by_name(output_signature.name)
+                      for _, output_signature in signature_def.outputs.items()]
+  return input_tensors, output_tensors
+
+
+def save_tf(sess, file_path):
+  import tensorflow as tf
+  saver = tf.train.Saver()
+  return saver.save(sess, file_path)
+
+
+########## pyTorch specific ########################################################################
+def load_tch(foldername, filename):
+  return 1
+
+
+def save_tch(foldername, filename):
+  return 1
+
+
+########## Other model specific ####################################################################
+def load_pkl(folder_name, filename=None):
+  pass
+
+
+
+
+
+
+
+
+
+
+####################################################################################################
 def load_config(args, config_file, config_mode, verbose=0):
-    ##### Load file dict_params as dict namespace #############################
+    ##### Load file dict_pars as dict namespace #############################
     import toml
     print(config_file) if verbose else None
 
     try:
        pars = toml.load(config_file)
-       # print(arg.param_file, model_params)
+       # print(arg.param_file, model_pars)
 
 
        pars = pars[config_mode]  # test / prod
        print(config_file, pars) if verbose else None
 
-       ### Overwrite dict_params from CLI input and merge with toml file
+       ### Overwrite dict_pars from CLI input and merge with toml file
        for key, x in vars(args).items():
           if x is not None:  # only values NOT set by CLI
              pars[key] = x
 
-       # print(model_params)
-       pars = to_namespace(pars)  #  like object/namespace model_params.instance
+       # print(model_pars)
+       pars = to_namespace(pars)  #  like object/namespace model_pars.instance
        return pars
        
     except Exception as e:
@@ -63,11 +116,11 @@ def get_recursive_files(folderPath, ext):
     return outFiles
 
 
-def os_filename_current(f):
+def os_file_current(f):
    pass
 
 
-def os_folder_parent(f):
+def os_file_parent(f):
   pass
 
 
@@ -102,11 +155,11 @@ sns.set()
 
 
 class ModelFactory():
-    def create_model(self, model_name, datasampler, hyper_parameters={'epoch':5}):
+    def model_create(self, model_name, datasampler, hyper_parameters={'epoch':5}):
         if model_name == 'lstm':
             datasampler = DataSampler() # the reader object for the input data
             model =  LSTM(datasampler)
-            model.set_params(hyper_parameters)
+            model.set_pars(hyper_parameters)
             return model
 
 # example usage
@@ -114,15 +167,15 @@ class ModelFactory():
 # this datasampler is sent to the model
 class DataSampler():
     def __init__(self, file_name = '../dataset/GOOG-year.csv', timestamp =5):
-        self.data_params = pd.read_csv()
-        self.date_ori = pd.to_datetime(data_params.iloc[:, 0]).tolist()
+        self.data_pars = pd.read_csv()
+        self.date_ori = pd.to_datetime(data_pars.iloc[:, 0]).tolist()
         self.minmax = MinMaxScaler()
         self.timestamp = timestamp
         self.df_log = self.preprocess_df()
     
     def preprocess_df(self):
-        self.minmax.fit(self.data_params.iloc[:, 1:].astype('float32'))
-        df_log = minmax.transform(data_params.iloc[:, 1:].astype('float32'))
+        self.minmax.fit(self.data_pars.iloc[:, 1:].astype('float32'))
+        df_log = minmax.transform(data_pars.iloc[:, 1:].astype('float32'))
         df_log = pd.DataFrame(df_log)
         return df_log
 
@@ -157,14 +210,14 @@ class BaseModelDl(object):
         self.learning_rate = 0.01
         self.sess = None
 
-    def get_params(self):
+    def get_pars(self):
         # epoch and learning rate exists in all models
         return {
             'epoch': self.epoch,
             'learning_rate': self.learning_rate
         }
 
-    def set_params(self, **parameters):
+    def set_pars(self, **parameters):
         # this function is common for all children classes
         for parameter, value in parameters.items():
             if hasattr(self,parameter):
@@ -215,7 +268,7 @@ class LSTM(BaseModelDl):
         self.model = None
 
 
-    def get_params(self):
+    def get_pars(self):
         return {
             'num_layers': self.num_layers,
             'size_layer': self.size_layer,

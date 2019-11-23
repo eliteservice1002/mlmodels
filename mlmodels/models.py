@@ -1,129 +1,222 @@
 # -*- coding: utf-8 -*-
 """
 Lightweight Functional interface to wrap access to Deep Learning, RLearning models.
-Logic follows Scikit Learn API and simple for easy extentions.Logic
-
-Models are stored in model/
-folder/mymodel.py
-
-   Class Model( )
-   def fit(model, )
-   def predict(model, sess, )
-   def test()
-
-######### CLI sample  ##########################################################
-python models.py  --do test
-
-python models.py  --do generate_config  --modelname model_tf.1_lstm.py  --save_folder "c:\myconfig\"
+Logic follows Scikit Learn API and simple for easy extentions logic.
+Goal to facilitate Jupyter to Prod. models.
 
 
+Models are stored in model_XX/  or in folder XXXXX
+    module :  folder/mymodel.py, contains the methods, operations.
+    model  :  Class in mymodel.py containing the model definition, compilation
+   
+
+models.py   #### Generic Interface
+   module_load(model_uri)
+   model_create(module)
+   fit(model, module, session, data_pars, out_pars   )
+   metrics(model, module, session, data_pars, out_pars)
+   predict(model, module, session, data_pars, out_pars)
+   save()
+   load()
+
+
+Example of custom model : model_tf/mymodels.py  : Allows to de-couple with Wrapper
+  Class Model()  : Model definition
+  fit(model, data_pars )               :  Fit wrapper
+  predict(model, session, data_pars)   :
+  stats(model)
+  save(model, session)
+  load(folder, load_pars)
+  
+  
+
+####################################################################################################
+######### Code sample  #############################################################################
+from mlmodels.models import module_load, data_loader, create_model, fit, predict, stats
+
+model_pars = { "learning_rate": 0.001, "num_layers": 1,
+                  "size": ncol_input, "size_layer": 128, "output_size": ncol_output, "timestep": 4,  
+                  "epoch": 2,}
+data_pars = {}
+
+module = models.module_load( model_uri="model_tf.1_lstm.py" )  #Load file definition
+model =  models.model_create(module, model_pars)    # Create Model instance
+sess =   models.fit(model, module, data_pars)       # fit the model
+dict_stats = models.metrics( model, sess, ["loss"])     # get stats
+
+model.save( "myfolder/", model, module, sess,)
+
+
+model = module.load(folder)    #Create Model instance
+module.predict(model, module, data_pars)     # predict pipeline
 
 
 
+#df = data_loader(data_pars)
 
-######### Code sample  ##########################################################
-from models import create
-# module, model = create_full("model_tf.1_lstm.py", dict_params= model_params)  # Net
-
-model_params =  { "learning_rate": 0.001, "num_layers": 1,
-            "size": ncol_input, "size_layer": 128, "output_size": ncol_output, "timestep": 4,  
-            "epoch": 2,}
-data_params = {}
-
-module = module_load(modelname="model_tf.1_lstm.py")
-model = module.create(module, model_params)
-
-df = data_loader(data_params)
-sess = module.fit(model, df)
-stats = model.stats["loss"]
-module.save("myfolder/")
+# module, model = module_load_full("model_tf.1_lstm.py", dict_pars= model_pars)  # Net
 
 
 
-######### Command line sample  #################################################
+######### Command line sample  #####################################################################
+####
+python mlmodels/models.py  --do generate_config  --model_uri model_tf.1_lstm.py  --save_folder "c:\myconfig\" 
+
+
 ### RL model
-python  models.py  --modelname model_tf.rl.4_policygradient  --do test
+python  models.py  --model_uri model_tf.rl.4_policygradient  --do test
 
 
 ### TF DNN model
-python  models.py  --modelname model_tf.1_lstm.py  --do test
+python  models.py  --model_uri model_tf.1_lstm.py  --do test
 
 
 ## PyTorch models
-python  models.py  --modelname model_tch.mlp.py  --do test
+python  models.py  --model_uri model_tch.mlp.py  --do test
+
+
+
 
 
 
 """
+import sys
 import argparse
 import glob
 import os
 import re
+import inspect
 from importlib import import_module
 import json
-
 
 
 # from aapackage.mlmodel import util
 # import pandas as pd
 # import tensorflow as tf
 
+# from os.path import join
 
 
-#################################################################################
+####################################################################################################
 from util import load_config, get_recursive_files, get_recursive_folder
+from util import load_tf, load_tch,  save_tf, save_tch
+
 
 def log(*args):
     print(  ",".join( [  x for x in args   ]  ))
 
 
-#################################################################################
-def module_load(modelname=""):
+ 
+
+####################################################################################################
+def os_file_current_path():
+   val = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
+   # return current_dir + "/"
+   # Path of current file
+   #from pathlib import Path
+   # val = Path().absolute()
+   val = str( os.path.join(  val , "" ))
+   # print(val)
+   return val
+
+
+#module = import_module("mlmodels.model_tf.1_lstm")
+#print(module)
+#ys.exit(0)
+
+
+
+
+####################################################################################################
+def module_load(model_uri=""):
     """
       Load the file which contains the model description
-      modelname:  model_tf.1_lstm.py
+      model_uri:  model_tf.1_lstm.py  or ABSOLUTE PATH
     """
-    print(modelname)
-    modelname = modelname.replace(".py", "")
-
+    print(model_uri)
+    print(os_file_current_path())
+    
+    
+    
     try :
-      module = import_module(modelname)
-    except Exception as e :
-      raise NameError("Module {} notfound, {}".format(modelname, e))
+      #module = import_module("mlmodels.model_tf.1_lstm")
+      ##print(module)
+      #sys.exit(0)
+      
+      model_name = model_uri.replace(".py", "")
+      module = import_module( f"mlmodels.{model_name}")
+      print(module)
+      
+    except Exception as e1 :
+      try :
+        model_name = os_file_current_path() + model_uri
+        model_name = model_name.replace(".py", "")
+        module = import_module(model_name)
+        
+      except Exception as e2:
+        raise NameError( f"Module {model_name} notfound, {e2}")
     return module
 
 
-def create(module, model_params=None):
+def module_load_full(model_uri="", model_pars=None, choice=None):
+  """
+    Create Instance of the model, module
+    model_uri:  model_tf.1_lstm.py
+  """
+  module = module_load(model_uri=model_uri)
+  model = module.Model(**model_pars)
+  return module, model
+
+
+def model_create(module, model_pars=None):
     """
       Create Instance of the model from loaded module
-      model_params : dict params
+      model_pars : dict params
     """
-    if model_params is None :
-      model_params = module.get_params()
+    if model_pars is None :
+      model_pars = module.get_pars()
 
-    model = module.Model(**model_params)
+    model = module.Model(**model_pars)
     return model
 
 
-def create_full(modelname="", model_params=None, choice=None):
+
+def fit(model, module, compute_pars=None, data_pars=None, out_pars=None,  **kwarg):
     """
-      Create Instance of the model, module
-      modelname:  model_tf.1_lstm.py
+    Wrap fit generic method
+    :type model: object
     """
-    module = module_load(modelname=modelname)
-    model = module.Model(**model_params)
-    return module, model
+    return module.fit(model, data_pars, **kwarg)
 
 
-def fit(model, module, data_params, **kwarg):
-    return module.fit(model, data_params, **kwarg)
+def predict(model, module, sess=None, compute_pars=None, data_pars=None, out_pars=None,  **kwarg):
+    """
+       predict  using a pre-trained model and some data
+    :param model:
+    :param module:
+    :param sess:
+    :param data_pars:
+    :param out_pars:
+    :param kwarg:
+    :return:
+    """
+    return module.predict(model, sess, data_pars, **kwarg)
 
 
-def predict(model, module, sess=None, data_params=None, **kwarg):
-    return module.predict(model, sess, data_params, **kwarg)
+def metrics(model, module, sess=None, compute_pars=None, data_pars=None, out_pars=None, **kwarg):
+  val = module.metrics(model, sess, data_pars, **kwarg)
+  return val
 
 
 def load(folder_name, model_type="tf", filename=None, **kwarg):
+    """
+       Load model/session from files
+    :param folder_name:
+    :param model_type:
+    :param filename:
+    :param kwarg:
+    :return:
+    """
     if model_type == "tf" :
         return load_tf(folder_name)
 
@@ -134,13 +227,19 @@ def load(folder_name, model_type="tf", filename=None, **kwarg):
         return load_pkl(folder_name)
 
 
-def save(folder_name, modelname=None,  sess=None, ** kwarg):
+def save(folder_name, modelname="model_default",  model_session=None, ** kwarg):
+    """
+       Save model/session on disk
+    :param folder_name:
+    :param modelname:
+    :param sess:
+    :param kwarg:
+    :return:
+    """
     if "model_tf" in modelname :
-      #save_folder = save_folder + "/" + modelname
-      if not(os.path.isdir(folder_name)):
-        os.makedirs(folder_name)
+      os.makedirs(folder_name, exist_ok = True)
       file_path = f"{folder_name}/{modelname}.ckpt"
-      save_tf(sess, file_path)
+      save_tf(model_session, file_path)
       print(file_path)
       return 1      
 
@@ -158,50 +257,6 @@ def save(folder_name, modelname=None,  sess=None, ** kwarg):
 
 
 
-########## TF specific #############################################################################
-def load_tf(foldername, filename):
-    """
-    https://www.mlflow.org/docs/latest/python_api/mlflow.tensorflow.html#
-    
-    
-   """
-    import mlflow.tensorflow
-    import tensorflow as tf
-    tf_graph = tf.Graph()
-    tf_sess = tf.Session(graph=tf_graph)
-    with tf_graph.as_default():
-        signature_def = mlflow.tensorflow.load_model(model_uri="model_uri",
-                               tf_sess=tf_sess)
-        input_tensors = [tf_graph.get_tensor_by_name(input_signature.name)
-                        for _, input_signature in signature_def.inputs.items()]
-        output_tensors = [tf_graph.get_tensor_by_name(output_signature.name)
-                          for _, output_signature in signature_def.outputs.items()]
-    return input_tensors, output_tensors
-
-
-
-def save_tf(sess, file_path):
-    import tensorflow as tf
-    saver = tf.train.Saver()
-    return saver.save(sess, file_path)
-
-
-
-
-########## pyTorch specific ########################################################################
-def load_tch(foldername, filename):
-    return 1
-
-
-def save_tch(foldername, filename):
-    return 1
-
-
-
-
-########## Other model specific ####################################################################
-def load_pkl(folder_name, filename=None) :
-    pass
 
 
 
@@ -227,7 +282,8 @@ def test_all(folder=None):
         print("#######################")
         print(module_name)
         try :
-          module = import_module(f'{folder}.{module_name.replace(".py", "")}')
+          module = module_load(model_uri= module_name)
+          # module = import_module(f'{folder}.{module_name.replace(".py", "")}')
           module.test()
           del module
         except Exception as e:
@@ -238,6 +294,7 @@ def test_all(folder=None):
 def test(modelname):
         try :
           module = import_module( modelname )
+          print(module)
           module.test()
           del module
         except Exception as e:
@@ -263,7 +320,7 @@ def load_arguments(config_file= None ):
     p.add_argument("--log_file", help="log.log")
 
     p.add_argument("--do", default="test", help="test")
-    p.add_argument("--modelname", default="model_tf.1_lstm.py",  help=".")
+    p.add_argument("--model_uri", default="model_tf.1_lstm.py",  help=".")
     p.add_argument("--dataname", default="dataset/google.csv",  help=".")
                                  
     p.add_argument("--save_folder", default="ztest/",  help=".")
@@ -275,35 +332,25 @@ def load_arguments(config_file= None ):
 
 
                                  
-def get_params(arg) :
-   """  From CLI Input to JSON format
-      JSON should map EXACTLY the model input
-        self.X = tf.placeholder(tf.float32, (None, None, size))
-        self.Y = tf.placeholder(tf.float32, (None, output_size))
-
+def config_get_pars(config_file, config_mode) :
+   """ 
+     load JSON and output the params
    """
-   js = json.load(open(arg.config_file, 'r'))  #Config     
-   js = js[arg.config_mode]  #test /uat /prod                              
-   model_p = js.get("model_params")
-   data_p = js.get("data_params")
+   js = json.load(open(config_file, 'r'))  #Config
+   js = js[config_mode]  #test /uat /prod
+   model_p = js.get("model_pars")
+   data_p = js.get("data_pars")
+   compute_p  = js.get("compute_pars")
+   out_p = js.get("out_pars")
 
-   return model_p, data_p
+   return model_p, data_p, compute_p, out_p
                                  
 
-
-def folder_file() :
-  # Path of current file
-  from pathlib import Path
-  return Path().absolute()  
-
-                                 
-                                 
-                                 
-def generate_config_file(modelname, to_folder="ztest/") :
+   
+def config_generate_template(modelname, to_folder="ztest/") :
   """
     Generate config file from code source
-
-    generate_config_file("model_tf.1_lstm", to_folder="ztest/")
+    config_generate_template("model_tf.1_lstm", to_folder="ztest/")
 
   """
   import inspect                               
@@ -316,66 +363,64 @@ def generate_config_file(modelname, to_folder="ztest/") :
   }
                                  
   # args = inspect.getargspec(module.Model)
-  model_params = {"model_params" : args,
-                  "data_params" : {},
-                  "optim_params": {}                 
-                 }
+  model_pars = {"model_pars" :     args,
+                  "data_pars" :      {},
+                  "compute_pars":    {},
+                  "out_pars" :       {}
+               }
 
-  modelname.replace(".", "")
-  fname = f"{to_folder}/{modelname}_config.json"
-  json.dump(model_params, open( fname, mode="w"))
+  modelname = modelname.replace(".py", "").replace(".", "-" )
+  fname = os.path.join( to_folder , f"{modelname}_config.json" )
+  os.makedirs(to_folder, exist_ok=True)
+  json.dump(model_pars, open( fname, mode="w"))
   print(fname)
 
 
+  
 
-
-                                 
-                                 
 if __name__ == "__main__":
-    # test_all() # tot test all te modules inside model_tf
     arg = load_arguments()
     print(arg.do)
 
-    if arg.do == "model_list"  :  #list all models
-        folder = folder_file()                         
+    if arg.do == "model_list"  :  #list all models in the repo
+        folder = os_file_current_path()
         module_names = get_recursive_folder(folder, r"model*/*.py" )                       
         for t in module_names :
             print(t)
                     
                                  
-    if arg.do == "testall"  :    
+    if arg.do == "testall"  :
+        # test_all() # tot test all te modules inside model_tf
         test_all(folder=None)
 
                                  
     if arg.do == "test"  :
-        test(arg.modelname.replace(".py", "" ))  # '1_lstm'
+        test(arg.model_uri.replace(".py", "" ))  # '1_lstm'
 
 
     if arg.do == "fit"  :
-        model_params, data_params = get_params(arg)
+        model_p, data_p, compute_p, out_p  = config_get_pars(arg.config_file, arg.config_mode)
+        
         module = module_load(arg.modelname)  # '1_lstm.py
-
-        model = module.Model(**model_params)   #Exact map JSON and paramters
+        model = model_create(model_p)   # Exact map JSON and paramters
 
         log("Fit")
-        sess = module.fit(model, data_params)
+        sess = module.fit(model, data_pars=data_p, compute_pars= compute_p)
 
         log("Save")
         save(f"{arg.save_folder}/{arg.modelname}", arg.modelname, sess )
 
 
-                                 
     if arg.do == "predict"  :
-        model_params, data_params = get_params(arg)      
-                                 
-        module = module_load(arg.modelname)  # '1_lstm'
-        model = load(arg.load_folder)
-        module.predict(model, data_params, data_params )
-
+        model_p, data_p, compute_p, out_p  = config_get_pars(arg.config_file, arg.config_mode)
+        # module = module_load(arg.modelname)  # '1_lstm'
+        module, model, session = load(arg.load_folder)
+        module.predict(model, session, data_pars= data_p, compute_pars= compute_p, out_pars=out_p )
 
 
     if arg.do == "generate_config"  :
-        generate_config_file(arg.modelname, to_folder= arg.save_folder) 
+        print( arg.save_folder)
+        config_generate_template(arg.model_uri, to_folder= arg.save_folder)
 
 
 

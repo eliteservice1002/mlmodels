@@ -16,7 +16,7 @@ from importlib import import_module
 
 
 
-def create(modelname="", params=None, modelonly=1):
+def model_create(modelname="", params=None, modelonly=1):
     """
       modelname:  model_tch.mlp.py
       model_tch/****
@@ -37,7 +37,7 @@ def model_instance(name="net", params={}):
     if name == "net":
         return Net()
     else  :
-        return create(name, params)
+        return model_create(name, params)
          
 
 

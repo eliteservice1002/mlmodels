@@ -10,7 +10,7 @@ class GEN:
         self.weight_decay = weight_decay
         self.learning_rate = learning_rate
         self.temperature = temperature
-        self.g_params = []
+        self.g_pars = []
 
         self.reward = tf.placeholder(tf.float32, shape=[None], name='reward')
         self.pred_data = tf.placeholder(tf.float32, shape=[None, self.feature_size], name="pred_data")
@@ -30,10 +30,10 @@ class GEN:
                 self.W_2 = tf.Variable(param[1])
                 self.b_1 = tf.Variable(param[2])
                 self.b_2 = tf.Variable(param[3])
-            self.g_params.append(self.W_1)
-            self.g_params.append(self.W_2)
-            self.g_params.append(self.b_1)
-            self.g_params.append(self.b_2)
+            self.g_pars.append(self.W_1)
+            self.g_pars.append(self.W_2)
+            self.g_pars.append(self.b_1)
+            self.g_pars.append(self.b_2)
 
         # Given batch query-url pairs, calculate the matching score
         # For all urls of one query
@@ -48,9 +48,9 @@ class GEN:
                                                + tf.nn.l2_loss(self.b_1) + tf.nn.l2_loss(self.b_2))
 
         self.optimizer = tf.train.GradientDescentOptimizer(self.learning_rate)
-        self.g_updates = self.optimizer.minimize(self.gan_loss, var_list=self.g_params)
+        self.g_updates = self.optimizer.minimize(self.gan_loss, var_list=self.g_pars)
 
 
     def save_model(self, sess, filename):
-        param = sess.run(self.g_params)
+        param = sess.run(self.g_pars)
         cPickle.dump(param, open(filename, 'w'))

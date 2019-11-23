@@ -25,12 +25,12 @@ python optim.py  --do test
                         
       def fit(model, )       :  train the model
       def predict(model,sess, )  : predic the results
-      def get_params() : example of parameters of the model
+      def get_pars() : example of parameters of the model
       def save()   : save the model
       def load()   : load the trained model
       def test()   : example running the model
      
-      def data_loader(data_params)
+      def data_loader(data_pars)
 
 
 

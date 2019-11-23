@@ -1,7 +1,7 @@
 {
 	"test": {
 
-		"model_params": {
+		"model_pars": {
 			"learning_rate": 0.001,
 			"num_layers": 1,
 			"size": 6,
@@ -11,7 +11,7 @@
 			"epoch": 2
 		},
 
-		"data_params": {
+		"data_pars": {
 			"data_path": "dataset/GOOG-year.csv",
 			"data_type": "pandas",
 			"size": [0, 0, 6],
@@ -24,9 +24,9 @@
 
 	"prod": {
 
-		"model_params": {},
+		"model_pars": {},
 
-		"data_params": {}
+		"data_pars": {}
 
 
 	}

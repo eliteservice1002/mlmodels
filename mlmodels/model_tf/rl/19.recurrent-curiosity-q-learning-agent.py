@@ -102,9 +102,9 @@ class Agent:
                 var_list=tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES, "q_model/eval_net"),
             )
 
-        t_params = tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES, scope="q_model/target_net")
-        e_params = tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES, scope="q_model/eval_net")
-        self.target_replace_op = [tf.assign(t, e) for t, e in zip(t_params, e_params)]
+        t_pars = tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES, scope="q_model/target_net")
+        e_pars = tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES, scope="q_model/eval_net")
+        self.target_replace_op = [tf.assign(t, e) for t, e in zip(t_pars, e_pars)]
 
         self.sess = tf.InteractiveSession()
         self.sess.run(tf.global_variables_initializer())

@@ -40,8 +40,8 @@ class Model:
 
 
 
-def fit(model, data_params):
-    df = get_dataset(data_params)
+def fit(model, data_pars):
+    df = get_dataset(data_pars)
 
     #########
     nlog_freq=100
@@ -77,9 +77,9 @@ def stats_compute(model, sess, df, ):
 
 
 
-def predict(model, sess, data_params, ):
+def predict(model, sess, data_pars, ):
 
-    df = get_dataset(data_params)
+    df = get_dataset(data_pars)
 
 
     return output_predict
@@ -96,7 +96,7 @@ def reset_model():
 
 
 
-def fit(model, data_params):
+def fit(model, data_pars):
     args = get_script_arguments()
     device = torch.device('cuda') if not args.disable_cuda and torch.cuda.is_available() else torch.device('cpu')
     forecast_length = 10

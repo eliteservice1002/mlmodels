@@ -15,11 +15,23 @@ from sklearn.preprocessing import MinMaxScaler
 
 
 tf.get_logger().setLevel('INFO')
-# **** change the warning level ****
-os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'  # **** change the warning level ****
+
+import warnings
+warnings.filterwarnings('ignore')
 
 
+####################################################################################################
 # from util import set_root_dir
+
+def os_module_path():
+    current_dir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
+    parent_dir = os.path.dirname(current_dir)
+    # sys.path.insert(0, parent_dir)
+    return parent_dir
+
+
+
 ####################################################################################################
 class Model:
     def __init__(self,
@@ -61,13 +73,14 @@ class Model:
 
 
 
-def fit(model, data_params):
-    df = get_dataset(data_params)
-
+def fit(model, data_pars, out_pars=None, **kwargs):
+    df = get_dataset(data_pars)
+    print(df)
+    
     #########
     nlog_freq=100
-    sess = tf.InteractiveSession()
-    sess.run(tf.global_variables_initializer())
+    sess =   tf.compat.v1.InteractiveSession()
+    sess.run(tf.compat.v1.global_variables_initializer())
     for i in range(model.epoch):
         total_loss = 0
 
@@ -96,22 +109,26 @@ def fit(model, data_params):
 
 
 
-def stats_compute(model, sess, df, get_hidden_state=False, init_value=None):
+def metrics(model, sess, data_pars, out_pars=None):
+    #### SK-Learn metrics
     # Compute stats on training
-    arr_out = predict(model, sess, df, get_hidden_state=False, init_value=None)
+    #df = get_dataset(data_pars)
+    #arr_out = predict(model, sess, df, get_hidden_state=False, init_value=None)
     return model.stats
 
 
 
-def predict(model, sess, data_params, get_hidden_state=False, init_value=None):
+def predict(model, sess, data_pars=None,  out_pars=None,   compute_pars=None,
+            get_hidden_state=False, init_value=None):
+    df = get_dataset(data_pars)
+    print(df, flush=True)
 
-    df = get_dataset(data_params)
-
-
+    #############################################################
     if init_value is None:
         init_value = np.zeros((1, model.hidden_layer_size))
     output_predict = np.zeros((df.shape[0], df.shape[1]))
     upper_b = (df.shape[0] // model.timestep) * model.timestep
+
 
     if upper_b == model.timestep:
         out_logits, init_value = sess.run(
@@ -125,13 +142,14 @@ def predict(model, sess, data_params, get_hidden_state=False, init_value=None):
         for k in range(0, (df.shape[0] // model.timestep) * model.timestep, model.timestep):
             out_logits, last_state = sess.run(
                 [model.logits, model.last_state],
-                feed_dict={
-                    model.X: np.expand_dims(df.iloc[k : k + model.timestep].values, axis=0),
-                    model.hidden_layer: init_value,
+                feed_dict={ model.X: np.expand_dims(df.iloc[k : k + model.timestep].values, axis=0),
+                            model.hidden_layer: init_value,
                 },
             )
             init_value = last_state
             output_predict[k + 1 : k + model.timestep + 1] = out_logits
+    
+    
     if get_hidden_state:
         return output_predict, init_value
     return output_predict
@@ -144,24 +162,14 @@ def reset_model():
 
 
 ####################################################################################################
-def set_root_dir():
-    current_dir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
-    parent_dir = os.path.dirname(current_dir)
-    sys.path.insert(0, parent_dir)
-    return parent_dir
-
-
-
-def get_dataset(data_params=None):
+def get_dataset(data_pars=None):
     """
-      JSON data_params  to  actual dataframe of data
+      JSON data_pars  to  actual dataframe of data
     """
-
-    filename = data_params["data_path"]  #
+    filename = data_pars["data_path"]  #
+    
 
     ##### Specific   ######################################################
-    set_root_dir()
-
     df = pd.read_csv(filename)
     date_ori = pd.to_datetime(df.iloc[:, 0]).tolist()
     print( filename )
@@ -173,7 +181,7 @@ def get_dataset(data_params=None):
     return df_log
 
 
-def get_params(choice="test", **kwargs):
+def get_pars(choice="test", **kwargs):
     # output parms
     # print(kwargs)
     if choice=="test":
@@ -195,42 +203,72 @@ def get_params(choice="test", **kwargs):
 
 
 ####################################################################################################
-def test(data_path="dataset/GOOG-year.csv", reset=True):
-    set_root_dir()
-    data_params = { "data_path" : data_path, "data_type" : "pandas" }
+def test(data_path="dataset/GOOG-year.csv", out_path="", reset=True):
+    """
+       Using mlmodels package method
+       path : mlmodels/mlmodels/dataset/
+       from ../../model_tf
+      
+    """
+    # set_root_dir()
+    from pathlib import Path
+    data_path =   os.path.join(  Path(__file__).parent.parent.absolute() , data_path )
+    print(data_path)
+    
+    
+    #######################
+    data_pars = { "data_path" :  data_path, "data_type" : "pandas" }
+    out_pars = { "path" : data_path +  out_path }
+    compute_pars = {}
 
-    df = get_dataset(data_params)
-    model_params = get_params("test", size=df.shape[1], output_size=df.shape[1] )
+    df = get_dataset(data_pars)
+    model_pars = get_pars("test", size=df.shape[1], output_size=df.shape[1] )
 
 
-    from models import create_full, fit, predict
-    module, model = create_full( "model_tf.1_lstm", model_params)
+    #######################
+    from mlmodels.models import module_load_full, fit, predict
+    module, model = module_load_full( "model_tf.1_lstm", model_pars)
+    print(module, model)
 
-    sess = fit(model, module, data_params)
-    predictions = predict(model, sess, data_params)
-    print(predictions)
-    tf.reset_default_graph()
+    sess = fit(model, module, data_pars=data_pars, out_pars=out_pars, compute_pars={})
+    print("fit success", sess)
+    
+
+    preds = predict(model, module, sess, data_pars=data_pars,
+                    out_pars= out_pars, compute_pars= compute_pars)
+
+    print(preds)
+    tf.compat.v1.reset_default_graph()
 
 
 
 def test2( data_path="dataset/GOOG-year.csv" ):
-    data_params = { "data_path" : data_path, "data_type" : "pandas" }
+    """
+      Using this file methods
+    """
+    data_pars = { "data_path" : data_path, "data_type" : "pandas" }
 
-    df = get_dataset(data_params)
-    model_params = get_params("test", size=df.shape[1], output_size=df.shape[1] )
+    df = get_dataset(data_pars)
+    model_pars = get_pars("test", size=df.shape[1], output_size=df.shape[1] )
 
-    model = Model(**model_params)
-    sess  = fit(model, data_params)
-    predictions = predict(model, sess, data_params)
+    model = Model(**model_pars)
+    sess  = fit(model, data_pars)
+    predictions = predict(model, sess, data_pars)
     print(predictions)
     tf.reset_default_graph()
 
 
 
-####################################################################################################
-####################################################################################################
+
 if __name__ == "__main__":
     test2()
+
+
+
+
+
+####################################################################################################
+####################################################################################################
 
     """
     import seaborn as sns
@@ -245,13 +283,13 @@ if __name__ == "__main__":
     future_day = 50
 
     # In[2]:
-    data_params = pd.read_csv("../dataset/GOOG-year.csv")
-    date_ori = pd.to_datetime(data_params.iloc[:, 0]).tolist()
-    data_params.head()
+    data_pars = pd.read_csv("../dataset/GOOG-year.csv")
+    date_ori = pd.to_datetime(data_pars.iloc[:, 0]).tolist()
+    data_pars.head()
 
     # In[3]:
-    minmax = MinMaxScaler().fit(data_params.iloc[:, 1:].astype("float32"))
-    df_log = minmax.transform(data_params.iloc[:, 1:].astype("float32"))
+    minmax = MinMaxScaler().fit(data_pars.iloc[:, 1:].astype("float32"))
+    df_log = minmax.transform(data_pars.iloc[:, 1:].astype("float32"))
     df_log = pd.DataFrame(df_log)
     df_log.head()
 
@@ -322,25 +360,25 @@ if __name__ == "__main__":
     current_palette = sns.color_palette("Paired", 12)
     fig = plt.figure(figsize=(15, 10))
     ax = plt.subplot(111)
-    x_range_original = np.arange(data_params.shape[0])
+    x_range_original = np.arange(data_pars.shape[0])
     x_range_future = np.arange(df_log.shape[0])
-    ax.plot(x_range_original, data_params.iloc[:, 1], label="true Open", color=current_palette[0])
+    ax.plot(x_range_original, data_pars.iloc[:, 1], label="true Open", color=current_palette[0])
     ax.plot(
         x_range_future, anchor(df_log[:, 0], 0.5), label="predict Open", color=current_palette[1]
     )
-    ax.plot(x_range_original, data_params.iloc[:, 2], label="true High", color=current_palette[2])
+    ax.plot(x_range_original, data_pars.iloc[:, 2], label="true High", color=current_palette[2])
     ax.plot(
         x_range_future, anchor(df_log[:, 1], 0.5), label="predict High", color=current_palette[3]
     )
-    ax.plot(x_range_original, data_params.iloc[:, 3], label="true Low", color=current_palette[4])
+    ax.plot(x_range_original, data_pars.iloc[:, 3], label="true Low", color=current_palette[4])
     ax.plot(
         x_range_future, anchor(df_log[:, 2], 0.5), label="predict Low", color=current_palette[5]
     )
-    ax.plot(x_range_original, data_params.iloc[:, 4], label="true Close", color=current_palette[6])
+    ax.plot(x_range_original, data_pars.iloc[:, 4], label="true Close", color=current_palette[6])
     ax.plot(
         x_range_future, anchor(df_log[:, 3], 0.5), label="predict Close", color=current_palette[7]
     )
-    ax.plot(x_range_original, data_params.iloc[:, 5], label="true Adj Close", color=current_palette[8])
+    ax.plot(x_range_original, data_pars.iloc[:, 5], label="true Adj Close", color=current_palette[8])
     ax.plot(
         x_range_future,
         anchor(df_log[:, 4], 0.5),
@@ -358,12 +396,12 @@ if __name__ == "__main__":
 
     fig = plt.figure(figsize=(20, 8))
     plt.subplot(1, 2, 1)
-    plt.plot(x_range_original, data_params.iloc[:, 1], label="true Open", color=current_palette[0])
-    plt.plot(x_range_original, data_params.iloc[:, 2], label="true High", color=current_palette[2])
-    plt.plot(x_range_original, data_params.iloc[:, 3], label="true Low", color=current_palette[4])
-    plt.plot(x_range_original, data_params.iloc[:, 4], label="true Close", color=current_palette[6])
-    plt.plot(x_range_original, data_params.iloc[:, 5], label="true Adj Close", color=current_palette[8])
-    plt.xticks(x_range_original[::60], data_params.iloc[:, 0].tolist()[::60])
+    plt.plot(x_range_original, data_pars.iloc[:, 1], label="true Open", color=current_palette[0])
+    plt.plot(x_range_original, data_pars.iloc[:, 2], label="true High", color=current_palette[2])
+    plt.plot(x_range_original, data_pars.iloc[:, 3], label="true Low", color=current_palette[4])
+    plt.plot(x_range_original, data_pars.iloc[:, 4], label="true Close", color=current_palette[6])
+    plt.plot(x_range_original, data_pars.iloc[:, 5], label="true Adj Close", color=current_palette[8])
+    plt.xticks(x_range_original[::60], data_pars.iloc[:, 0].tolist()[::60])
     plt.legend()
     plt.title("true market")
     plt.subplot(1, 2, 2)
@@ -394,7 +432,7 @@ if __name__ == "__main__":
 
     fig = plt.figure(figsize=(15, 10))
     ax = plt.subplot(111)
-    ax.plot(x_range_original, data_params.iloc[:, -1], label="true Volume")
+    ax.plot(x_range_original, data_pars.iloc[:, -1], label="true Volume")
     ax.plot(x_range_future, anchor(df_log[:, -1], 0.5), label="predict Volume")
     box = ax.get_position()
     ax.set_position([box.x0, box.y0 + box.height * 0.1, box.width, box.height * 0.9])
@@ -407,8 +445,8 @@ if __name__ == "__main__":
 
     fig = plt.figure(figsize=(20, 8))
     plt.subplot(1, 2, 1)
-    plt.plot(x_range_original, data_params.iloc[:, -1], label="true Volume")
-    plt.xticks(x_range_original[::60], data_params.iloc[:, 0].tolist()[::60])
+    plt.plot(x_range_original, data_pars.iloc[:, -1], label="true Volume")
+    plt.xticks(x_range_original[::60], data_pars.iloc[:, 0].tolist()[::60])
     plt.legend()
     plt.title("true market volume")
     plt.subplot(1, 2, 2)

@@ -9,7 +9,7 @@ class DIS():
         self.hidden_size = hidden_size
         self.weight_decay = weight_decay
         self.learning_rate = learning_rate
-        self.d_params = []
+        self.d_pars = []
 
         self.pos_data = tf.placeholder(tf.float32, shape=[None, self.feature_size], name="pos_data")
         self.neg_data = tf.placeholder(tf.float32, shape=[None, self.feature_size], name="neg_data")
@@ -26,9 +26,9 @@ class DIS():
                 self.W_1 = tf.Variable(param[0])
                 self.W_2 = tf.Variable(param[1])
                 self.b = tf.Variable(param[2])
-            self.d_params.append(self.W_1)
-            self.d_params.append(self.W_2)
-            self.d_params.append(self.b)
+            self.d_pars.append(self.W_1)
+            self.d_pars.append(self.W_2)
+            self.d_pars.append(self.b)
 
         pos_score = tf.matmul(tf.nn.tanh(tf.nn.xw_plus_b(self.pos_data, self.W_1, self.b)), self.W_2)
         neg_score = tf.matmul(tf.nn.tanh(tf.nn.xw_plus_b(self.neg_data, self.W_1, self.b)), self.W_2)
@@ -52,12 +52,12 @@ class DIS():
 
         optimizer = tf.train.GradientDescentOptimizer(self.learning_rate)
         # optimizer = tf.train.AdamOptimizer(self.learning_rate)
-        self.d_updates = optimizer.minimize(self.loss, var_list=self.d_params)
+        self.d_updates = optimizer.minimize(self.loss, var_list=self.d_pars)
 
         # Given batch query-url pairs, calculate the matching score
         self.pred_score = tf.matmul(tf.nn.tanh(tf.nn.xw_plus_b(self.pred_data, self.W_1, self.b)), self.W_2)
 
 
     def save_model(self, sess, filename):
-        param = sess.run(self.d_params)
+        param = sess.run(self.d_pars)
         cPickle.dump(param, open(filename, 'w'))

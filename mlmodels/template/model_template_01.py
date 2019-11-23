@@ -50,8 +50,8 @@ class Model:
 
 
 
-def fit(model, data_params):
-    df = get_dataset(data_params)
+def fit(model, data_pars):
+    df = get_dataset(data_pars)
 
     #########
     nlog_freq=100
@@ -87,9 +87,9 @@ def stats_compute(model, sess, df, ):
 
 
 
-def predict(model, sess, data_params, ):
+def predict(model, sess, data_pars, ):
 
-    df = get_dataset(data_params)
+    df = get_dataset(data_pars)
 
 
     return output_predict
@@ -110,12 +110,12 @@ def set_root_dir():
 
 
 
-def get_dataset(data_params=None):
+def get_dataset(data_pars=None):
     """
-      JSON data_params  to  actual dataframe of data
+      JSON data_pars  to  actual dataframe of data
     """
 
-    filename = data_params["data_path"]  #
+    filename = data_pars["data_path"]  #
 
     ##### Specific   ######################################################
     set_root_dir()
@@ -126,7 +126,7 @@ def get_dataset(data_params=None):
     return df
 
 
-def get_params(choice="test", **kwargs):
+def get_pars(choice="test", **kwargs):
     # output parms
     # print(kwargs)
     if choice=="test":
@@ -150,32 +150,32 @@ def get_params(choice="test", **kwargs):
 ####################################################################################################
 def test(data_path="dataset/GOOG-year.csv", reset=True):
     set_root_dir()
-    data_params = { "data_path" : data_path, "data_type" : "pandas" }
+    data_pars = { "data_path" : data_path, "data_type" : "pandas" }
 
-    df = get_dataset(data_params)
-    model_params = get_params("test", size=df.shape[1], output_size=df.shape[1]  )
+    df = get_dataset(data_pars)
+    model_pars = get_pars("test", size=df.shape[1], output_size=df.shape[1]  )
 
 
     from models import create_full, fit, predict
-    module, model = create_full( "model_tf.1_lstm", model_params)
+    module, model = module_load_full( "model_tf.1_lstm", model_pars)
 
-    sess = fit(model, module, data_params)
-    predictions = predict(model, sess, data_params)
+    sess = fit(model, module, data_pars)
+    predictions = predict(model, sess, data_pars)
     print(predictions)
     tf.reset_default_graph()
 
 
 
 def test2( data_path="dataset/GOOG-year.csv" ):
-    data_params = { "data_path" : data_path, "data_type" : "pandas" }
+    data_pars = { "data_path" : data_path, "data_type" : "pandas" }
 
-    df = get_dataset(data_params)
-    model_params = get_params("test", size=df.shape[1], output_size=df.shape[1]  )
+    df = get_dataset(data_pars)
+    model_pars = get_pars("test", size=df.shape[1], output_size=df.shape[1]  )
 
 
-    model = Model(**model_params)
-    sess  = fit(model, data_params)
-    predictions = predict(model, sess, data_params)
+    model = Model(**model_pars)
+    sess  = fit(model, data_pars)
+    predictions = predict(model, sess, data_pars)
     print(predictions)
     tf.reset_default_graph()
 

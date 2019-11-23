@@ -122,7 +122,7 @@ def test(filename="dataset/GOOG-year.csv"):
     df_log = minmax.transform(df.iloc[:, 1:].astype("float32"))
     df_log = pd.DataFrame(df_log)
 
-    module, model = create(
+    module, model = model_create(
         "9_vanilla.py",
         {
             "learning_rate": 0.01,

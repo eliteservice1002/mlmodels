@@ -137,7 +137,7 @@ def test(filename="dataset/GOOG-year.csv"):
     df_log = minmax.transform(df.iloc[:, 1:].astype("float32"))
     df_log = pd.DataFrame(df_log)
 
-    module, model = create(
+    module, model = model_create(
         "24_lstm_luong_bahdanau.py",
         {
             "epoch": 1,

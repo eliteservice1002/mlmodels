@@ -58,7 +58,7 @@ def load_arguments():
     p.add_argument("--fp16-allreduce", action="store_true", default=False, help="fp16 in allreduce")
 
     ### Should be store in toml file
-    p.add_argument("--model_params_name",  default='test', help="model dict_params as Dict")
+    p.add_argument("--model_pars_name",  default='test', help="model dict_pars as Dict")
 
 
     args = p.parse_args()
@@ -87,7 +87,7 @@ train_dataset = import_data(name=args.data, mode="train", node_id=hvd.rank())
 test_dataset =  import_data(name=args.data, mode="test", node_id=hvd.rank())
 
 
-params_dict = args.get( args.get("model_params_name")  )
+params_dict = args.get( args.get("model_pars_name")  )
 params_dict = params_dict if params_dict is not None else {} 
 model = create_instance(args.model, params=params_dict)  # Net()
 

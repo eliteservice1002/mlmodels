@@ -1,7 +1,7 @@
 {
 "test" :{
 
- "model_params":   {
+ "model_pars":   {
         "learning_rate": {"type": "log_uniform", "init": 0.01,  "range" : [0.001, 0.1] },
         "num_layers":    {"type": "int", "init": 2,  "range" :[2, 4] },
         "size":    {"type": "int", "init": 6,  "range" :[6, 6] },
@@ -13,7 +13,7 @@
     },
 
 
- "data_params": {
+ "data_pars": {
 			"data_path": "dataset/GOOG-year.csv",
 			"data_type": "pandas",
 			"size": [0, 0, 6],
@@ -21,7 +21,7 @@
 		},
 
    
-   "optim_params" : {
+   "compute_pars" : {
       "engine" : "optuna",
       "method" : "prune",
       "ntrials" : 5
@@ -33,11 +33,11 @@
 
 "prod" :{
 
-   "model_params" : {},
+   "model_pars" : {},
    
-   "data_params" :  {},
+   "data_pars" :  {},
 
-   "optim_params" : {}
+   "compute_pars" : {}
 
 
    

@@ -1,1 +1,1 @@
-{"model_params": {"learning_rate": 0.001, "num_layers": 2, "size": null, "size_layer": 128, "output_size": null, "forget_bias": 0.1, "timestep": 5, "epoch": 5}, "data_params": {}, "optim_params": {}}
+{"model_pars": {"learning_rate": 0.001, "num_layers": 2, "size": null, "size_layer": 128, "output_size": null, "forget_bias": 0.1, "timestep": 5, "epoch": 5}, "data_pars": {}, "compute_pars": {}}

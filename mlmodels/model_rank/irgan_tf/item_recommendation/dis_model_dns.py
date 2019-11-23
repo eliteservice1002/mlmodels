@@ -12,7 +12,7 @@ class DIS():
         self.param = param
         self.initdelta = initdelta
         self.learning_rate = learning_rate
-        self.d_params = []
+        self.d_pars = []
 
         with tf.variable_scope('discriminator'):
             if self.param is None:
@@ -28,7 +28,7 @@ class DIS():
                 self.item_embeddings = tf.Variable(self.param[1])
                 self.item_bias = tf.Variable(self.param[2])
 
-        self.d_params = [self.user_embeddings, self.item_embeddings, self.item_bias]
+        self.d_pars = [self.user_embeddings, self.item_embeddings, self.item_bias]
 
         # placeholder definition
         self.u = tf.placeholder(tf.int32)
@@ -53,7 +53,7 @@ class DIS():
         )
 
         d_opt = tf.train.GradientDescentOptimizer(self.learning_rate)
-        self.d_updates = d_opt.minimize(self.pre_loss, var_list=self.d_params)
+        self.d_updates = d_opt.minimize(self.pre_loss, var_list=self.d_pars)
 
         # for test stage, self.u: [batch_size]
         self.all_rating = tf.matmul(self.u_embedding, self.item_embeddings, transpose_a=False,
@@ -64,5 +64,5 @@ class DIS():
         self.dns_rating = tf.reduce_sum(tf.multiply(self.u_embedding, self.item_embeddings), 1) + self.item_bias
 
     def save_model(self, sess, filename):
-        param = sess.run(self.d_params)
+        param = sess.run(self.d_pars)
         cPickle.dump(param, open(filename, 'w'))

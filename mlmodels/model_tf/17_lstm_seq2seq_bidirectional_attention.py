@@ -222,7 +222,7 @@ def test(filename="dataset/GOOG-year.csv"):
     df_log = minmax.transform(df.iloc[:, 1:].astype("float32"))
     df_log = pd.DataFrame(df_log)
 
-    module, model = create(
+    module, model = model_create(
         "model_tf.17_lstm_seq2seq_bidirectional_attention.py",
         {
             "learning_rate": 0.01,
