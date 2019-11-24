@@ -12,8 +12,29 @@ class to_namespace(object):
     return self.__dict__.get(key)
 
 
+def os_package_root_path(add_path="",n=0):
+  from pathlib import Path
+  add_path = os.path.join(Path(__file__).parent.absolute(), add_path)
+  # print("os_package_root_path,check", add_path)
+  return add_path
 
 
+def os_file_current_path():
+  val = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
+  # return current_dir + "/"
+  # Path of current file
+  # from pathlib import Path
+  # val = Path().absolute()
+  val = str(os.path.join(val, ""))
+  # print(val)
+  return val
+
+
+
+def log(*s, n=0,m=1):
+  sspace = "#" * n
+  sjump =  "\n" * m
+  print(sjump, sspace, s, sspace, flush=True)
 
 
 
@@ -41,7 +62,7 @@ def load_tf(foldername, filename):
 
 def save_tf(sess, file_path):
   import tensorflow as tf
-  saver = tf.train.Saver()
+  saver = tf.compat.v1.train.Saver()
   return saver.save(sess, file_path)
 
 

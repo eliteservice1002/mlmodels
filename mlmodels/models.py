@@ -59,8 +59,12 @@ module.predict(model, module, data_pars)     # predict pipeline
 
 
 ######### Command line sample  #####################################################################
-####
+#### generate config file
 python mlmodels/models.py  --do generate_config  --model_uri model_tf.1_lstm.py  --save_folder "c:\myconfig\" 
+
+
+#### Cusomt Directory Models
+python mlmodels/models.py --do test  --model_uri "D:\_devs\Python01\gitdev\mlmodels\mlmodels\model_tf\1_lstm.py"
 
 
 ### RL model
@@ -79,7 +83,13 @@ python  models.py  --model_uri model_tch.mlp.py  --do test
 
 
 
+
 """
+from warnings import simplefilter
+simplefilter(action='ignore', category=FutureWarning)
+simplefilter(action='ignore', category=DeprecationWarning)
+
+
 import sys
 import argparse
 import glob
@@ -88,38 +98,15 @@ import re
 import inspect
 from importlib import import_module
 import json
+from pathlib import Path
 
+####################################################################################################
+from mlmodels.util import load_config, get_recursive_files, get_recursive_folder
+from mlmodels.util import load_tf, load_tch,  save_tf, save_tch,  os_package_root_path, log
 
-# from aapackage.mlmodel import util
-# import pandas as pd
-# import tensorflow as tf
-
-# from os.path import join
 
 
 ####################################################################################################
-from util import load_config, get_recursive_files, get_recursive_folder
-from util import load_tf, load_tch,  save_tf, save_tch
-
-
-def log(*args):
-    print(  ",".join( [  x for x in args   ]  ))
-
-
- 
-
-####################################################################################################
-def os_file_current_path():
-   val = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
-   # return current_dir + "/"
-   # Path of current file
-   #from pathlib import Path
-   # val = Path().absolute()
-   val = str( os.path.join(  val , "" ))
-   # print(val)
-   return val
-
-
 #module = import_module("mlmodels.model_tf.1_lstm")
 #print(module)
 #ys.exit(0)
@@ -128,34 +115,40 @@ def os_file_current_path():
 
 
 ####################################################################################################
-def module_load(model_uri=""):
+def module_load(model_uri="", verbose=0):
     """
       Load the file which contains the model description
       model_uri:  model_tf.1_lstm.py  or ABSOLUTE PATH
     """
     print(model_uri)
-    print(os_file_current_path())
-    
-    
-    
+    # print(os_file_current_path())
+
+    module = None
     try :
+      #### Import from package mlmodels sub-folder
       #module = import_module("mlmodels.model_tf.1_lstm")
-      ##print(module)
-      #sys.exit(0)
-      
       model_name = model_uri.replace(".py", "")
       module = import_module( f"mlmodels.{model_name}")
-      print(module)
       
     except Exception as e1 :
       try :
-        model_name = os_file_current_path() + model_uri
-        model_name = model_name.replace(".py", "")
+        ### Add Folder to Path and Load absoluate path model
+        path_parent = str( Path( model_uri).parent.absolute())
+        sys.path.append( path_parent )
+        # print(path_parent, sys.path)
+        
+        #### import model_tf.1_lstm
+        model_name = Path(model_uri).stem  # remove .py
+        model_name =   str(Path(model_uri).parts[-2]) +"."+ str(model_name )
+        #print(model_name)
         module = import_module(model_name)
         
       except Exception as e2:
-        raise NameError( f"Module {model_name} notfound, {e2}")
+        raise NameError( f"Module {model_name} notfound, {e1}, {e2}")
+        
+    if verbose: print(module)
     return module
+
 
 
 def module_load_full(model_uri="", model_pars=None, choice=None):
@@ -227,7 +220,7 @@ def load(folder_name, model_type="tf", filename=None, **kwarg):
         return load_pkl(folder_name)
 
 
-def save(folder_name, modelname="model_default",  model_session=None, ** kwarg):
+def save(folder_name, modelname="model_default", model_type="tf",  model_session=None, ** kwarg):
     """
        Save model/session on disk
     :param folder_name:
@@ -236,7 +229,7 @@ def save(folder_name, modelname="model_default",  model_session=None, ** kwarg):
     :param kwarg:
     :return:
     """
-    if "model_tf" in modelname :
+    if model_type == "tf" :
       os.makedirs(folder_name, exist_ok = True)
       file_path = f"{folder_name}/{modelname}.ckpt"
       save_tf(model_session, file_path)
@@ -259,15 +252,11 @@ def save(folder_name, modelname="model_default",  model_session=None, ** kwarg):
 
 
 
-
-
-
-
 ####################################################################################################
 ####################################################################################################
 def test_all(folder=None):
     if folder is None :
-       folder =  folder_file() +  "/model_tf/"
+       folder =  os_package_root_path() +  "/model_tf/"
             
     module_names = get_recursive_files(folder, r"[0-9]+_.+\.py$")
     module_names.sort()
@@ -293,7 +282,7 @@ def test_all(folder=None):
 
 def test(modelname):
         try :
-          module = import_module( modelname )
+          module = module_load( modelname , verbose=1)
           print(module)
           module.test()
           del module
@@ -305,27 +294,32 @@ def test(modelname):
 
 ####################################################################################################
 ############CLI Command ############################################################################
-def load_arguments(config_file= None ):
+def cli_load_arguments(config_file= None):
     """
         Load CLI input, load config.toml , overwrite config.toml by CLI Input
     """
     if config_file is None  :
       cur_path = os.path.dirname(os.path.realpath(__file__))
       config_file = os.path.join(cur_path, "models_config.json")
-    print(config_file)
+    # print(config_file)
 
     p = argparse.ArgumentParser()
     p.add_argument("--config_file", default=config_file, help="Params File")
     p.add_argument("--config_mode", default="test", help="test/ prod /uat")
     p.add_argument("--log_file", help="log.log")
-
     p.add_argument("--do", default="test", help="test")
+
+    ##### model pars
     p.add_argument("--model_uri", default="model_tf.1_lstm.py",  help=".")
-    p.add_argument("--dataname", default="dataset/google.csv",  help=".")
-                                 
-    p.add_argument("--save_folder", default="ztest/",  help=".")
     p.add_argument("--load_folder", default="ztest/",  help=".")
-                                 
+
+    ##### data pars
+    p.add_argument("--dataname", default="dataset/google.csv",  help=".")
+
+
+    ##### out pars
+    p.add_argument("--save_folder", default="ztest/",  help=".")
+    
     arg = p.parse_args()
     # arg = load_config(arg, arg.config_file, arg.config_mode, verbose=0)
     return arg
@@ -345,7 +339,6 @@ def config_get_pars(config_file, config_mode) :
 
    return model_p, data_p, compute_p, out_p
                                  
-
    
 def config_generate_template(modelname, to_folder="ztest/") :
   """
@@ -377,13 +370,12 @@ def config_generate_template(modelname, to_folder="ztest/") :
 
 
   
-
 if __name__ == "__main__":
-    arg = load_arguments()
+    arg = cli_load_arguments()
     print(arg.do)
 
     if arg.do == "model_list"  :  #list all models in the repo
-        folder = os_file_current_path()
+        folder = os_package_root_path()
         module_names = get_recursive_folder(folder, r"model*/*.py" )                       
         for t in module_names :
             print(t)

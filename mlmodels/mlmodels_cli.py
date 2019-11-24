@@ -149,7 +149,7 @@ def load_arguments(config_file= None ):
     p.add_argument("--load_folder", default="ztest/",  help=".")
 
     
-    arg: Namespace = p.parse_args()
+    arg = p.parse_args()
     # arg = load_config(arg, arg.config_file, arg.config_mode, verbose=0)
     return arg
 
