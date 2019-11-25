@@ -86,17 +86,17 @@ deepar time series
 
 
 ### Packages  ####################################################
-packages = ["mlmodels"] + ["mlmodels." + p for p in find_packages("dsa")]
+packages = ["mlmodels"] + ["mlmodels." + p for p in find_packages("mlmodels")]
 
 
-### CLI Scripts
+### CLI Scripts  #################################################
 scripts = [ "mlmodels/models.py",
             "mlmodels/optim.py",
             "mlmodels/mlmodels_cli.py"            
           ]
 
 
-    
+##################################################################    
 entry_points={ 'console_scripts': [
                'autoscale = mlmodels.mlmodels_cli:main'
               ] }
