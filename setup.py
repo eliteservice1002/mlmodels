@@ -92,11 +92,14 @@ packages = ["mlmodels"] + ["mlmodels." + p for p in find_packages("dsa")]
 ### CLI Scripts
 scripts = [ "mlmodels/models.py",
             "mlmodels/optim.py",
-            "mlmodels/mlmodels_cli.py",
-            
-            ]
+            "mlmodels/mlmodels_cli.py"            
+          ]
 
 
+    
+entry_points={ 'console_scripts': [
+               'autoscale = mlmodels.mlmodels_cli:main'
+              ] }
 
 setup(
     name="mlmodels",
@@ -105,9 +108,16 @@ setup(
     author="Kevin Noel",
     author_email="brookm291@gmail.com",
     url="https://github.com/arita37/mlmodels",
+    
     install_requires=[ ],
+    python_requires='>=3.6',
+    
     packages=packages,
+    include_package_data=True,
+    
     scripts=scripts,
+    entry_points= entry_points,
+    
     long_description=long_description,
     long_description_content_type="text/markdown",
 )
