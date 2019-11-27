@@ -21,6 +21,39 @@ import tensorflow as tf
 import os, sys, inspect
 
 
+def os_module_path():
+    current_dir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
+    parent_dir = os.path.dirname(current_dir)
+    # sys.path.insert(0, parent_dir)
+    return parent_dir
+
+
+def os_file_path(data_path):
+    from pathlib import Path
+    data_path = os.path.join(Path(__file__).parent.parent.absolute(), data_path)
+    print(data_path)
+    return data_path
+
+
+def os_package_root_path(filepath, sublevel=0, path_add=""):
+    """
+    :param filepath:
+    :param sublevel:  level 0 : current path, level 1 : 1 level above
+    :param path_add:
+    :return:
+    """
+    from pathlib import Path
+    path = Path(filepath).parent
+    for i in range(1, sublevel + 1):
+        path = path.parent
+    
+    path = os.path.join(path.absolute(), path_add)
+    return path
+
+
+# print("check", os_package_root_path(__file__, sublevel=1) )
+
+
 def batch_invert_permutation(permutations):
     """Returns batched `tf.invert_permutation` for every row in `permutations`."""
     with tf.name_scope("batch_invert_permutation", values=[permutations]):

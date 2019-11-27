@@ -24,42 +24,11 @@ tf.get_logger().setLevel('ERROR')
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '1'  # **** change the warning level ****
 
 
-
-    
+####################################################################################################
+from util import os_package_root_path, os_file_current, os_file_parent
 
 
 ####################################################################################################
-def os_module_path():
-    current_dir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
-    parent_dir = os.path.dirname(current_dir)
-    # sys.path.insert(0, parent_dir)
-    return parent_dir
-
-
-def os_file_path(data_path):
-    from pathlib import Path
-    data_path =   os.path.join(  Path(__file__).parent.parent.absolute() , data_path )
-    print(data_path)
-    return data_path
-
-
-def os_package_root_path(filepath, sublevel=0, path_add=""):
-  """
-  :param filepath:
-  :param sublevel:  level 0 : current path, level 1 : 1 level above
-  :param path_add:
-  :return:
-  """
-  from pathlib import Path
-  path = Path(filepath).parent
-  for i in range(1, sublevel+1) :
-      path =  path.parent
-  
-  path = os.path.join(path.absolute(), path_add)
-  return path
-# print("check", os_package_root_path(__file__, sublevel=1) )
-
-
 def log(*s, n=0,m=1):
   sspace = "#" * n
   sjump =  "\n" * m
@@ -113,7 +82,7 @@ class Model:
 
 
 
-def fit(model, data_pars, out_pars=None, compute_pars={}, **kwargs):
+def fit(model, data_pars, compute_pars={}, out_pars=None,  **kwargs):
     df = get_dataset(data_pars)
     print(df.head(5))
     msample = df.shape[0]
@@ -151,7 +120,7 @@ def fit(model, data_pars, out_pars=None, compute_pars={}, **kwargs):
 
 
 
-def metrics(model, sess=None, data_pars=None, out_pars=None):
+def metrics(model, sess=None, data_pars=None, compute_pars=None, out_pars=None):
     """
        Return metrics of the model stored
     #### SK-Learn metrics
@@ -323,6 +292,17 @@ def test2( data_path="dataset/GOOG-year.csv" ):
 
 if __name__ == "__main__":
     test2()
+
+
+
+
+
+
+
+
+
+
+
 
 
 

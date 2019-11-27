@@ -12,16 +12,13 @@ import sklearn as sk
 from sklearn import preprocessing
 from sklearn.feature_extraction.text import TfidfVectorizer
 
-try:
-    import pandas_profiling
-
-    import tensorflow as tf
-
-    print(tf, tf.__version__)
 
 
-except Exception as e:
-    print(e)
+import tensorflow as tf
+print(tf, tf.__version__)
 
 
 print("os.getcwd", os.getcwd())
+
+
+

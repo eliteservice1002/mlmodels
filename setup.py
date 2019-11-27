@@ -22,7 +22,7 @@ gpu_available = len(out) > 0
 
 
 ##### Version
-version ='0.7.1'
+version ='0.11.1'
 """"
 with io.open(os.path.join(root, 'nlp_architect', 'version.py'), encoding='utf8') as f:
     version_f = {}
@@ -92,7 +92,7 @@ packages = ["mlmodels"] + ["mlmodels." + p for p in find_packages("dsa")]
 ### CLI Scripts
 scripts = [ "mlmodels/models.py",
             "mlmodels/optim.py",
-            "mlmodels/mlmodels_cli.py",
+            "mlmodels/cli_mlmodels",
             
             ]
 
@@ -110,6 +110,7 @@ setup(
     scripts=scripts,
     long_description=long_description,
     long_description_content_type="text/markdown",
+    include_package_data=True
 )
 
 

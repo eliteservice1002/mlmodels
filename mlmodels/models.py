@@ -317,6 +317,9 @@ def cli_load_arguments(config_file= None):
     p.add_argument("--dataname", default="dataset/google.csv",  help=".")
 
 
+    ##### compute pars
+
+
     ##### out pars
     p.add_argument("--save_folder", default="ztest/",  help=".")
     
