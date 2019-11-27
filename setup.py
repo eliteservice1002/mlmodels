@@ -86,17 +86,26 @@ deepar time series
 
 
 ### Packages  ####################################################
-packages = ["mlmodels"] + ["mlmodels." + p for p in find_packages("dsa")]
+packages = ["mlmodels"] + ["mlmodels." + p for p in find_packages("mlmodels")]
 
 
-### CLI Scripts
+### CLI Scripts  #################################################
 scripts = [ "mlmodels/models.py",
             "mlmodels/optim.py",
+<<<<<<< HEAD
             "mlmodels/cli_mlmodels",
             
             ]
+=======
+            "mlmodels/mlmodels_cli.py"            
+          ]
+>>>>>>> 3c54896f936b6d90c6d8239c9d91b3a0e4a0df4a
 
 
+##################################################################    
+entry_points={ 'console_scripts': [
+               'autoscale = mlmodels.mlmodels_cli:main'
+              ] }
 
 setup(
     name="mlmodels",
@@ -105,9 +114,16 @@ setup(
     author="Kevin Noel",
     author_email="brookm291@gmail.com",
     url="https://github.com/arita37/mlmodels",
+    
     install_requires=[ ],
+    python_requires='>=3.6',
+    
     packages=packages,
+    include_package_data=True,
+    
     scripts=scripts,
+    entry_points= entry_points,
+    
     long_description=long_description,
     long_description_content_type="text/markdown",
     include_package_data=True
