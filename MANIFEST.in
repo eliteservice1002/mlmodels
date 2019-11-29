@@ -1,0 +1,4 @@
+include README.md
+include mlmodels/*
+include mlmodels/dataset/*.*
+include mlmodels/*.json

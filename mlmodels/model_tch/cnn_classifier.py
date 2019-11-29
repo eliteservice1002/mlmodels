@@ -5,7 +5,8 @@
 #       and tensorboardX (using pip install tensorboardX).
 #
 # Code based on https://github.com/lanpa/tensorboard-pytorch-examples/blob/master/mnist/main.py.
-#
+
+
 
 
 """
@@ -64,12 +65,29 @@ class Model(nn.Module):
 
 
 ######## Generic methods ###########################################################################
-def get_params():
-    # return default params as dict
-    return ddict
+def get_pars(choice="test", **kwargs):
+    # output parms sample
+    # print(kwargs)
+    if choice=="test":
+        p=         { "learning_rate": 0.001,
+            "num_layers": 1,
+            "size": None,
+            "size_layer": 128,
+            "output_size": None,
+            "timestep": 4,
+            "epoch": 2,
+        }
+
+        ### Overwrite by manual input
+        for k,x in kwargs.items() :
+            p[k] = x
+
+        return p
+
 
 
 def get_dataset(data_params) :
+    #### Get dataset
 
     train_loader = torch.utils.data.DataLoader( datasets.MNIST('../data', train=True, download=True,
                        transform=transforms.Compose([
@@ -85,7 +103,7 @@ def get_dataset(data_params) :
     return train_loader, test_loader
 
 
-def fit(model, module=None, sess=None, compute_params=None, data_params=None) :
+def fit(model, data_pars, compute_pars={}, out_pars=None,  **kwargs):
     train_loader, test_loader = get_dataset(data_params)
 
     args = to_namepace(compute_params)
@@ -113,27 +131,32 @@ def fit(model, module=None, sess=None, compute_params=None, data_params=None) :
 
 
 
-def predict(model, module=None, sess=None, compute_params=None, data_params=None) :
+def predict(model,sess=None, compute_params=None, data_params=None) :
+    # prediction
     train_loader, test_loader = get_dataset(data_params)
     
     return res
 
 
 
-def predict_proba(model, module=None, sess=None, compute_params=None, data_params=None) :
+def predict_proba(model,  sess=None, compute_params=None, data_params=None) :
+    # compute probability, ie softmax
     train_loader, test_loader = get_dataset(data_params)
     
     return res
 
 
 
-def metrics(model, data_params={}, compute_params={}) :
+def metrics(model, sess=None, data_params={}, compute_params={}) :
+    # compute some metrics
     pass
 
 
 
 
 def test(arg) :
+    # some test runs
+
     # Create a SummaryWriter to write TensorBoard events locally
     writer = tfboard_writer_create()
 
@@ -156,8 +179,8 @@ def test(arg) :
 
 
 
-
-########### Local ###################################################################################
+############################################################################################################
+########### Local code, helper code  #######################################################################
 def train(epoch, model, train_loader):
     model.train()
     for batch_idx, (data, target) in enumerate(train_loader):
@@ -213,12 +236,12 @@ def log_scalar(name, value, step):
 
 
 
-
-
+#######################################################################################
+########### CLI #######################################################################
 def cli_load_arguments():
     def to(*arg, **kwarg) :
         p.add_argument(*arg, **kwarg)
-    p = argparse.ArgumentParser(description='PyTorch MNIST Example')
+    p = argparse.ArgumentParser(description='PyTorch CNN')
     to('--do', type=str, default="test",   help='input batch size for training (default: 64)')
 
 
