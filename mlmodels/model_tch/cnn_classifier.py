@@ -34,7 +34,7 @@ from tensorboardX import SummaryWriter
 
 
 
-########Model definiton ############################################################################
+########Model definiton and Generic method #########################################################
 class Model(nn.Module):
     def __init__(self):
         super(Model, self).__init__()
@@ -88,7 +88,6 @@ def get_pars(choice="test", **kwargs):
 
 def get_dataset(data_params) :
     #### Get dataset
-
     train_loader = torch.utils.data.DataLoader( datasets.MNIST('../data', train=True, download=True,
                        transform=transforms.Compose([
                            transforms.ToTensor(),
@@ -155,6 +154,7 @@ def metrics(model, sess=None, data_params={}, compute_params={}) :
 
 
 def test(arg) :
+
     # some test runs
 
     # Create a SummaryWriter to write TensorBoard events locally
@@ -175,6 +175,14 @@ def test(arg) :
 
     print("\nLaunch TensorBoard with:\n\ntensorboard --logdir=%s" %
         os.path.join(mlflow.get_artifact_uri(), "events"))
+
+
+
+
+
+
+
+
 
 
 

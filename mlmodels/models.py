@@ -294,41 +294,6 @@ def test(modelname):
 
 ####################################################################################################
 ############CLI Command ############################################################################
-def cli_load_arguments(config_file= None):
-    """
-        Load CLI input, load config.toml , overwrite config.toml by CLI Input
-    """
-    if config_file is None  :
-      cur_path = os.path.dirname(os.path.realpath(__file__))
-      config_file = os.path.join(cur_path, "models_config.json")
-    # print(config_file)
-
-    p = argparse.ArgumentParser()
-    p.add_argument("--config_file", default=config_file, help="Params File")
-    p.add_argument("--config_mode", default="test", help="test/ prod /uat")
-    p.add_argument("--log_file", help="log.log")
-    p.add_argument("--do", default="test", help="test")
-
-    ##### model pars
-    p.add_argument("--model_uri", default="model_tf.1_lstm.py",  help=".")
-    p.add_argument("--load_folder", default="ztest/",  help=".")
-
-    ##### data pars
-    p.add_argument("--dataname", default="dataset/google.csv",  help=".")
-
-
-    ##### compute pars
-
-
-    ##### out pars
-    p.add_argument("--save_folder", default="ztest/",  help=".")
-    
-    arg = p.parse_args()
-    # arg = load_config(arg, arg.config_file, arg.config_mode, verbose=0)
-    return arg
-
-
-                                 
 def config_get_pars(config_file, config_mode) :
    """ 
      load JSON and output the params
@@ -371,6 +336,43 @@ def config_generate_template(modelname, to_folder="ztest/") :
   json.dump(model_pars, open( fname, mode="w"))
   print(fname)
 
+
+
+def cli_load_arguments(config_file= None):
+    """
+        Load CLI input, load config.toml , overwrite config.toml by CLI Input
+    """
+    if config_file is None  :
+      cur_path = os.path.dirname(os.path.realpath(__file__))
+      config_file = os.path.join(cur_path, "models_config.json")
+    # print(config_file)
+
+    p = argparse.ArgumentParser()
+    p.add_argument("--config_file", default=config_file, help="Params File")
+    p.add_argument("--config_mode", default="test", help="test/ prod /uat")
+    p.add_argument("--log_file", help="log.log")
+    p.add_argument("--do", default="test", help="test")
+
+    ##### model pars
+    p.add_argument("--model_uri", default="model_tf.1_lstm.py",  help=".")
+    p.add_argument("--load_folder", default="ztest/",  help=".")
+
+    ##### data pars
+    p.add_argument("--dataname", default="dataset/google.csv",  help=".")
+
+
+    ##### compute pars
+
+
+    ##### out pars
+    p.add_argument("--save_folder", default="ztest/",  help=".")
+    
+    arg = p.parse_args()
+    # arg = load_config(arg, arg.config_file, arg.config_mode, verbose=0)
+    return arg
+
+
+                                 
 
   
 if __name__ == "__main__":
