@@ -181,7 +181,7 @@ def test(arg) :
 
 ############################################################################################################
 ########### Local code, helper code  #######################################################################
-def train(epoch, model, train_loader):
+def _train(epoch, model, train_loader):
     model.train()
     for batch_idx, (data, target) in enumerate(train_loader):
         if args.cuda:
@@ -205,7 +205,7 @@ def train(epoch, model, train_loader):
 
 
 
-def eval_metrics(model, epoch, test_loader):
+def _eval_metrics(model, epoch, test_loader):
     model.eval()
     test_loss = 0
     correct = 0
@@ -229,7 +229,7 @@ def eval_metrics(model, epoch, test_loader):
 
 
 
-def log_scalar(name, value, step):
+def _log_scalar(name, value, step):
     """Log a scalar value to both MLflow and TensorBoard"""
     writer.add_scalar(name, value, step)
     mlflow.log_metric(name, value)
