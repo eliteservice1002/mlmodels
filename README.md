@@ -12,7 +12,7 @@ https://mlmodels.readthedocs.io/en/latest/
 
 
 
-###############################################################################
+####################################################################################################
 Install as editable package   ONLY dev branch
 
 cd yourfolder
@@ -24,7 +24,7 @@ pip install -e .
 
 
 
-###### In Jupyter / python Editor   ###########################################
+###### In Jupyter / python Editor   ################################################################
 from mlmodels.util import load_config, to_namespace
 from mlmodels.models import create, module_load, save
 
@@ -37,20 +37,20 @@ ztest.run()
 python mlmodels/models.py  --do generate_config  --model_uri model_tf.1_lstm.py  --save_folder "c:\myconfig\"
 
 
-#### Cusomt Directory Models
+#### Custom Directory Models
 python mlmodels/models.py --do test  --model_uri "D:\_devs\Python01\gitdev\mlmodels\mlmodels\model_tf\1_lstm.py"
 
 
 ### RL model
-python  models.py  --model_uri model_tf.rl.4_policygradient  --do test
+python  models.py  --model_uri model_tf/rl/4_policygradient  --do test
 
 
-### TF DNN model
-python  models.py  --model_uri model_tf.1_lstm.py  --do test
+### TF LSTM model
+python  models.py  --model_uri model_tf/1_lstm.py  --do test
 
 
 ## PyTorch models
-python  models.py  --model_uri model_tch.mlp.py  --do test
+python  models.py  --model_uri model_tch/mlp.py  --do test
 
 
 
@@ -58,6 +58,8 @@ python  models.py  --model_uri model_tch.mlp.py  --do test
 *How to define a model ?*
 
    create file mymodel.py
+
+   Include those classes/functions :
       Class Model()
             __init__(model_param):
                         
@@ -71,9 +73,6 @@ python  models.py  --model_uri model_tch.mlp.py  --do test
       def test()   : example running the model
      
       def data_loader(data_pars)
-
-
-
 
 
 
@@ -101,6 +100,8 @@ Example of custom model : model_tf/mymodels.py  : Allows to de-couple with Wrapp
   stats(model)
   save(model, session)
   load(folder, load_pars)
+
+
 
 
 

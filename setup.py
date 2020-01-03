@@ -92,14 +92,9 @@ packages = ["mlmodels"] + ["mlmodels." + p for p in find_packages("mlmodels")]
 ### CLI Scripts  #################################################
 scripts = [ "mlmodels/models.py",
             "mlmodels/optim.py",
-<<<<<<< HEAD
-            "mlmodels/cli_mlmodels",
-            
+            "mlmodels/cli_mlmodels",     
             ]
-=======
-            "mlmodels/mlmodels_cli.py"            
-          ]
->>>>>>> 3c54896f936b6d90c6d8239c9d91b3a0e4a0df4a
+
 
 
 ##################################################################    
@@ -119,7 +114,6 @@ setup(
     python_requires='>=3.6',
     
     packages=packages,
-    include_package_data=True,
     
     scripts=scripts,
     entry_points= entry_points,
