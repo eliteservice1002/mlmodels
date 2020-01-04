@@ -25,7 +25,7 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '1'  # **** change the warning level ****
 
 
 ####################################################################################################
-from util import os_package_root_path, os_file_current, os_file_parent
+from mlmodels.model_tf.util import os_package_root_path, os_file_path, os_module_path
 
 
 ####################################################################################################

@@ -120,15 +120,20 @@ def module_load(model_uri="", verbose=0):
       Load the file which contains the model description
       model_uri:  model_tf.1_lstm.py  or ABSOLUTE PATH
     """
+
+    module = import_module( f"mlmodels.model_tf.1_lstm")
+
+
     print(model_uri)
     # print(os_file_current_path())
+    model_uri = model_uri.replace("/", ".")
 
     module = None
     try :
       #### Import from package mlmodels sub-folder
       #module = import_module("mlmodels.model_tf.1_lstm")
       model_name = model_uri.replace(".py", "")
-      model_name = model_uri.replace("/", ".")
+
       module = import_module( f"mlmodels.{model_name}")
       
     except Exception as e1 :
@@ -282,13 +287,13 @@ def test_all(folder=None):
 
 
 def test(modelname):
-        try :
-          module = module_load( modelname , verbose=1)
-          print(module)
-          module.test()
-          del module
-        except Exception as e:
-          print("Failed", e)
+    try :
+      module = module_load( modelname , verbose=1)
+      print(module)
+      module.test()
+      del module
+    except Exception as e:
+      print("Failed", e)
 
 
 
@@ -355,7 +360,7 @@ def cli_load_arguments(config_file= None):
     p.add_argument("--do", default="test", help="test")
 
     ##### model pars
-    p.add_argument("--model_uri", default="model_tf.1_lstm.py",  help=".")
+    p.add_argument("--model_uri", default="model_tf/1_lstm.py",  help=".")
     p.add_argument("--load_folder", default="ztest/",  help=".")
 
     ##### data pars
@@ -393,7 +398,7 @@ def main():
 
                                  
     if arg.do == "test"  :
-        test(arg.model_uri.replace(".py", "" ))  # '1_lstm'
+        test(arg.model_uri)  # '1_lstm'
 
 
     if arg.do == "fit"  :
