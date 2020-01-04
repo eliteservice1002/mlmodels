@@ -99,7 +99,8 @@ scripts = [ "mlmodels/models.py",
 
 ##################################################################    
 entry_points={ 'console_scripts': [
-               'autoscale = mlmodels.mlmodels_cli:main'
+               'models = mlmodels.models:main',
+               'optim = mlmodels.optim:main'
               ] }
 
 setup(
@@ -115,7 +116,6 @@ setup(
     
     packages=packages,
     
-    scripts=scripts,
     entry_points= entry_points,
     
     long_description=long_description,

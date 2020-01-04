@@ -124,11 +124,11 @@ def module_load(model_uri="", verbose=0):
     # print(os_file_current_path())
 
     module = None
-    model_uri = model_uri.replace("/", ".")
     try :
       #### Import from package mlmodels sub-folder
       #module = import_module("mlmodels.model_tf.1_lstm")
       model_name = model_uri.replace(".py", "")
+      model_name = model_uri.replace("/", ".")
       module = import_module( f"mlmodels.{model_name}")
       
     except Exception as e1 :
@@ -376,7 +376,7 @@ def cli_load_arguments(config_file= None):
                                  
 
   
-if __name__ == "__main__":
+def main():
     arg = cli_load_arguments()
     print(arg.do)
 
@@ -420,15 +420,5 @@ if __name__ == "__main__":
         print( arg.save_folder)
         config_generate_template(arg.model_uri, to_folder= arg.save_folder)
 
-
-
-
-
-
-
-
-
-
-
-
-
+if __name__ == "__main__":
+    main()

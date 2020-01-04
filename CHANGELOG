@@ -1,0 +1,8 @@
+CHANGELOG:
+* setup.py:
+	+ Used "entry_points" that calls the main function in optim.py and mlmodels.py 
+	- Removed the "scripts" variable
+	- Removed the unused "autoscale" entry point
+
+* mlmodels/models.py, mlmodels/optim.py:
+	+ Created a new method "main" that can be used by the entry point
