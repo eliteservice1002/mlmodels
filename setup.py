@@ -99,8 +99,8 @@ scripts = [ "mlmodels/models.py",
 
 ##################################################################    
 entry_points={ 'console_scripts': [
-               'models = mlmodels.models:main',
-               'optim = mlmodels.optim:main'
+               'ml_models = mlmodels.models:main',
+               'ml_moptim = mlmodels.optim:main'
               ] }
 
 setup(
