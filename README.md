@@ -39,14 +39,18 @@ ztest.run()
 ######### Entry CLI  ###############################################################################
 ml_models --do  
     "model_list"  :  #list all models in the repo                            
-    "testall"  :                                 
-    "test"  :
-    "fit"  :
-    "predict"  :
-    "generate_config"  :
+    "testall"  :  test all modules inside model_tf
+    "test"  :  test a certain module inside model_tf
+    "fit"  :  wrap fit generic method
+    "predict"  :  predict  using a pre-trained model and some data
+    "generate_config"  :  generate config file from code source
 
 
 ml_optim --do
+	"test"  :  test the hyperparameter optimization for a specific model
+	"test_all"  :  TODO
+	"search"  :  search for the best hyperparameters of a specific model
+
 
 
 
@@ -54,40 +58,40 @@ ml_optim --do
 ####################################################################################################
 ######### Command line sample (test) ###############################################################
 #### generate config file
-python mlmodels/models.py  --do generate_config  --model_uri model_tf.1_lstm.py  --save_folder "c:\myconfig\"
+ml_models  --do generate_config  --model_uri model_tf.1_lstm.py  --save_folder "c:\myconfig\"
 
 
 #### Custom Directory Models
-python mlmodels/models.py --do test  --model_uri "D:\_devs\Python01\gitdev\mlmodels\mlmodels\model_tf\1_lstm.py"
+ml_models --do test  --model_uri "D:\_devs\Python01\gitdev\mlmodels\mlmodels\model_tf\1_lstm.py"
 
 
 ### RL model
-python  models.py  --model_uri model_tf/rl/4_policygradient  --do test
+ml_models  --model_uri model_tf/rl/4_policygradient  --do test
 
 
 ### TF LSTM model
-python  models.py  --model_uri model_tf/1_lstm.py  --do test
+ml_models  --model_uri model_tf/1_lstm.py  --do test
 
 
 ## PyTorch models
-python  models.py  --model_uri model_tch/mlp.py  --do test
+ml_models  --model_uri model_tch/mlp.py  --do test
 
 
 ###### Model param search test
-python optim.py --do test
+ml_optim --do test
 
 
 ##### #for normal optimization search method
-python optim.py --do search --ntrials 1  --config_file optim_config.json --optim_method normal
+ml_optim --do search --ntrials 1  --config_file optim_config.json --optim_method normal
 
-python optim.py --do search --ntrials 1  --config_file optim_config.json --optim_method prune  ###### for pruning method
+ml_optim --do search --ntrials 1  --config_file optim_config.json --optim_method prune  ###### for pruning method
 
 
 
 ###### HyperParam standalone run
-python optim.py --modelname model_tf.1_lstm.py  --do test
+ml_optim --modelname model_tf.1_lstm.py  --do test
 
-python optim.py --modelname model_tf.1_lstm.py  --do search
+ml_optim --modelname model_tf.1_lstm.py  --do search
 
 
 
