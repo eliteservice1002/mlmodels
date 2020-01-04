@@ -32,8 +32,25 @@ ztest.run()
 
 
 
+
+
+
 ####################################################################################################
-######### Command line sample  #####################################################################
+######### Entry CLI  ###############################################################
+ml_models --do  
+    "model_list"  :  #list all models in the repo                            
+    "testall"  :                                 
+    "test"  :
+    "fit"  :
+    "predict"  :
+    "generate_config"  :
+
+
+
+
+
+####################################################################################################
+######### Command line sample (test) ###############################################################
 #### generate config file
 python mlmodels/models.py  --do generate_config  --model_uri model_tf.1_lstm.py  --save_folder "c:\myconfig\"
 
