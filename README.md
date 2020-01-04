@@ -3,7 +3,7 @@
 ```
 Lightweight Functional interface to wrap access to Deep Learning, RLearning models.
 Logic follows Scikit Learn API and simple for easy extentions logic.
-Goal to facilitate Jupyter to Prod. models.
+Goal to facilitate Jupyter to Prod.
 
 
 
@@ -23,15 +23,16 @@ git checkout dev
 pip install -e .
 
 
-
+####################################################################################################
 ###### In Jupyter / python Editor   ################################################################
 from mlmodels.util import load_config, to_namespace
 from mlmodels.models import create, module_load, save
-
 from mlmodels import ztest
 ztest.run()
 
 
+
+####################################################################################################
 ######### Command line sample  #####################################################################
 #### generate config file
 python mlmodels/models.py  --do generate_config  --model_uri model_tf.1_lstm.py  --save_folder "c:\myconfig\"
@@ -53,37 +54,30 @@ python  models.py  --model_uri model_tf/1_lstm.py  --do test
 python  models.py  --model_uri model_tch/mlp.py  --do test
 
 
+###### Model param search test
+python optim.py --do test
 
-####################################################################################################
-*How to define a model ?*
 
-   create file mymodel.py
+##### #for normal optimization search method
+python optim.py --do search --ntrials 1  --config_file optim_config.json --optim_method normal
 
-   Include those classes/functions :
-      Class Model()
-            __init__(model_param):
-                        
+python optim.py --do search --ntrials 1  --config_file optim_config.json --optim_method prune  ###### for pruning method
 
-      def load_dataset()                  
-      def fit(model, )       :  train the model
-      def predict(model,sess, )  : predic the results
-      def get_pars() : example of parameters of the model
-      def save()   : save the model
-      def load()   : load the trained model
-      def test()   : example running the model
-     
-      def data_loader(data_pars)
+
+
+###### HyperParam standalone run
+python optim.py --modelname model_tf.1_lstm.py  --do test
+
+python optim.py --modelname model_tf.1_lstm.py  --do search
+
+
 
 
 
 
 ####################################################################################################
-Models are stored in model_XX/  or in folder XXXXX
-    module :  folder/mymodel.py, contains the methods, operations.
-    model  :  Class in mymodel.py containing the model definition, compilation
-
-
-models.py   #### Generic Interface
+#########  Interface ###############################################################################
+models.py 
    module_load(model_uri)
    model_create(module)
    fit(model, module, session, data_pars, out_pars   )
@@ -93,13 +87,41 @@ models.py   #### Generic Interface
    load()
 
 
-Example of custom model : model_tf/mymodels.py  : Allows to de-couple with Wrapper
-  Class Model()  : Model definition
-  fit(model, data_pars )               :  Fit wrapper
-  predict(model, session, data_pars)   :
-  stats(model)
-  save(model, session)
-  load(folder, load_pars)
+
+optim.py
+   optim(modelname="model_tf.1_lstm.py",  model_pars= {}, data_pars = {}, compute_pars={"method": "normal/prune"}, save_folder="/mymodel/", log_folder="", ntrials=2) 
+
+   optim_optuna(modelname="model_tf.1_lstm.py", model_pars= {}, data_pars = {}, compute_pars={"method" : "normal/prune"}, save_folder="/mymodel/", log_folder="", ntrials=2) 
+
+
+
+
+#################################################################################################### 
+Models are stored in model_XX/  or in folder XXXXX
+    module :  folder/mymodel.py, contains the methods, operations.
+    model  :  Class in mymodel.py containing the model definition, compilation
+
+
+
+*How to define a custom model ?*
+   Create a folder,
+   Create file mymodel.py
+
+   Include those classes/functions :
+      Class Model()                  :   Model definition
+            __init__(model_param):
+                        
+
+      def load_dataset()                  
+      def fit(model, )               : train the model
+      def predict(model,sess, )      : predic the results
+      def get_pars()                 : example of parameters of the model
+      def save()                     : save the model
+      def load()                     : load the trained model
+      def test()                     : example running the model     
+      def data_loader(data_pars)
+
+
 
 
 
@@ -142,10 +164,7 @@ module.predict(model, module, data_pars)     # predict pipeline
 
 
 
-
-
-
-
+###############################################################################
 ###############################################################################
 Naming convention for functions, arguments :
 
