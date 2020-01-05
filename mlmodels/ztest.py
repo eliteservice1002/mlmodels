@@ -12,13 +12,21 @@ import sklearn as sk
 from sklearn import preprocessing
 from sklearn.feature_extraction.text import TfidfVectorizer
 
-
-
 import tensorflow as tf
-print(tf, tf.__version__)
+import torch as torch
 
 
-print("os.getcwd", os.getcwd())
 
 
+
+def main():
+  print("os.getcwd", os.getcwd())
+  print(np, np.__version__)
+  print(tf, tf.__version__)
+
+
+
+
+if __name__ == "__main__":
+    main()
 
