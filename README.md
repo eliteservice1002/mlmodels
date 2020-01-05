@@ -37,26 +37,32 @@ ztest.run()
 
 ####################################################################################################
 ######### Entry CLI  ###############################################################################
+ml_models  :  mlmodels/models.py
+ml_optim   :  mlmodels/optim.py
+
 ml_models --do  
     "model_list"  :  #list all models in the repo                            
-    "testall"  :  test all modules inside model_tf
-    "test"  :  test a certain module inside model_tf
-    "fit"  :  wrap fit generic method
-    "predict"  :  predict  using a pre-trained model and some data
+    "testall"     :  test all modules inside model_tf
+    "test"        :  test a certain module inside model_tf
+    "fit"         :  wrap fit generic method
+    "predict"     :  predict  using a pre-trained model and some data
     "generate_config"  :  generate config file from code source
 
 
 ml_optim --do
-	"test"  :  test the hyperparameter optimization for a specific model
-	"test_all"  :  TODO
-	"search"  :  search for the best hyperparameters of a specific model
+	"test"      :  Test the hyperparameter optimization for a specific model
+	"test_all"  :  TODO, Test all
+	"search"    :  search for the best hyperparameters of a specific model
 
 
 
 
 
-####################################################################################################
-######### Command line sample (test) ###############################################################
+##################################################################################################
+######### Command line sample (test) #############################################################
+
+
+
 #### generate config file
 ml_models  --do generate_config  --model_uri model_tf.1_lstm.py  --save_folder "c:\myconfig\"
 
