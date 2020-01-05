@@ -114,6 +114,8 @@ from mlmodels.util import load_tf, load_tch,  save_tf, save_tch,  os_package_roo
 
 
 
+
+
 ####################################################################################################
 def module_load(model_uri="", verbose=0):
     """
@@ -121,14 +123,11 @@ def module_load(model_uri="", verbose=0):
       model_uri:  model_tf.1_lstm.py  or ABSOLUTE PATH
     """
 
-    module = import_module( f"mlmodels.model_tf.1_lstm")
-
-
-    print(model_uri)
     # print(os_file_current_path())
     model_uri = model_uri.replace("/", ".")
-
     module = None
+    if verbose : print(model_uri)
+
     try :
       #### Import from package mlmodels sub-folder
       #module = import_module("mlmodels.model_tf.1_lstm")
@@ -287,6 +286,7 @@ def test_all(folder=None):
 
 
 def test(modelname):
+    print(model_uri)
     try :
       module = module_load( modelname , verbose=1)
       print(module)

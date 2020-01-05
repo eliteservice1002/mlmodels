@@ -65,6 +65,11 @@ def ask(question, ans='yes'):
     return input(question).lower() == ans.lower()
 
 def pypi_upload():
+    """
+      It requires credential in .pypirc  files
+      __token__
+
+    """
     os.system('python setup.py sdist bdist_wheel')
     os.system('twine upload dist/*')
     print("Upload files")

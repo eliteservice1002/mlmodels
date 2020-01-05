@@ -21,8 +21,9 @@ out = p.communicate()[0].decode("utf8")
 gpu_available = len(out) > 0
 
 
-##### Version
+##### Version  #######################################################################
 version ='0.18.1'
+print("version", version)
 """"
 with io.open(os.path.join(root, 'nlp_architect', 'version.py'), encoding='utf8') as f:
     version_f = {}
@@ -31,6 +32,9 @@ with io.open(os.path.join(root, 'nlp_architect', 'version.py'), encoding='utf8')
 """
 
 
+
+
+######################################################################################
 with open("README.md", "r") as fh:
     long_description = fh.read()
 
@@ -105,23 +109,28 @@ packages = ["mlmodels"] + ["mlmodels." + p for p in find_packages("mlmodels")]
 
 
 ### CLI Scripts  #################################################
+"""
 scripts = [ "mlmodels/models.py",
             "mlmodels/optim.py",
             "mlmodels/cli_mlmodels",     
             ]
+"""
 
 
-
-##################################################################    
+### CLI Scripts  #################################################   
 entry_points={ 'console_scripts': [
                'ml_models = mlmodels.models:main',
-               'ml_moptim = mlmodels.optim:main'
+               'ml_optim = mlmodels.optim:main'
               ] }
 
+
+##################################################################   
 setup(
     name="mlmodels",
     version=version,
     description="Generic model API, Model Zoo in Tensorflow, Keras, Pytorch, Hyperparamter search",
+    keywords='Machine Learning Interface library',
+    
     author="Kevin Noel",
     author_email="brookm291@gmail.com",
     url="https://github.com/arita37/mlmodels",
@@ -135,7 +144,28 @@ setup(
     
     long_description=long_description,
     long_description_content_type="text/markdown",
-    include_package_data=True
+    include_package_data=True,
+
+    classifiers=[
+          'Development Status :: 3 - Alpha',
+          'Intended Audience :: End Users/Desktop',
+          'Intended Audience :: Developers',
+          'Intended Audience :: Science/Research',
+          'License :: OSI Approved :: Apache Software License',
+          'Programming Language :: Python :: 3',
+          'Programming Language :: Python :: 3.6',
+          'Topic :: Scientific/Engineering',
+          'Topic :: Scientific/Engineering :: ' +
+          'Artificial Intelligence',
+          'Topic :: Software Development :: Libraries',
+          'Topic :: Software Development :: Libraries :: ' +
+          'Python Modules',
+          'Topic :: Scientific/Engineering :: Information Analysis',
+          'Environment :: Console',
+          'Environment :: Web Environment',
+          'Operating System :: POSIX',
+          'Operating System :: MacOS :: MacOS X',
+      ]
 )
 
 
@@ -204,9 +234,6 @@ setup(name='nlp-architect',
       long_description_content_type='text/markdown',
       keywords='NLP NLU deep learning natural language processing tensorflow keras dynet',
       author='Intel AI Lab',
-      author_email=
-      license='Apache 2.0',
-      python_requires='>=3.6.*',
       packages=find_packages(exclude=['tests.*', 'tests', '*.tests', '*.tests.*',
                                       'examples.*', 'examples', '*.examples', '*.examples.*']),
       install_requires=install_requirements,

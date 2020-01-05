@@ -68,7 +68,7 @@ def optim(modelname="model_tf.1_lstm.py",
           model_pars= {},
           data_pars = {},
           compute_pars={"method": "normal/prune"},
-          save_folder="/mymodel/", log_folder="", ntrials=2) :
+          save_path="/mymodel/", log_path="", ntrials=2) :
     """
     Generic optimizer for hyperparamters
     Parameters
@@ -78,8 +78,8 @@ def optim(modelname="model_tf.1_lstm.py",
     data_pars : TYPE, optional
     compute_pars : TYPE, optional
     DESCRIPTION. The default is {"method": "normal/prune"}.
-    save_folder : TYPE, optional The default is "/mymodel/".
-    log_folder : TYPE, optional. The default is "".
+    save_path : TYPE, optional The default is "/mymodel/".
+    log_path : TYPE, optional. The default is "".
     ntrials : TYPE, optional. The default is 2.
     Returns : None
 
@@ -87,7 +87,7 @@ def optim(modelname="model_tf.1_lstm.py",
     log("model_pars", model_pars)
     if compute_pars["engine"] == "optuna" :
         return optim_optuna(modelname,  model_pars, data_pars, compute_pars,
-                            save_folder, log_folder, ntrials)
+                            save_path, log_path, ntrials)
     return None
 
 
@@ -97,7 +97,7 @@ def optim_optuna(modelname="model_tf.1_lstm.py",
                  model_pars= {},
                  data_pars = {},
                  compute_pars={"method" : "normal/prune"},
-                 save_folder="/mymodel/", log_folder="", ntrials=2) :
+                 save_path="/mymodel/", log_path="", ntrials=2) :
     """
        Interface layer to Optuna  for hyperparameter optimization
        return Best Parameters
@@ -130,25 +130,14 @@ def optim_optuna(modelname="model_tf.1_lstm.py",
         for t,p  in model_pars.items():
             #p = model_pars[t]
             x = p['type']
-
-
-            if x=='log_uniform':
-                pres = trial.suggest_loguniform(t,p['range'][0], p['range'][1])
-
-            elif x=='int':
-                pres = trial.suggest_int(t,p['range'][0], p['range'][1])
-
-            elif x=='categorical':
-                pres = trial.suggest_categorical(t,p['value'])
-
-            elif x=='discrete_uniform':
-                pres = trial.suggest_discrete_uniform(t, p['init'],p['range'][0],p['range'][1])
-
-            elif x=='uniform':
-                pres = trial.suggest_uniform(t,p['range'][0], p['range'][1])
-
+  
+            if   x=='log_uniform':       pres = trial.suggest_loguniform(t,p['range'][0], p['range'][1])
+            elif x=='int':               pres = trial.suggest_int(t,p['range'][0], p['range'][1])
+            elif x=='categorical':       pres = trial.suggest_categorical(t,p['value'])
+            elif x=='discrete_uniform':  pres = trial.suggest_discrete_uniform(t, p['init'],p['range'][0],p['range'][1])
+            elif x=='uniform':           pres = trial.suggest_uniform(t,p['range'][0], p['range'][1])
             else:
-                raise Exception('Not supported type {}'.format(p['type']))
+                raise Exception( f'Not supported type {x}')
                 pres = None
 
             param_dict[t] = pres
@@ -198,16 +187,16 @@ def optim_optuna(modelname="model_tf.1_lstm.py",
 
     log("#### Saving     ###########################################################")
     modelname = modelname.replace(".", "-") # this is the module name which contains .
-    save( save_folder, modelname, sess, model=model )
+    save( save_path, modelname, sess, model=model )
 
 
     log("### Save Stats   ##########################################################")
     study_trials = study.trials_dataframe()
-    study_trials.to_csv(f"{save_folder}/{modelname}_study.csv")
+    study_trials.to_csv(f"{save_path}/{modelname}_study.csv")
 
     param_dict_best["best_value"] = study.best_value
     # param_dict["file_path"] = file_path
-    json.dump( param_dict_best, open(f"{save_folder}/{modelname}_best-params.json", mode="w") )
+    json.dump( param_dict_best, open(f"{save_path}/{modelname}_best-params.json", mode="w") )
 
     return param_dict_best
 
@@ -235,15 +224,18 @@ def test_all():
     res = optim('model_tf.1_lstm', model_pars=pars,
                 data_pars={"data_path": data_path, "data_type": "pandas"},
                 ntrials=2,
-                save_folder="ztest/optuna_1lstm/",
-                log_folder="ztest/optuna_1lstm/",
+                save_path="ztest/optuna_1lstm/",
+                log_path="ztest/optuna_1lstm/",
                 compute_pars={"engine": "optuna" ,  "method" : "prune"} )
 
     return res
 
 
 def test_fast(ntrials=2):
-    pars = {
+
+    modelname = 'model_tf.1_lstm'
+
+    model_pars = {
         "learning_rate": {"type": "log_uniform", "init": 0.01,  "range" : [0.001, 0.1] },
         "num_layers":    {"type": "int", "init": 2,  "range" :[2, 4] },
         "size":    {"type": "int", "init": 6,  "range" :[6, 6] },
@@ -253,18 +245,27 @@ def test_fast(ntrials=2):
         "timestep":      {"type" : "categorical", "value": [5] },
         "epoch":         {"type" : "categorical", "value": [2] }
     }
+    log( "model details" , modelname, model_pars ) 
 
-    # print("ok2")
+
     data_path = os_package_root_path('dataset/GOOG-year_small.csv')
-    # return 1
-    # print("validate", data_path, flush=True)
-    res = optim('model_tf.1_lstm',
-                model_pars = pars,
-                data_pars = {"data_path": data_path, "data_type": "pandas"},
-                ntrials=ntrials,
-                save_folder="ztest/optuna_1lstm/",
-                log_folder="ztest/optuna_1lstm/",
-                compute_pars={"engine": "optuna" ,  "method" : "prune"} )
+    log( "data_path" , data_path )
+
+
+    path_curr = os.getcwd()
+    path_save = f"{path_curr}/ztest/optuna_1lstm/" 
+    os.makedirs(path_save, exist_ok=True)
+    log("path_save", path_save)
+
+
+
+    res = optim(modelname    = modelname,
+                model_pars   = model_pars,
+                data_pars    = {"data_path": data_path, "data_type": "pandas"},
+                ntrials      = ntrials,
+                save_path    = path_save,
+                log_path     = path_save,
+                compute_pars = {"engine": "optuna" ,  "method" : "prune"} )
 
     log("Finished OPTIMIZATION",n =30)
     print(res)
@@ -306,7 +307,7 @@ def cli_load_arguments(config_file= None):
 
 
     ###### out params
-    p.add_argument('--save_folder', default='ztest/search_save/',help='folder that will contain saved version of best model')
+    p.add_argument('--save_path', default='ztest/search_save/',help='folder that will contain saved version of best model')
 
 
     args = p.parse_args()
@@ -352,11 +353,12 @@ def main():
                     ntrials = int(arg.ntrials),
                     compute_pars = compute_pars,
                     data_pars  = data_pars,
-                    save_folder  = arg.save_folder,
-                    log_folder   = arg.log_file)  # '1_lstm'
+                    save_path  = arg.save_path,
+                    log_path   = arg.log_file)  # '1_lstm'
 
         log("#############  OPTIMIZATION End ###############")
         log(res)
+
 
 if __name__ == "__main__":
     main()

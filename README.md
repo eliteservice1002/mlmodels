@@ -1,13 +1,15 @@
 # mlmodels
 
 ```
-Lightweight Functional interface to wrap access to Deep Learning, RLearning models.
+Lightweight Functional interface to wrap access to Deep Learning, RLearning models
+and Hyper Params Search
 Logic follows Scikit Learn API and simple for easy extentions logic.
-Goal to facilitate Jupyter to Prod.
+Goal to facilitate Jupyter to Prod code.
 
 
 
 #### Docs here:
+
 https://mlmodels.readthedocs.io/en/latest/
 
 
@@ -33,20 +35,25 @@ ztest.run()
 
 
 
-
-
-####################################################################################################
-######### Entry CLI  ###############################################################################
+#################################################################################################
+######### Entry CLI  ############################################################################
 ml_models  :  mlmodels/models.py
+              Lightweight Functional interface to execute models
+
 ml_optim   :  mlmodels/optim.py
+              Lightweight Functional interface to wrap Hyper-parameter Optimization
+
 
 ml_models --do  
+    Lightweight Functional interface to wrap Hyper-parameter Optimization
+
     "model_list"  :  #list all models in the repo                            
     "testall"     :  test all modules inside model_tf
     "test"        :  test a certain module inside model_tf
-    "fit"         :  wrap fit generic method
+    "fit"         :  wrap fit generic m    ethod
     "predict"     :  predict  using a pre-trained model and some data
     "generate_config"  :  generate config file from code source
+
 
 
 ml_optim --do
@@ -59,9 +66,7 @@ ml_optim --do
 
 
 ##################################################################################################
-######### Command line sample (test) #############################################################
-
-
+######### Command line sample (test) ##########################################################
 
 #### generate config file
 ml_models  --do generate_config  --model_uri model_tf.1_lstm.py  --save_folder "c:\myconfig\"
@@ -98,6 +103,25 @@ ml_optim --do search --ntrials 1  --config_file optim_config.json --optim_method
 ml_optim --modelname model_tf.1_lstm.py  --do test
 
 ml_optim --modelname model_tf.1_lstm.py  --do search
+
+###### Model param search test
+python optim.py --do test
+
+
+##### #for normal optimization search method
+python optim.py --do search --ntrials 1  --config_file optim_config.json --optim_method normal
+
+
+###### for pruning method
+python optim.py --do search --ntrials 1  --config_file optim_config.json --optim_method prune
+
+
+
+###### HyperParam standalone run
+python optim.py --modelname model_tf.1_lstm.py  --do test
+
+python optim.py --modelname model_tf.1_lstm.py  --do search
+
 
 
 
