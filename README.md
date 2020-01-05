@@ -14,7 +14,7 @@ https://mlmodels.readthedocs.io/en/latest/
 
 
 
-####################################################################################################
+#################################################################################################
 Install as editable package   ONLY dev branch
 
 cd yourfolder
@@ -25,16 +25,6 @@ git checkout dev
 pip install -e .
 
 
-####################################################################################################
-###### In Jupyter / python Editor   ################################################################
-from mlmodels.util import load_config, to_namespace
-from mlmodels.models import create, module_load, save
-from mlmodels import ztest
-ztest.run()
-
-
-
-
 #################################################################################################
 ######### Entry CLI  ############################################################################
 ml_models  :  mlmodels/models.py
@@ -43,17 +33,13 @@ ml_models  :  mlmodels/models.py
 ml_optim   :  mlmodels/optim.py
               Lightweight Functional interface to wrap Hyper-parameter Optimization
 
-
 ml_models --do  
-    Lightweight Functional interface to wrap Hyper-parameter Optimization
-
     "model_list"  :  #list all models in the repo                            
     "testall"     :  test all modules inside model_tf
     "test"        :  test a certain module inside model_tf
     "fit"         :  wrap fit generic m    ethod
     "predict"     :  predict  using a pre-trained model and some data
     "generate_config"  :  generate config file from code source
-
 
 
 ml_optim --do
@@ -66,7 +52,7 @@ ml_optim --do
 
 
 ##################################################################################################
-######### Command line sample (test) ##########################################################
+######### Command line sample (test) #############################################################
 
 #### generate config file
 ml_models  --do generate_config  --model_uri model_tf.1_lstm.py  --save_folder "c:\myconfig\"
@@ -121,6 +107,8 @@ python optim.py --do search --ntrials 1  --config_file optim_config.json --optim
 python optim.py --modelname model_tf.1_lstm.py  --do test
 
 python optim.py --modelname model_tf.1_lstm.py  --do search
+
+
 
 
 
