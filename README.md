@@ -4,14 +4,12 @@
 Lightweight Functional interface to wrap access to Deep Learning, RLearning models
 and Hyper Params Search
 Logic follows Scikit Learn API and simple for easy extentions logic.
-Goal to facilitate Jupyter to Prod code.
+Goal to facilitate Prototype to Prod code.
 
 
+#### Docs here:   https://mlmodels.readthedocs.io/en/latest/
 
-#### Docs here:
-
-https://mlmodels.readthedocs.io/en/latest/
-
+#### Pypi here :  https://pypi.org/project/mlmodels/
 
 
 #################################################################################################
@@ -34,7 +32,7 @@ ml_optim   :  mlmodels/optim.py
               Lightweight Functional interface to wrap Hyper-parameter Optimization
 
 ml_models --do  
-    "model_list"  :  #list all models in the repo                            
+    "model_list"  :  list all models in the repo                            
     "testall"     :  test all modules inside model_tf
     "test"        :  test a certain module inside model_tf
     "fit"         :  wrap fit generic m    ethod
@@ -58,7 +56,7 @@ ml_optim --do
 ml_models  --do generate_config  --model_uri model_tf.1_lstm.py  --save_folder "c:\myconfig\"
 
 
-#### Custom Directory Models
+#### Custom  Models
 ml_models --do test  --model_uri "D:\_devs\Python01\gitdev\mlmodels\mlmodels\model_tf\1_lstm.py"
 
 
@@ -80,32 +78,23 @@ ml_optim --do test
 
 ##### #for normal optimization search method
 ml_optim --do search --ntrials 1  --config_file optim_config.json --optim_method normal
-
 ml_optim --do search --ntrials 1  --config_file optim_config.json --optim_method prune  ###### for pruning method
 
 
 
 ###### HyperParam standalone run
 ml_optim --modelname model_tf.1_lstm.py  --do test
-
 ml_optim --modelname model_tf.1_lstm.py  --do search
+
+
 
 ###### Model param search test
 python optim.py --do test
-
-
-##### #for normal optimization search method
 python optim.py --do search --ntrials 1  --config_file optim_config.json --optim_method normal
-
-
-###### for pruning method
 python optim.py --do search --ntrials 1  --config_file optim_config.json --optim_method prune
-
-
 
 ###### HyperParam standalone run
 python optim.py --modelname model_tf.1_lstm.py  --do test
-
 python optim.py --modelname model_tf.1_lstm.py  --do search
 
 
@@ -136,7 +125,7 @@ optim.py
 
 
 
-
+#################################################################################################### 
 #################################################################################################### 
 Models are stored in model_XX/  or in folder XXXXX
     module :  folder/mymodel.py, contains the methods, operations.
