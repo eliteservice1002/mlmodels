@@ -42,19 +42,23 @@ with open("README.md", "r") as fh:
 long_description =  """
 
 ```
+
 ml_models --do  
-    "model_list"  :  list all models in the repo                            
-    "testall"     :                                 
-    "test"        :
-    "fit"         :
-    "predict"     :
-    "generate_config"  :
+    "model_list"  :  #list all models in the repo                            
+    "testall"     :  test all modules inside model_tf
+    "test"        :  test a certain module inside model_tf
+    "fit"         :  wrap fit generic m    ethod
+    "predict"     :  predict  using a pre-trained model and some data
+    "generate_config"  :  generate config file from code source
 
 
 ml_optim --do
-    "test"  
-    "test_all"  
-    "search"  
+  "test"      :  Test the hyperparameter optimization for a specific model
+  "test_all"  :  TODO, Test all
+  "search"    :  search for the best hyperparameters of a specific model
+
+
+ 
 
 
 
@@ -94,10 +98,12 @@ vanilla
 autoencoder
 nbeats  time series
 deepar time series
-
-
-
 ```
+
+
+
+
+
 
 
 """

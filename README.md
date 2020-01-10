@@ -9,7 +9,6 @@ Goal to facilitate Jupyter to Prod code.
 
 
 #### Docs here:
-
 https://mlmodels.readthedocs.io/en/latest/
 
 
@@ -43,9 +42,9 @@ ml_models --do
 
 
 ml_optim --do
-	"test"      :  Test the hyperparameter optimization for a specific model
-	"test_all"  :  TODO, Test all
-	"search"    :  search for the best hyperparameters of a specific model
+  "test"      :  Test the hyperparameter optimization for a specific model
+  "test_all"  :  TODO, Test all
+  "search"    :  search for the best hyperparameters of a specific model
 
 
 
