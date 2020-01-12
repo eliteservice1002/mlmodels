@@ -35,6 +35,12 @@ with io.open(os.path.join(root, 'nlp_architect', 'version.py'), encoding='utf8')
 
 
 ######################################################################################
+with open('requirements.txt') as fp:
+    install_requires = fp.read()
+
+
+
+######################################################################################
 with open("README.md", "r") as fh:
     long_description = fh.read()
 
@@ -142,7 +148,7 @@ setup(
     author_email="brookm291@gmail.com",
     url="https://github.com/arita37/mlmodels",
     
-    install_requires=[ ],
+    install_requires=install_requires,
     python_requires='>=3.6',
     
     packages=packages,

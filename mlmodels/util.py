@@ -39,64 +39,13 @@ def log(*s, n=0,m=1):
 
 
 
-########## TF specific #############################################################################
-def load_tf(foldername, filename):
-  """
-  https://www.mlflow.org/docs/latest/python_api/mlflow.tensorflow.html#
-
- """
-  import mlflow.tensorflow
-  import tensorflow as tf
-  
-  model_uri = foldername + "/" + filename
-  tf_graph = tf.Graph()
-  tf_sess = tf.Session(graph=tf_graph)
-  with tf_graph.as_default():
-    signature_def = mlflow.tensorflow.load_model(model_uri=model_uri,
-                                                 tf_sess=tf_sess)
-    input_tensors = [tf_graph.get_tensor_by_name(input_signature.name)
-                     for _, input_signature in signature_def.inputs.items()]
-    output_tensors = [tf_graph.get_tensor_by_name(output_signature.name)
-                      for _, output_signature in signature_def.outputs.items()]
-  return input_tensors, output_tensors
-
-
-def save_tf(sess, file_path):
-  import tensorflow as tf
-  saver = tf.compat.v1.train.Saver()
-  return saver.save(sess, file_path)
-
-
-########## pyTorch specific ########################################################################
-def load_tch(foldername, filename):
-  return 1
-
-
-def save_tch(foldername, filename):
-  return 1
-
-
-########## Other model specific ####################################################################
-def load_pkl(folder_name, filename=None):
-  pass
-
-
-
-
-
-
-
-
-
-
-####################################################################################################
 def load_config(args, config_file, config_mode, verbose=0):
     ##### Load file dict_pars as dict namespace #############################
-    import toml
+    import json
     print(config_file) if verbose else None
 
     try:
-       pars = toml.load(config_file)
+       pars = json.load(open(config_file, mode="r") )
        # print(arg.param_file, model_pars)
 
 
@@ -138,16 +87,6 @@ def get_recursive_files(folderPath, ext):
     return outFiles
 
 
-def os_file_current(f):
-   pass
-
-
-def os_file_parent(f):
-  pass
-
-
-
-
 def get_recursive_folder(folderPath, ext):
     results = os.listdir(folderPath)
     outFiles = []
@@ -160,6 +99,69 @@ def get_recursive_folder(folderPath, ext):
     return outFiles
 
   
+
+
+
+
+
+
+
+####################################################################################################
+########## TF specific #############################################################################
+def load_tf(foldername, filename):
+  """
+  https://www.mlflow.org/docs/latest/python_api/mlflow.tensorflow.html#
+
+ """
+  import mlflow.tensorflow
+  import tensorflow as tf
+  
+  model_uri = foldername + "/" + filename
+  tf_graph = tf.Graph()
+  tf_sess = tf.Session(graph=tf_graph)
+  with tf_graph.as_default():
+    signature_def = mlflow.tensorflow.load_model(model_uri=model_uri,
+                                                 tf_sess=tf_sess)
+    input_tensors = [tf_graph.get_tensor_by_name(input_signature.name)
+                     for _, input_signature in signature_def.inputs.items()]
+    output_tensors = [tf_graph.get_tensor_by_name(output_signature.name)
+                      for _, output_signature in signature_def.outputs.items()]
+  return input_tensors, output_tensors
+
+
+def save_tf(sess, file_path):
+  import tensorflow as tf
+  saver = tf.compat.v1.train.Saver()
+  return saver.save(sess, file_path)
+
+
+
+
+
+####################################################################################################
+########## pyTorch specific ########################################################################
+def load_tch(foldername, filename):
+  return 1
+
+
+def save_tch(foldername, filename):
+  return 1
+
+
+
+
+####################################################################################################
+########## Other model specific ####################################################################
+def load_pkl(folder_name, filename=None):
+  pass
+
+
+
+
+
+
+
+
 
 
 """

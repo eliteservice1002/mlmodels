@@ -286,7 +286,7 @@ def test_all(folder=None):
 
 
 def test(modelname):
-    print(model_uri)
+    print(modelname)
     try :
       module = module_load( modelname , verbose=1)
       print(module)

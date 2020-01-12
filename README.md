@@ -53,16 +53,16 @@ ml_optim --do
 ml_models  --do generate_config  --model_uri model_tf.1_lstm.py  --save_folder "c:\myconfig\"
 
 
+### TF LSTM model
+ml_models  --model_uri model_tf/1_lstm.py  --do test
+
+
 #### Custom  Models
 ml_models --do test  --model_uri "D:\_devs\Python01\gitdev\mlmodels\mlmodels\model_tf\1_lstm.py"
 
 
 ### RL model
 ml_models  --model_uri model_tf/rl/4_policygradient  --do test
-
-
-### TF LSTM model
-ml_models  --model_uri model_tf/1_lstm.py  --do test
 
 
 ## PyTorch models
@@ -78,11 +78,9 @@ ml_optim --do search --ntrials 1  --config_file optim_config.json --optim_method
 ml_optim --do search --ntrials 1  --config_file optim_config.json --optim_method prune  ###### for pruning method
 
 
-
 ###### HyperParam standalone run
 ml_optim --modelname model_tf.1_lstm.py  --do test
 ml_optim --modelname model_tf.1_lstm.py  --do search
-
 
 
 ###### Model param search test
@@ -93,7 +91,6 @@ python optim.py --do search --ntrials 1  --config_file optim_config.json --optim
 ###### HyperParam standalone run
 python optim.py --modelname model_tf.1_lstm.py  --do test
 python optim.py --modelname model_tf.1_lstm.py  --do search
-
 
 
 

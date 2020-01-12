@@ -55,9 +55,11 @@ from mlmodels.util import os_package_root_path, log
 #print(os_package_root_path())
 
 ####################################################################################################
+try :
+  from tensorflow.python.util import deprecation
+  deprecation._PRINT_DEPRECATION_WARNINGS = False
+except : pass
 
-from tensorflow.python.util import deprecation
-deprecation._PRINT_DEPRECATION_WARNINGS = False
 
 
 
