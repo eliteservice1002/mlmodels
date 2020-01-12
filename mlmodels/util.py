@@ -75,7 +75,7 @@ def val(x,xdefault) :
 
 
 
-def get_recursive_files(folderPath, ext):
+def get_recursive_files2(folderPath, ext):
     results = os.listdir(folderPath)
     outFiles = []
     for file in results:
@@ -87,18 +87,13 @@ def get_recursive_files(folderPath, ext):
     return outFiles
 
 
-def get_recursive_folder(folderPath, ext):
-    results = os.listdir(folderPath)
-    outFiles = []
-    for file in results:
-      if os.path.isdir(os.path.join(folderPath, file)):
-        outFiles += get_recursive_files(os.path.join(folderPath, file), ext)
-      elif re.match(ext, file):
-        outFiles.append(file)
-  
-    return outFiles
+def get_recursive_files(folderPath, ext='/*model*/*.py'):
+  import glob
+  files = glob.glob( folderPath + ext, recursive=True) 
+  return files
 
-  
+
+
 
 
 
@@ -165,7 +160,21 @@ def load_pkl(folder_name, filename=None):
 
 
 """
-from datetime import datetime, timedelta
+
+
+import glob
+
+path = "."
+files = glob.glob(path + '/*model*/*.py', recursive=True)
+files
+
+
+
+
+from datetime import datetime, timedelt
+
+
+a
 
 import matplotlib.pyplot as plt
 import numpy as np

@@ -101,7 +101,7 @@ import json
 from pathlib import Path
 
 ####################################################################################################
-from mlmodels.util import load_config, get_recursive_files, get_recursive_folder
+from mlmodels.util import load_config, get_recursive_files
 from mlmodels.util import load_tf, load_tch,  save_tf, save_tch,  os_package_root_path, log
 
 
@@ -363,6 +363,7 @@ def cli_load_arguments(config_file= None):
     p.add_argument("--model_uri", default="model_tf/1_lstm.py",  help=".")
     p.add_argument("--load_folder", default="ztest/",  help=".")
 
+
     ##### data pars
     p.add_argument("--dataname", default="dataset/google.csv",  help=".")
 
@@ -380,16 +381,22 @@ def cli_load_arguments(config_file= None):
 
                                  
 
-  
+
+
+def model_list() :
+  folder = os_package_root_path()
+  # print(folder)
+  module_names = get_recursive_files(folder, r'/*model*/*.py' )                       
+  for t in module_names :
+     print(t.replace(folder, "").replace("\\", "."))
+
+
 def main():
     arg = cli_load_arguments()
     print(arg.do)
 
     if arg.do == "model_list"  :  #list all models in the repo
-        folder = os_package_root_path()
-        module_names = get_recursive_folder(folder, r"model*/*.py" )                       
-        for t in module_names :
-            print(t)
+       model_list()
                     
                                  
     if arg.do == "testall"  :

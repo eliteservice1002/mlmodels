@@ -38,6 +38,11 @@ ml_models  :  mlmodels/models.py
 ml_optim   :  mlmodels/optim.py
               Lightweight Functional interface to wrap Hyper-parameter Optimization
 
+ml_test    :  A lot of tests
+
+
+
+
 ml_models --do  
     "model_list"  :  list all models in the repo                            
     "testall"     :  test all modules inside model_tf
