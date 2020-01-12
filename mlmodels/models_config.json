@@ -21,7 +21,7 @@
 
 		"compute_pars": {
 			"distributed": "mpi",
-			"epoch": 10,
+			"epoch": 10
 		},
 
 

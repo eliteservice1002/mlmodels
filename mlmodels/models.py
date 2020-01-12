@@ -101,7 +101,7 @@ import json
 from pathlib import Path
 
 ####################################################################################################
-from mlmodels.util import load_config, get_recursive_files
+from mlmodels.util import load_config, get_recursive_files, load_pkl
 from mlmodels.util import load_tf, load_tch,  save_tf, save_tch,  os_package_root_path, log
 
 
@@ -230,7 +230,7 @@ def save(folder_name, modelname="model_default", model_type="tf",  model_session
        Save model/session on disk
     :param folder_name:
     :param modelname:
-    :param sess:
+    :param model_session:
     :param kwarg:
     :return:
     """
@@ -411,14 +411,14 @@ def main():
     if arg.do == "fit"  :
         model_p, data_p, compute_p, out_p  = config_get_pars(arg.config_file, arg.config_mode)
         
-        module = module_load(arg.modelname)  # '1_lstm.py
-        model = model_create(model_p)   # Exact map JSON and paramters
+        module = module_load(arg.model_uri)  # '1_lstm.py
+        model = model_create(module, model_p)   # Exact map JSON and paramters
 
         log("Fit")
         sess = module.fit(model, data_pars=data_p, compute_pars= compute_p)
 
         log("Save")
-        save(f"{arg.save_folder}/{arg.modelname}", arg.modelname, sess )
+        save(f"{arg.save_folder}/{arg.model_uri}", arg.model_uri, sess )
 
 
     if arg.do == "predict"  :
@@ -432,5 +432,11 @@ def main():
         print( arg.save_folder)
         config_generate_template(arg.model_uri, to_folder= arg.save_folder)
 
+
+
 if __name__ == "__main__":
     main()
+
+
+
+
