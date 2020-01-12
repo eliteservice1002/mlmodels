@@ -8,6 +8,6 @@ tensorflow>=1.14.0
 pytorch>=0.4.0
 optuna
 lightgbm
-
+mlflow
 
 

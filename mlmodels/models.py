@@ -206,7 +206,7 @@ def metrics(model, module, sess=None, compute_pars=None, data_pars=None, out_par
   return val
 
 
-def load(folder_name, model_type="tf", filename=None, **kwarg):
+def load(folder_name, model_type="tf", filename="", **kwarg):
     """
        Load model/session from files
     :param folder_name:
@@ -216,7 +216,7 @@ def load(folder_name, model_type="tf", filename=None, **kwarg):
     :return:
     """
     if model_type == "tf" :
-        return load_tf(folder_name)
+        return load_tf(folder_name, filename)
 
     if model_type == "tch" :
         return load_tch(folder_name)

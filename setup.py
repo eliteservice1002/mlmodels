@@ -49,10 +49,12 @@ long_description =  """
 
 ```
 
-ml_models --do  
-    "model_list"  :  #list all models in the repo                            
+ml_models --do                    
     "testall"     :  test all modules inside model_tf
     "test"        :  test a certain module inside model_tf
+
+
+    "model_list"  :  #list all models in the repo          
     "fit"         :  wrap fit generic m    ethod
     "predict"     :  predict  using a pre-trained model and some data
     "generate_config"  :  generate config file from code source
