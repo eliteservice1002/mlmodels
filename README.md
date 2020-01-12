@@ -46,8 +46,6 @@ ml_optim --do
 
 
 
-
-
 ##################################################################################################
 ######### Command line sample (test) #############################################################
 
@@ -123,14 +121,22 @@ optim.py
    optim_optuna(modelname="model_tf.1_lstm.py", model_pars= {}, data_pars = {}, compute_pars={"method" : "normal/prune"}, save_folder="/mymodel/", log_folder="", ntrials=2) 
 
 
+### Generic parameters :
+   Define in models_config.json
+   model_params      :  {  model definition }
+   compute_pars      :  Relative to  the compute
+   data_pars         :  Relative to the data
+   out_pars          :  Relative to out
+
+
+
+
 
 #################################################################################################### 
 #################################################################################################### 
 Models are stored in model_XX/  or in folder XXXXX
     module :  folder/mymodel.py, contains the methods, operations.
-    model  :  Class in mymodel.py containing the model definition, compilation
-
-
+    model  :  Class in mymodel.py containing tihe model definition, compilation
 
 *How to define a custom model ?*
    Create a folder,
@@ -142,13 +148,14 @@ Models are stored in model_XX/  or in folder XXXXX
                         
 
       def load_dataset()                  
-      def fit(model, )               : train the model
-      def predict(model,sess, )      : predic the results
-      def get_pars()                 : example of parameters of the model
-      def save()                     : save the model
-      def load()                     : load the trained model
-      def test()                     : example running the model     
+      def fit(model, compute_pars, )     : train the model
+      def predict(model,sess, )         : predic the results
+      def get_pars()                    : example of parameters of the model
+      def save()                        : save the model
+      def load()                        : load the trained model
+      def test()                        : example running the model     
       def data_loader(data_pars)
+
 
 
 
