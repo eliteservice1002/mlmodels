@@ -1,0 +1,48 @@
+{
+"test" :{
+
+ "model_pars":   {
+        "learning_rate": {"type": "log_uniform", "init": 0.01,  "range" : [0.001, 0.1] },
+        "num_layers":    {"type": "int", "init": 2,  "range" :[2, 4] },
+        "size":    {"type": "int", "init": 6,  "range" :[6, 6] },
+        "output_size":    {"type": "int", "init": 6,  "range" : [6, 6] },
+
+        "size_layer":    {"type" : "categorical", "value": [128, 256 ] },
+        "timestep":      {"type" : "categorical", "value": [5] },
+        "epoch":         {"type" : "categorical", "value": [2] }
+    },
+
+
+ "data_pars": {
+			"data_path": "dataset/GOOG-year.csv",
+			"data_type": "pandas",
+			"size": [0, 0, 6],
+			"output_size": [0, 6]
+		},
+
+   
+   "compute_pars" : {
+      "engine" : "optuna",
+      "method" : "prune",
+      "ntrials" : 5
+  }
+
+
+},
+
+
+"prod" :{
+
+   "model_pars" : {},
+   
+   "data_pars" :  {},
+
+   "compute_pars" : {}
+
+
+   
+   }
+   
+   
+}
+
