@@ -168,7 +168,9 @@ Models are stored in model_XX/  or in folder XXXXX
 
 
 
-
+  Template is available in mlmodels/template/model_XXXX.py
+                           model_tf/1_lstm.py
+                           
 
 
 
