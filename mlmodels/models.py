@@ -299,7 +299,7 @@ def test(modelname):
 
 
 ####################################################################################################
-############CLI Command ############################################################################
+############ JSON template #########################################################################
 def config_get_pars(config_file, config_mode) :
    """ 
      load JSON and output the params
@@ -314,13 +314,15 @@ def config_get_pars(config_file, config_mode) :
    return model_p, data_p, compute_p, out_p
                                  
    
-def config_generate_template(modelname, to_folder="ztest/") :
+def config_generate_json(modelname, to_path="ztest/new_model/") :
   """
     Generate config file from code source
     config_generate_template("model_tf.1_lstm", to_folder="ztest/")
 
   """
-  import inspect                               
+  os.makedirs(to_path, exist_ok=True)
+  ##### JSON file
+  import inspect
   module = module_load(modelname)
   signature = inspect.signature( module.Model )
   args = {
@@ -337,20 +339,40 @@ def config_generate_template(modelname, to_folder="ztest/") :
                }
 
   modelname = modelname.replace(".py", "").replace(".", "-" )
-  fname = os.path.join( to_folder , f"{modelname}_config.json" )
-  os.makedirs(to_folder, exist_ok=True)
+  fname = os.path.join(to_path, f"{modelname}_config.json")
   json.dump(model_pars, open( fname, mode="w"))
   print(fname)
 
 
+def config_generate_template(template_type=None, to_path="ztest/new_model/"):
+    """
+      Generate template from code source
+      config_generate_template("model_tf.1_lstm", to_folder="ztest/")
 
+    """
+
+    """
+    if template_type is None :
+       os_root = os_package_root_path()
+       lfiles = get_recursive_files(os_root, ext='/*template*/*.py')
+       for f in lfiles :
+           print(f.replace(os_root, ""))
+    """
+    import shutil
+    os_root = os_package_root_path()
+    #os.makedirs(to_path, exist_ok=True)
+    shutil.copytree(os_root+"/template/", to_path)
+
+
+####################################################################################################
+############CLI Command ############################################################################
 def cli_load_arguments(config_file= None):
     """
         Load CLI input, load config.toml , overwrite config.toml by CLI Input
     """
     if config_file is None  :
       cur_path = os.path.dirname(os.path.realpath(__file__))
-      config_file = os.path.join(cur_path, "models_config.json")
+      config_file = os.path.join(cur_path, "template/models_config.json")
     # print(config_file)
 
     p = argparse.ArgumentParser()
@@ -379,16 +401,13 @@ def cli_load_arguments(config_file= None):
     return arg
 
 
-                                 
-
-
-
 def model_list() :
   folder = os_package_root_path()
   # print(folder)
   module_names = get_recursive_files(folder, r'/*model*/*.py' )                       
   for t in module_names :
      print(t.replace(folder, "").replace("\\", "."))
+
 
 
 def main():
@@ -430,7 +449,13 @@ def main():
 
     if arg.do == "generate_config"  :
         print( arg.save_folder)
-        config_generate_template(arg.model_uri, to_folder= arg.save_folder)
+        config_generate_json(arg.model_uri, to_path= arg.save_folder)
+
+
+    if arg.do == "generate_template"  :
+        print( arg.save_folder)
+        config_generate_template(arg.model_uri, to_path= arg.save_folder)
+
 
 
 

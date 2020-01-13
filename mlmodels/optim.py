@@ -283,7 +283,7 @@ def cli_load_arguments(config_file= None):
     """
     if config_file is None  :
       cur_path = os.path.dirname(os.path.realpath(__file__))
-      config_file = os.path.join(cur_path, "optim_config.json")
+      config_file = os.path.join(cur_path, "template/optim_config.json")
     # print(config_file)
 
     p = argparse.ArgumentParser()
