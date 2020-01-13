@@ -133,7 +133,7 @@ optim.py
 
 ### Generic parameters :
    Define in models_config.json
-   model_params      :  {  model definition }
+   model_params      :  model definition 
    compute_pars      :  Relative to  the compute
    data_pars         :  Relative to the data
    out_pars          :  Relative to out
@@ -155,22 +155,22 @@ Models are stored in model_XX/  or in folder XXXXX
    Include those classes/functions :
       Class Model()                  :   Model definition
             __init__(model_param):
-                        
-
-      def load_dataset()                  
+                                  
       def fit(model, compute_pars, )     : train the model
       def predict(model,sess, )         : predic the results
       def get_pars()                    : example of parameters of the model
+      def get_dataset(data_pars)        : load dataset
+      def test_local()                  : example running the model     
+      def test_generic()                : example running the model in global settings  
+
       def save()                        : save the model
       def load()                        : load the trained model
-      def test()                        : example running the model     
-      def data_loader(data_pars)
 
 
 
   Template is available in mlmodels/template/model_XXXX.py
                            model_tf/1_lstm.py
-                           
+
 
 
 

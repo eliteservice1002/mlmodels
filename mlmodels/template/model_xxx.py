@@ -76,9 +76,6 @@ class to_namespace(object):
 ####################################################################################################
 class Model:
   def __init__(self,
-               epoch=5,
-               learning_rate=0.001,
-  
                num_layers=2,
                size=None,
                size_layer=128,
@@ -86,7 +83,6 @@ class Model:
                forget_bias=0.1,
                timestep=5,
                ):
-    self.epoch = epoch
     self.stats = {"loss": 0.0,
                   "loss_history": []}
     
@@ -98,9 +94,7 @@ class Model:
 
     """
     
-    ### Loss    ##############################################
-    self.cost =   0
-    self.optimizer = 0
+
 
 
 
