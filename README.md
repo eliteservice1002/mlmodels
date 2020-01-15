@@ -18,7 +18,25 @@ cd yourfolder
 git clone https://github.com/arita37/mlmodels.git mlmodels
 cd mlmodels
 git checkout dev     
+
+
 pip install -e .  --no-deps  
+
+
+####  dependencies
+numpy>=1.16.4
+pandas>=0.24.2
+scipy>=1.3.0
+scikit-learn>=0.21.2
+numexpr>=2.6.8 
+sqlalchemy>=1.3.8
+tensorflow>=1.14.0
+pytorch>=0.4.0
+optuna
+
+
+
+
 
 
 
