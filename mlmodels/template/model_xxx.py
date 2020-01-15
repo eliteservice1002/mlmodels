@@ -164,7 +164,6 @@ def predict(model, sess, data_pars=None, out_pars=None, compute_pars=None,
 def reset_model():
   pass
 
-
 ####################################################################################################
 def get_dataset(data_pars=None):
   """
@@ -201,7 +200,7 @@ def get_pars(choice="test", **kwargs):
 def test_local(data_path="dataset/GOOG-year.csv"):
   """
       Using this file methods
-    """
+  """
   #### path to local package roots
   data_path = os_package_root_path(__file__, sublevel=1, path_add=data_path)
   print(data_path)
