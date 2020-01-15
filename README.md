@@ -18,7 +18,8 @@ cd yourfolder
 git clone https://github.com/arita37/mlmodels.git mlmodels
 cd mlmodels
 git checkout dev     
-pip install -e .
+pip install -e .  --no-deps  
+
 
 
 ### Test, in CLI type :
