@@ -4,15 +4,18 @@ import numpy as np
 from argparse import ArgumentParser
 import argparse
 import sys
-from torch import nn
 import matplotlib.pyplot as plt
+
+
+from torch import nn
+
 import torch
 from torch import optim
 from torch.nn import functional as F
 
 
 CHECKPOINT_NAME = 'nbeats-fiting-checkpoint.th'
-
+VERBOSE = True
 
 ###############################################################################################################
 ###############################################################################################################
@@ -31,7 +34,7 @@ def os_package_root_path(filepath, sublevel=0, path_add=""):
     path = os.path.join(path.absolute(), path_add)
     return path
 
-def plot(net, x, target, backcast_length, forecast_length, grad_step):
+def plot(net, x, target, backcast_length, forecast_length, grad_step, out_path="./"):
     net.eval()
     _, f = net(torch.tensor(x, dtype=torch.float))
     subplots = [221, 222, 223, 224]
@@ -46,7 +49,7 @@ def plot(net, x, target, backcast_length, forecast_length, grad_step):
         plt.plot(range(backcast_length, backcast_length + forecast_length), ff, color='r')
         # plt.title(f'step #{grad_step} ({i})')
 
-    output = 'n_beats_{}.png'.format(grad_step)
+    output = f'{out_path}/n_beats_{grad_step}.png'
     plt.savefig(output)
     plt.clf()
     print('Saved image to {}.'.format(output))
@@ -63,13 +66,19 @@ def log(*s, n=0,m=1):
 
 
 def get_dataset(**kwargs):
-    data_path=kwargs['data_path']
+    data_path = kwargs['data_path']
+    train_split_ratio = kwargs.get("train_split_ratio", 1)
+
     milk = pd.read_csv(data_path, index_col=0, parse_dates=True)
 
-    print(milk.head())
+    if VERBOSE :
+      print(milk.head(5))
+
     milk = milk.values  # just keep np array here for simplicity.
     norm_constant = np.max(milk)
     milk = milk / norm_constant  # small leak to the test set here.
+
+
 
     x_train_batch, y = [], []
     backcast_length=kwargs['backcast_length']
@@ -81,10 +90,13 @@ def get_dataset(**kwargs):
     x_train_batch = np.array(x_train_batch)[..., 0]
     y = np.array(y)[..., 0]
 
-    c = int(len(x_train_batch) * 0.8)
+    #### Split
+    c = int(len(x_train_batch) * train_split_ratio)
     x_train, y_train = x_train_batch[:c], y[:c]
     x_test, y_test = x_train_batch[c:], y[c:]
     return x_train,y_train,x_test,y_test,norm_constant
+
+
 
 def data_generator(x_full, y_full, bs):
     def split(arr, size):
@@ -106,8 +118,6 @@ def data_generator(x_full, y_full, bs):
 ###############################################################################################################
 # Model
 ####################################################################################################
-
-
 class NBeatsNet(nn.Module):
     SEASONALITY_BLOCK = 'seasonality'
     TREND_BLOCK = 'trend'
@@ -291,9 +301,12 @@ def fit(model, data_pars, compute_pars={}, out_pars=None,  **kwargs):
     device = torch.device('cpu')
     forecast_length = data_pars["forecast_length"]
     backcast_length = data_pars["backcast_length"]
+
     batch_size = compute_pars["batch_size"]  # greater than 4 for viz
     disable_plot=compute_pars["disable_plot"]
+    
     x_train, y_train, x_test, y_test,_ = get_dataset(**data_pars)
+    
     data_gen = data_generator(x_train, y_train, batch_size)
     net = model
 
@@ -304,7 +317,7 @@ def fit(model, data_pars, compute_pars={}, out_pars=None,  **kwargs):
             print('plot()')
             plot(net, x, target, backcast_length, forecast_length, grad_step)
 
-    simple_fit(net, optimiser, data_gen, plot_model, device)
+    fit_simple(net, optimiser, data_gen, plot_model, device)
 
 
 ###############################################################################################################
@@ -315,17 +328,33 @@ def predict( net,data_pars, compute_pars={}, out_pars=None,  **kwargs):
     forecast_length = data_pars["forecast_length"]
     backcast_length = data_pars["backcast_length"]
     norm_constant = compute_pars["norm_contsant"]
-    output=out_pars['output']
-    x_train, y_train, x_test, y_test,_ = get_dataset(**data_pars)
+    output = out_pars['output']
+    
+    data_pars["train_split_ratio"] = 1
+
+    # x_train, y_train, x_test, y_test,_ = get_dataset(**data_pars)
+    
+    x_test,_,_,_ = get_dataset(**data_pars)
+
     test_losses=[]
     net.eval()
     _, f = net(torch.tensor(x_test, dtype=torch.float))
     test_losses.append(F.mse_loss(f, torch.tensor(y_test, dtype=torch.float)).item())
     p = f.detach().numpy()
+    return p
+
+
+
+def plot_predict(p, data_pars, compute_pars, out_pars) :
+    forecast_length = data_pars["forecast_length"]
+    backcast_length = data_pars["backcast_length"]
+    norm_constant = compute_pars["norm_contsant"]
+    output = out_pars['output']
+
     subplots = [221, 222, 223, 224]
     plt.figure(1)
     plt.subplots_adjust(top=0.88)
-    for plot_id, i in enumerate(np.random.choice(range(len(x_test)), size=4, replace=False)):
+    for plot_id, i in enumerate(np.random.choice(range(len(p)), size=4, replace=False)):
         ff, xx, yy = p[i] * norm_constant, x_test[i] * norm_constant, y_test[i] * norm_constant
         plt.subplot(subplots[plot_id])
         plt.grid()
@@ -337,7 +366,10 @@ def predict( net,data_pars, compute_pars={}, out_pars=None,  **kwargs):
     print('Saved image to {}.'.format(output))
     return test_losses
 
-def simple_fit(net, optimiser, data_generator, on_save_callback, device, max_grad_steps=2000):
+
+
+
+def fit_simple(net, optimiser, data_generator, on_save_callback, device, max_grad_steps=2000):
     print('--- fiting ---')
     initial_grad_step = load(net, optimiser)
     for grad_step, (x, target) in enumerate(data_generator):
@@ -383,16 +415,8 @@ def load(model, optimiser):
         return grad_step
     return 0
 
+
 ######################################################################################
-
-
-
-
-
-
-
-
-
 def test2(data_path="dataset/milk.csv",out_path="n_beats_test{}.png", reset=True):
 
 
@@ -431,9 +455,10 @@ def test2(data_path="dataset/milk.csv",out_path="n_beats_test{}.png", reset=True
 
 
 
+from  nbeats.n_beats.model import *
+
 
 def test(data_path="dataset/milk.csv"):
-
 
     ###loading the command line arguments
     data_path = os_package_root_path(__file__, sublevel=1, path_add=data_path)
@@ -446,17 +471,25 @@ def test(data_path="dataset/milk.csv"):
     ## loading model
 
     device = torch.device('cpu')
-    model_pars =  {"stack_types":[NBeatsNet.GENERIC_BLOCK, NBeatsNet.GENERIC_BLOCK],"device":device,"nb_blocks_per_stack":3,"forecast_length": 5, "backcast_length": 10,
+    model_pars =  {"stack_types":[NBeatsNet.GENERIC_BLOCK, NBeatsNet.GENERIC_BLOCK],
+                   "device":device,
+                   "nb_blocks_per_stack":3,"forecast_length": 5, "backcast_length": 10,
                    "thetas_dims":[7, 8],"share_weights_in_stack":False,"hidden_layer_units":256}
 
 
     #### Model setup, fit, predict
     model = NBeatsNet(**model_pars)
-    compute_pars={"batch_size":100,"disable_plot":False,"norm_contsant":norm_const,"result_path" :'n_beats_test{}.png',"model_path": CHECKPOINT_NAME}
-    out_pars={}
-    fit(model,data_pars,compute_pars)
-    predictions=predict(model, data_pars,compute_pars,out_pars)
-    print(predictions)
+    compute_pars={"batch_size":100,"disable_plot":False,
+                  "norm_contsant":norm_const,
+                  "result_path" :'n_beats_test{}.png',
+                  "model_path": CHECKPOINT_NAME}
+    out_pars = {}
+    fit(model, data_pars, compute_pars)
+
+    #### Predict
+    ypred = predict(model, data_pars, compute_pars, out_pars)
+    plot_predict(ypred)
+    print(ypred)
 
 
 
