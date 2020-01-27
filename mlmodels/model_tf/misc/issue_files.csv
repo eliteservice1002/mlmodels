@@ -1,0 +1,27 @@
+file,error_info
+../notebook_script/tfcode2/Feed-Forward/dropout-comparison/dropout-comparison-Iris.py,/home/ubuntu/proj/notebook_script/tfcode2/Feed-Forward/encoder-decoder/Encoder-simple.py
+../notebook_script/tfcode2/Feed-Forward/encoder-decoder/Encoder-simple.py,/home/ubuntu/proj/notebook_script/tfcode2/GAN/WGAN-improve/DC-WGAN-Improve.py
+../notebook_script/tfcode2/Feed-Forward/word-vector-skipgram/skipgram-nce.py,/home/ubuntu/proj/notebook_script/tfcode2/GAN/DCGAN/ORI-DCGAN.py
+../notebook_script/tfcode2/Feed-Forward/addsign-powersign/PowerSign.py,/home/ubuntu/proj/notebook_script/tfcode2/GAN/GAN/basicgan.py
+../notebook_script/tfcode2/Feed-Forward/addsign-powersign/AddSign.py,/home/ubuntu/proj/notebook_script/tfcode2/GAN/DiscoGAN/discogan.py
+../notebook_script/tfcode2/Feed-Forward/self-normalized/mnist-withoutAPI.py,/home/ubuntu/proj/notebook_script/tfcode2/Seq-to-Seq/summarization-attention-old/ringkasan-using-attentionmodel.py
+../notebook_script/tfcode2/Feed-Forward/self-normalized/mnist-withAPI.py,/home/ubuntu/proj/notebook_script/tfcode2/Seq-to-Seq/altimatum/ultimatum.py
+../notebook_script/tfcode2/Feed-Forward/cocob/cocob.py,/home/ubuntu/proj/notebook_script/tfcode2/Seq-to-Seq/Basic-Seq2Seq/basic sequence-to-sequence.py
+../notebook_script/tfcode2/Feed-Forward/regularization-comparison/regularization-comparison-Iris.py,/home/ubuntu/proj/notebook_script/tfcode2/Seq-to-Seq/chatbot-attention-old/chatbot.py
+../notebook_script/tfcode2/Feed-Forward/batch-normalization/batch-normalization.py,/home/ubuntu/proj/notebook_script/tfcode2/CNN/mnist.py
+../notebook_script/tfcode2/Feed-Forward/gradient-comparison/Gradientcomparison-Iris.py,/home/ubuntu/proj/notebook_script/tfcode2/CNN/encoder-decoder/Encoder-Convolutional.py
+../notebook_script/tfcode2/Misc/4.tfrecords.py,/home/ubuntu/proj/notebook_script/tfcode2/CNN/residual/residual.py
+../notebook_script/tfcode2/Misc/1.20newsgroup.py,/home/ubuntu/proj/notebook_script/tfcode2/deprecated/Deep Feed-forward/iris/nn.py
+../notebook_script/tfcode2/Misc/7.load-inception/inception-v1.py,/home/ubuntu/proj/notebook_script/tfcode2/deprecated/Deep Feed-forward/detect-voice/nn.py
+../notebook_script/tfcode2/Misc/7.load-inception/inception-v3.py,/home/ubuntu/proj/notebook_script/tfcode2/deprecated/Deep Feed-forward/sentiment/neuralnetwork.py
+../notebook_script/tfcode2/Misc/6.renaming-checkpoint/shadow-net-reverse-checkpoint.py,/home/ubuntu/proj/notebook_script/tfcode2/deprecated/Deep Feed-forward/pokemon/nn.py
+../notebook_script/tfcode2/Misc/6.renaming-checkpoint/shadow-net.py,/home/ubuntu/proj/notebook_script/tfcode2/deprecated/Deep Feed-forward/credicard-detection/nn.py
+../notebook_script/tfcode2/Misc/2.debugger/mnist-debugger.py,/home/ubuntu/proj/notebook_script/tfcode2/deprecated/Deep Feed-forward/sound-classification/nn.py
+../notebook_script/tfcode2/Misc/8.inception-visualization/inception-v1-learning.py,/home/ubuntu/proj/notebook_script/tfcode2/deprecated/Deep Recurrent Network/generate-text/nn.py
+../notebook_script/tfcode2/Misc/5.tf-serving/save-serving.py,/home/ubuntu/proj/notebook_script/tfcode2/deprecated/Deep Recurrent Network/sentiment/nn.py
+../notebook_script/tfcode2/Misc/3.emotion-mobilenet/transfer-learning.py,/home/ubuntu/proj/notebook_script/tfcode2/deprecated/Deep Recurrent Network/stock-prediction/recurrent.py
+../notebook_script/tfcode2/Bayesian-Optimization/bayesian-cnn-cifar10.py,/home/ubuntu/proj/notebook_script/tfcode2/deprecated/Deep Recurrent Network/sound-classification/recurrent.py
+../notebook_script/tfcode2/Bayesian-Optimization/bayesian-feedforward-iris.py,/home/ubuntu/proj/notebook_script/tfcode2/deprecated/Deep Convolutional Network/mnist.py
+../notebook_script/tfcode2/Bayesian-Optimization/cnn_iceberg.py,/home/ubuntu/proj/notebook_script/tfcode2/deprecated/Deep Convolutional Network/multilabel/nn.py
+../notebook_script/tfcode2/Bayesian-Optimization/bayesian-recurrent-sentiment.py,/home/ubuntu/proj/notebook_script/tfcode2/deprecated/Deep Convolutional Network/pokemon-type/convnet.py
+../notebook_script/tfcode2/distributed/2.pyspark-sparkflow/1.mnist-sparkflow-feedforward.py,/home/ubuntu/proj/notebook_script/tf_nlp/Classification Comparison/Deep-learning/rnn-vector-huber.py
