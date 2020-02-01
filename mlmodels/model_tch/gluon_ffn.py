@@ -11,8 +11,9 @@ from gluonts.model.simple_feedforward import SimpleFeedForwardEstimator
 from gluonts.trainer import Trainer
 from gluonts.evaluation.backtest import make_evaluation_predictions
 from gluonts.evaluation import Evaluator
-VERBOSE=True
-CHECKPOINT_NAME="GlUON"
+
+
+# CHECKPOINT_NAME="GlUON"   # Very BAD Hardocing
 
 
 ####################################################################################################
@@ -97,25 +98,23 @@ def fit(data_pars,model_pars, compute_pars={}, out_pars=None, **kwargs):
                                            freq=freq,trainer=trainer)
 
 
-
-
     # fit the model
     predictor = estimator.train(gluont_ds)
 
     # save the model
-    save(predictor)
-
+    # save(predictor)
+    return predictor
 
 
 ###############################################################################################################
 # Model predict
-def predict(data_pars, compute_pars={}, out_pars=None, **kwargs):
+def predict(model, data_pars, compute_pars={}, out_pars=None, **kwargs):
     ## load test dataset
     data_pars['train']=False
     test_ds=get_dataset(**data_pars)
 
     ##load model
-    predictor=load()
+    #predictor=load()
 
     num_samples=compute_pars['num_samples']
 
@@ -123,7 +122,7 @@ def predict(data_pars, compute_pars={}, out_pars=None, **kwargs):
     ## make evlauation
     forecast_it, ts_it = make_evaluation_predictions(
         dataset=test_ds,  # test dataset
-        predictor=predictor,  # predictor
+        predictor=model,  # predictor
         num_samples=num_samples,  # number of sample paths we want for evaluation
     )
 
@@ -144,41 +143,48 @@ def predict(data_pars, compute_pars={}, out_pars=None, **kwargs):
         print(f"Mean of the future window:\n {forecast_entry.mean}")
         print(f"0.5-quantile (median) of the future window:\n {forecast_entry.quantile(0.5)}")
 
-    #plot forecast probability
+    dd = { "forecasts": forecasts, "tss" :tss    } 
+    return dd
 
-    if out_pars['plot_prob']:
-        plot_prob_forecasts(ts_entry, forecast_entry)
+
+    #plot forecast probability
+    # if out_pars['plot_prob']:
+    #    plot_prob_forecasts(ts_entry, forecast_entry)
 
 
     ## evaluate
-    evaluator = Evaluator(quantiles=out_pars['quantiles'])
-    agg_metrics, item_metrics = evaluator(iter(tss), iter(forecasts), num_series=len(test_ds))
+    # evaluator = Evaluator(quantiles=out_pars['quantiles'])
+    # agg_metrics, item_metrics = evaluator(iter(tss), iter(forecasts), num_series=len(test_ds))
+    # return item_metrics
 
-    return item_metrics
 
-
-def predict_metrics(data_pars, compute_pars={}, out_pars=None, **kwargs):
+def metrics(ypred, data_pars, compute_pars={}, out_pars=None, **kwargs):
     ## load test dataset
-    data_pars['train']=False
-    test_ds=get_dataset(**data_pars)
-
-    ##load model
-    predictor=load()
-
+    data_pars['train'] = False
+    test_ds = get_dataset(**data_pars)
+    path_model = compute_pars["path"]
+    
+    """"
+    #######load model
+    # predictor=load(path_model)
     num_samples=compute_pars['num_samples']
 
 
-    ## make evlauation
+    ###### make evlauation
     forecast_it, ts_it = make_evaluation_predictions(
         dataset=test_ds,  # test dataset
-        predictor=predictor,  # predictor
+        predictor= model,  # predictor
         num_samples=num_samples,  # number of sample paths we want for evaluation
     )
 
     ##convert generator to list
     forecasts = list(forecast_it)
     tss = list(ts_it)
-
+    """
+    
+    forecasts = ypred["forecast_it"]  
+    tss =  ypred["ts_it"]  
+    
     ## evaluate
     evaluator = Evaluator(quantiles=out_pars['quantiles'])
     agg_metrics, _ = evaluator(iter(tss), iter(forecasts), num_series=len(test_ds))
@@ -221,14 +227,14 @@ def plot_predict(out_pars=None):
 
 ###############################################################################################################
 # save and load model helper function
-def save(model):
-    if os.path.exists(CHECKPOINT_NAME):
-       model.serialize(Path(CHECKPOINT_NAME))
+def save(model, path):
+    if os.path.exists(path):
+       model.serialize(Path(path))
 
 
-def load():
-    if os.path.exists(CHECKPOINT_NAME):
-        predictor_deserialized = Predictor.deserialize(Path(CHECKPOINT_NAME))
+def load(path):
+    if os.path.exists( path ):
+        predictor_deserialized = Predictor.deserialize(Path( path ))
     return predictor_deserialized
 
 
@@ -296,36 +302,45 @@ def test(data_path="dataset/"):
     data_pars = {"train_data_path":train_data_path,"test_data_path":test_data_path,"train":False,
                  'prediction_length': 48,'freq': '1H',"start":start,"num_series":245,"save_fig":"./series.png"}
 
-    ##loading dataset
+    ##loading dataset   ##############################################
     gluont_ds = get_dataset(**data_pars)
 
-    ## training model
-
+    ## training model   ##############################################
     model_pars = {"num_hidden_dimensions": [10], "prediction_length": data_pars["prediction_length"],
                   "context_length":2*data_pars["prediction_length"],"freq":data_pars["freq"]
                   }
     compute_pars={"ctx":"cpu","epochs":5,"learning_rate":1e-3,"hybridize":False,
                   "num_batches_per_epoch":100,'num_samples':100}
 
-    fit(data_pars,model_pars, compute_pars)
-
-    out_pars={"plot_prob":True,"quantiles":[0.1, 0.5, 0.9]}
-
-    #### Predict
-    ypred = predict(data_pars, compute_pars,out_pars)
-
-    # print results
-    print(ypred.head())
-
-    ###predict metrics
-    _, metrics = predict_metrics(data_pars, compute_pars,out_pars)
+    model = fit(data_pars, model_pars, compute_pars)
 
 
+    #### Predict   ################################################
+    out_pars={"plot_prob":True, "quantiles":[0.1, 0.5, 0.9]}
+    ypred = predict(model, data_pars, compute_pars,out_pars)
+    print(ypred)
+
+    
+    #### Plot   ####################################################
+    forecast_entry = ypred["forecast"][0]
+    ts_entry = ypred["tss"][0]
+    plot_prob_forecasts(ts_entry, forecast_entry)
+        
+    ###Get  metrics   ##############################################
+    metrics = metrics(model, data_pars, compute_pars,out_pars)
     out_pars['outpath']="GLUON/gluon.png"
-
+     
     #### Plot
     plot_predict(out_pars)
-
+                        
+                        
 if __name__ == '__main__':
-
+    VERBOSE=True
     test()
+    
+    
+    
+    
+    
+    
+ 
