@@ -1,15 +1,15 @@
 # mlmodels
 
 ```
-Lightweight Functional interface to wrap access to Deep Learning, RLearning models
+Lightweight Functional interface to wrap access to Deep Learning, ML models
 and Hyper Params Search
 Logic follows Scikit Learn API and simple for easy extentions logic.
-Goal to facilitate Prototype to Prod code.
+Goal to facilitate Prototype to Semi-Prod code.
 
 
 #### Docs here:   https://mlmodels.readthedocs.io/en/latest/
-
 #### Pypi here :  https://pypi.org/project/mlmodels/
+
 
 #################################################################################################
 Install as editable package   ONLY dev branch
@@ -18,8 +18,6 @@ cd yourfolder
 git clone https://github.com/arita37/mlmodels.git mlmodels
 cd mlmodels
 git checkout dev     
-
-
 pip install -e .  --no-deps  
 
 
@@ -35,17 +33,9 @@ pytorch>=0.4.0
 optuna
 
 
-
-
-
-
-
 ### Test, in CLI type :
 ml_models
-
 ml_optim    
-
-
 
 
 
@@ -53,14 +43,6 @@ ml_optim
 ######### Entry CLI  ############################################################################
 ml_models  :  mlmodels/models.py
               Lightweight Functional interface to execute models
-
-ml_optim   :  mlmodels/optim.py
-              Lightweight Functional interface to wrap Hyper-parameter Optimization
-
-ml_test    :  A lot of tests
-
-
-
 
 ml_models --do  
     model_list  :  list all models in the repo                            
@@ -71,21 +53,26 @@ ml_models --do
     generate_config  :  generate config file from code source
 
 
+ml_optim   :  mlmodels/optim.py
+              Lightweight Functional interface to wrap Hyper-parameter Optimization
+
 ml_optim --do
    test      :  Test the hyperparameter optimization for a specific model
    test_all  :  TODO, Test all
    search    :  search for the best hyperparameters of a specific model
 
 
+ml_test    :  A lot of tests
+
 
 ##################################################################################################
-######### Command line sample (test) #############################################################
+######### Command line sample        #############################################################
 
 #### generate config file
 ml_models  --do generate_config  --model_uri model_tf.1_lstm.py  --save_folder "c:\myconfig\"
 
 
-### TF LSTM model
+#### TF LSTM model
 ml_models  --model_uri model_tf/1_lstm.py  --do test
 
 
@@ -93,39 +80,51 @@ ml_models  --model_uri model_tf/1_lstm.py  --do test
 ml_models --do test  --model_uri "D:\_devs\Python01\gitdev\mlmodels\mlmodels\model_tf\1_lstm.py"
 
 
-### RL model
-ml_models  --model_uri model_tf/rl/4_policygradient  --do test
-
-
-## PyTorch models
+#### PyTorch models
 ml_models  --model_uri model_tch/mlp.py  --do test
 
 
-###### Model param search test
+#### Model param search test
 ml_optim --do test
 
 
-##### #for normal optimization search method
+#### for normal optimization search method
 ml_optim --do search --ntrials 1  --config_file optim_config.json --optim_method normal
 ml_optim --do search --ntrials 1  --config_file optim_config.json --optim_method prune  ###### for pruning method
 
 
-###### HyperParam standalone run
+#### HyperParam standalone run
 ml_optim --modelname model_tf.1_lstm.py  --do test
 ml_optim --modelname model_tf.1_lstm.py  --do search
 
 
-###### Model param search test
-python optim.py --do test
-python optim.py --do search --ntrials 1  --config_file optim_config.json --optim_method normal
-python optim.py --do search --ntrials 1  --config_file optim_config.json --optim_method prune
-
-###### HyperParam standalone run
-python optim.py --modelname model_tf.1_lstm.py  --do test
-python optim.py --modelname model_tf.1_lstm.py  --do search
 
 
+#################################################################################################### 
+########## How to add a new model ################################################################## 
+*How to define a custom model ?*
+   Create a folder,
+   Create a file mymodel.py
 
+   Include those classes/functions :
+      Class Model()                  :   Model definition
+            __init__(model_param):
+                                  
+      def fit(model, data_pars, model_pars, compute_pars, )     : Train the model
+      def predict(model, sess, data_pars, compute_pars, out_pars )         : Predict the results
+      def metric(ypred, data_pars, compute_pars, out_pars )         : Measure the results
+
+      def get_pars()                    : example of parameters of the model
+      def get_dataset(data_pars)        : load dataset
+      def test()                        : example running the model     
+      def test2()                       : example running the model in global settings  
+
+      def save()                        : save the model
+      def load()                        : load the trained model
+
+
+
+  Template is available in mlmodels/template/model_XXXX.py
 
 
 
@@ -161,34 +160,6 @@ optim.py
 
 
 
-#################################################################################################### 
-#################################################################################################### 
-Models are stored in model_XX/  or in folder XXXXX
-    module :  folder/mymodel.py, contains the methods, operations.
-    model  :  Class in mymodel.py containing tihe model definition, compilation
-
-*How to define a custom model ?*
-   Create a folder,
-   Create file mymodel.py
-
-   Include those classes/functions :
-      Class Model()                  :   Model definition
-            __init__(model_param):
-                                  
-      def fit(model, compute_pars, )     : train the model
-      def predict(model,sess, )         : predic the results
-      def get_pars()                    : example of parameters of the model
-      def get_dataset(data_pars)        : load dataset
-      def test_local()                  : example running the model     
-      def test_generic()                : example running the model in global settings  
-
-      def save()                        : save the model
-      def load()                        : load the trained model
-
-
-
-  Template is available in mlmodels/template/model_XXXX.py
-                           model_tf/1_lstm.py
 
 
 
