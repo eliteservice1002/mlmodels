@@ -108,7 +108,7 @@ def predict(model, data_pars, compute_pars=None, out_pars=None, **kwargs):
 
     ##convert generator to list
     forecasts,tss = list(forecast_it), list(ts_it)
-    forecast_entry, ts_entry = forecasts[0], tss[0] 
+    forecast_entry, ts_entry = forecasts[0], tss[0]
 
     ### output stats for forecast entry
     if VERBOSE:
@@ -119,7 +119,7 @@ def predict(model, data_pars, compute_pars=None, out_pars=None, **kwargs):
         print(f"Mean of the future window:\n {forecast_entry.mean}")
         print(f"0.5-quantile (median) of the future window:\n {forecast_entry.quantile(0.5)}")
 
-    dd = { "forecasts": forecasts, "tss" :tss    } 
+    dd = { "forecasts": forecasts, "tss" :tss    }
     return dd
 
 
@@ -128,11 +128,11 @@ def metrics(ypred, data_pars, compute_pars=None, out_pars=None, **kwargs):
     data_pars['train'] = False
     test_ds = get_dataset(**data_pars)
     path_model = compute_pars["path"]
-    
-    
-    forecasts = ypred["forecast_it"]  
-    tss =  ypred["ts_it"]  
-    
+
+
+    forecasts = ypred["forecast_it"]
+    tss =  ypred["ts_it"]
+
     ## evaluate
     evaluator = Evaluator(quantiles=out_pars['quantiles'])
     agg_metrics, _ = evaluator(iter(tss), iter(forecasts), num_series=len(test_ds))
@@ -270,11 +270,11 @@ def test(data_path="dataset/"):
 
             
     log("###Get  metrics   ################################################")
-    metrics_val = metrics(model, data_pars, compute_pars,out_pars)
+    metrics_val = metrics(ypred, data_pars, compute_pars,out_pars)
     
 
     log("#### Plot   ######################################################")
-    forecast_entry = ypred["forecast"][0]
+    forecast_entry = ypred["forecasts"][0]
     ts_entry = ypred["tss"][0]
     plot_prob_forecasts(ts_entry, forecast_entry)
     plot_predict(out_pars)
