@@ -80,7 +80,7 @@ def test2(data_path="dataset/", out_path="GLUON/gluon.png", reset=True):
 
 def test(data_path="dataset/"):
     ###loading the command line arguments
-    data_path = os_package_root_path(__file__, sublevel=2, path_add=data_path)
+    data_path = os_package_root_path(__file__, sublevel=1, path_add=data_path)
     out_path = os.getcwd() + "/GLUON/"
     os.makedirs(out_path, exist_ok=True)
     log(data_path, out_path)
