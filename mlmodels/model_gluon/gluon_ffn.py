@@ -14,7 +14,7 @@ from gluonts.trainer import Trainer
 from gluonts.evaluation.backtest import make_evaluation_predictions
 from gluonts.evaluation import Evaluator
 
-
+VERBOSE = FALSE
 
 ####################################################################################################
 # Helper functions
@@ -39,29 +39,27 @@ def log(*s, n=0, m=1):
 
 ####################################################################################################
 # Dataaset
-def get_dataset(**kwargs):
+def get_dataset(**kw):
     ##check whether dataset is of kind train or test
-    TRAIN=kwargs['train']
-    if TRAIN:
-        data_path = kwargs['train_data_path']
-    else:
-        data_path = kwargs['test_data_path']
+    data_path = kw['train_data_path'] if  kw['train'] else kw['test_data_path']
 
-    ####read from csv file
-    data_set = pd.read_csv(data_path)
-    start=kwargs['start']
-    num_series=kwargs['num_series']
+    #### read from csv file
+    if  kw.get("uri_type") == "pickle" :
+        data_set = pd.read_pickle(data_path)
+    else :
+        data_set = pd.read_csv(data_path)
+
     ### convert to gluont format
-    gluonts_ds = ListDataset([{FieldName.TARGET: data_set.iloc[i].values,
-                            FieldName.START: start}
-                           for i in range(num_series)],
-                             freq=kwargs['freq'])
+    gluonts_ds = ListDataset([{FieldName.TARGET: data_set.iloc[i].values, FieldName.START: kw['start'] }
+                             for i in range(kw['num_series'])],  freq=kw['freq'])
+
     if VERBOSE:
         entry = next(iter(gluonts_ds))
         train_series = to_pandas(entry)
         train_series.plot()
-        save_fig = kwargs['save_fig']
+        save_fig = kw['save_fig']
         plt.savefig(save_fig)
+
     return gluonts_ds
 
 
@@ -79,33 +77,18 @@ class Model(object) :
 
     ##set up the model
     m = model_pars
-    estimator = SimpleFeedForwardEstimator(num_hidden_dimensions=m['prediction_length'],
+    model = SimpleFeedForwardEstimator(num_hidden_dimensions=m['prediction_length'],
                                            prediction_length= m["prediction_length"],
                                            context_length= m["context_length"],
                                            freq=m["freq"],trainer=trainer)         
-    return estimator
+    return model
 
 
 # Model fit
 def fit(model, data_pars, model_pars=None, compute_pars=None, out_pars=None, **kwargs):
     ##loading dataset
-    gluont_ds = get_dataset(**data_pars)
-
-    """
-    ## load trainer
-    m = compute_pars
-    trainer = Trainer(ctx=m["ctx"], epochs=m["epochs"], learning_rate=m["learning_rate"],
-                      hybridize=m["hybridize"], num_batches_per_epoch=m["num_batches_per_epoch"])
-
-    ##set up the model
-    m = model_pars
-    estimator = SimpleFeedForwardEstimator(num_hidden_dimensions=m['prediction_length'],
-                                           prediction_length= m["prediction_length"],
-                                           context_length= m["context_length"],
-                                           freq=m["freq"],trainer=trainer)
-
-    """
-    predictor = model.train(gluont_ds)
+    gluont_ds = get_dataset( **data_pars )
+    predictor = model.train( gluont_ds )
     return predictor
 
 
@@ -140,18 +123,7 @@ def predict(model, data_pars, compute_pars=None, out_pars=None, **kwargs):
     return dd
 
 
-    #plot forecast probability
-    # if out_pars['plot_prob']:
-    #    plot_prob_forecasts(ts_entry, forecast_entry)
-
-
-    ## evaluate
-    # evaluator = Evaluator(quantiles=out_pars['quantiles'])
-    # agg_metrics, item_metrics = evaluator(iter(tss), iter(forecasts), num_series=len(test_ds))
-    # return item_metrics
-
-
-def metrics(ypred, data_pars, compute_pars={}, out_pars=None, **kwargs):
+def metrics(ypred, data_pars, compute_pars=None, out_pars=None, **kwargs):
     ## load test dataset
     data_pars['train'] = False
     test_ds = get_dataset(**data_pars)
@@ -164,10 +136,11 @@ def metrics(ypred, data_pars, compute_pars={}, out_pars=None, **kwargs):
     ## evaluate
     evaluator = Evaluator(quantiles=out_pars['quantiles'])
     agg_metrics, _ = evaluator(iter(tss), iter(forecasts), num_series=len(test_ds))
-    metrics=json.dump(agg_metrics,indent=4)
-    return metrics
+    metrics_dict=json.dump(agg_metrics,indent=4)
+    return metrics_dict
 
 
+###############################################################################################################
 ### different plots and output metric
 def plot_prob_forecasts(ts_entry, forecast_entry):
     plot_length = 150
@@ -210,18 +183,22 @@ def test2(data_path="dataset/", out_path="GLUON/gluon.png", reset=True):
     ###loading the command line arguments
     # arg = load_arguments()
     data_path = os_package_root_path(__file__, sublevel=1, path_add=data_path)
+    out_path = os.get_cwd() + "/GLUON/"
+    os.makedirs(out_path, exists_ok=True)
+    log(data_path, out_path)
+
+
     train_data_path = data_path + "GLUON-GLUON-train.csv"
     test_data_path = data_path + "GLUON-test.csv"
     start = pd.Timestamp("01-01-1750", freq='1H')
     data_pars = {"train_data_path": train_data_path, "test_data_path": test_data_path, "train": False,
-                 'prediction_length': 48, 'freq': '1H', "start": start, "num_series": 245, "save_fig": "./series.png"}
-
+                 'prediction_length': 48, 'freq': '1H', "start": start, "num_series": 245,
+                 "save_fig": "./series.png"}
 
     ##loading dataset
     gluont_ds = get_dataset(**data_pars)
 
-     ##Params
-
+    ##Params
     model_pars = {"num_hidden_dimensions": [10], "prediction_length": data_pars["prediction_length"],
                   "context_length": 2 * data_pars["prediction_length"], "freq": data_pars["freq"]
                   }
@@ -229,81 +206,80 @@ def test2(data_path="dataset/", out_path="GLUON/gluon.png", reset=True):
                     "num_batches_per_epoch": 100, 'num_samples': 100}
 
 
-
     out_pars = {"plot_prob": True, "quantiles": [0.1, 0.5, 0.9]}
-
-
     out_pars["path"]= data_path + out_path
+
 
     log("############ Model preparation   #########################")
     from mlmodels.models import module_load_full, fit, predict
-    module, model = module_load_full("GlUON", model_pars)
+    module, model = module_load_full("model_gluon/gluon_ffn.py", model_pars)
     print(module, model)
 
-    log("############ Model fit   ##################################")
-    fit(model, module, data_pars=data_pars, out_pars=out_pars, compute_pars= compute_pars)
-
-    log("############ Prediction  ##################################")
-
-    agg_metrics, item_metrics = predict(model, module,data_pars=data_pars,out_pars=out_pars, compute_pars=compute_pars)
-
-    out_pars['agg_metrics'] = agg_metrics
-    out_pars['item_metrics'] = item_metrics
-
-    ##metric
-    ypred = metrics(out_pars)
-
-    # print results
+    log("#### Predict   ###################################################")
+    ypred = predict(model, data_pars, compute_pars, out_pars)
     print(ypred)
-    print(item_metrics.head())
+
+    log("###Get  metrics   ################################################")
+    metrics_val = metrics(model, data_pars, compute_pars, out_pars)
+
+    log("#### Plot   ######################################################")
+    forecast_entry = ypred["forecast"][0]
+    ts_entry = ypred["tss"][0]
+    plot_prob_forecasts(ts_entry, forecast_entry)
+    plot_predict(out_pars)
 
 
 
 def test(data_path="dataset/"):
     ###loading the command line arguments
     data_path = os_package_root_path(__file__, sublevel=1, path_add=data_path)
-    print(data_path)
-    train_data_path=data_path+"GLUON-GLUON-train.csv"
-    test_data_path=data_path+"GLUON-test.csv"
-    start=pd.Timestamp("01-01-1750", freq='1H')
+    out_path = os.getcwd() + "/GLUON/"
+    os.makedirs(out_path, exist_ok= True)
+    log(data_path, out_path)
+   
+    train_data_path = data_path+"GLUON-GLUON-train.csv"
+    test_data_path  = data_path+"GLUON-test.csv"
+    start = pd.Timestamp("01-01-1750", freq='1H')
     data_pars = {"train_data_path":train_data_path,"test_data_path":test_data_path,"train":False,
-                 'prediction_length': 48,'freq': '1H',"start":start,"num_series":245,"save_fig":"./series.png"}
+                 'prediction_length': 48,'freq': '1H',"start":start,"num_series":245,
+                 "save_fig":"./series.png"}
 
-    out_path = os.get_cwd() + "/GLUON/gluon.png"
 
-    ##loading dataset   ################################################
+    log("##loading dataset   ##############################################")
     gluont_ds = get_dataset(**data_pars)
 
-    ## training model   ################################################
+    
+    log("## Model params   ################################################")
     model_pars = {"num_hidden_dimensions": [10], "prediction_length": data_pars["prediction_length"],
                   "context_length":2*data_pars["prediction_length"],"freq":data_pars["freq"]
-                  }
+                 }
     compute_pars = {"ctx":"cpu","epochs":5,"learning_rate":1e-3,"hybridize":False,
                   "num_batches_per_epoch":100,'num_samples':100}
 
+    out_pars = {"outpath": out_path, "plot_prob": True, "quantiles": [0.1, 0.5, 0.9]}
+
+
+    log("#### Model init, fit   ###########################################")
     model = Model( model_pars, compute_pars ) 
     model = fit(model, data_pars, model_pars, compute_pars)
 
 
-    #### Predict   ####################################################
-    out_pars = {"plot_prob":True, "quantiles":[0.1, 0.5, 0.9]}
-    ypred = predict(model, data_pars, compute_pars,out_pars)
+    log("#### Predict   ###################################################")
+    ypred    = predict(model, data_pars, compute_pars, out_pars)
     print(ypred)
 
+            
+    log("###Get  metrics   ################################################")
+    metrics_val = metrics(model, data_pars, compute_pars,out_pars)
     
-    #### Plot   ######################################################
+
+    log("#### Plot   ######################################################")
     forecast_entry = ypred["forecast"][0]
     ts_entry = ypred["tss"][0]
     plot_prob_forecasts(ts_entry, forecast_entry)
-
-        
-    ###Get  metrics   ################################################
-    metrics = metrics(model, data_pars, compute_pars,out_pars)
-    out_pars['outpath']= out_path
-     
-    #### Plot
     plot_predict(out_pars)
                         
+
 
                         
 if __name__ == '__main__':
