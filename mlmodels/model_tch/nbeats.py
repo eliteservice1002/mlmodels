@@ -6,12 +6,10 @@ import torch
 from torch import optim
 from torch.nn import functional as F
 
-
 ####################################################################################################
-CHECKPOINT_NAME = 'nbeats-fiting-checkpoint.th'
-VERBOSE = True
 from mlmodels.model_tch.nbeats.model import NBeatsNet
 
+VERBOSE = False
 
 
 
@@ -47,9 +45,9 @@ Model = NBeatsNet
 
 ####################################################################################################
 # Dataaset
-def get_dataset(**kwargs):
-    data_path = kwargs['data_path']
-    train_split_ratio = kwargs.get("train_split_ratio", 1)
+def get_dataset(**kw):
+    data_path = kw['data_path']
+    train_split_ratio = kw.get("train_split_ratio", 1)
 
     df = pd.read_csv(data_path, index_col=0, parse_dates=True)
 
@@ -61,8 +59,8 @@ def get_dataset(**kwargs):
     df = df / norm_constant  # small leak to the test set here.
 
     x_train_batch, y = [], []
-    backcast_length = kwargs['backcast_length']
-    forecast_length = kwargs['forecast_length']
+    backcast_length = kw['backcast_length']
+    forecast_length = kw['forecast_length']
     for i in range(backcast_length, len(df) - forecast_length):
         x_train_batch.append(df[i - backcast_length:i])
         y.append(df[i:i + forecast_length])
@@ -94,7 +92,7 @@ def data_generator(x_full, y_full, bs):
 
 ######################################################################################################
 # Model fit
-def fit(model, data_pars, compute_pars={}, out_pars=None, **kwargs):
+def fit(model, data_pars, compute_pars=None, out_pars=None, **kw):
     device = torch.device('cpu')
     forecast_length = data_pars["forecast_length"]
     backcast_length = data_pars["backcast_length"]
@@ -137,7 +135,7 @@ def fit_simple(net, optimiser, data_generator, on_save_callback, device, data_pa
             break
     return net, optimiser
 
-def predict(model, data_pars, compute_pars={}, out_pars=None, **kwargs):
+def predict(model, data_pars, compute_pars={}, out_pars=None, **kw):
     data_pars["train_split_ratio"] = 1
 
     x_test, y_test, _, _, _ = get_dataset(**data_pars)
@@ -269,12 +267,12 @@ def test(data_path="dataset/milk.csv"):
     data_path = os_package_root_path(__file__, sublevel=1, path_add=data_path)
     print(data_path)
 
-    ## Loading dataset
+    log("## Loading dataset  ######################################")
     data_pars = {"data_path": data_path, "forecast_length": 5, "backcast_length": 10, "train_split_ratio": 0.8}
     x_train, y_train, x_test, y_test, norm_const = get_dataset(**data_pars)
 
 
-    ## Model setup
+    log("## Model setup   #########################################")
     device = torch.device('cpu')
     model_pars = {"stack_types": [NBeatsNet.GENERIC_BLOCK, NBeatsNet.GENERIC_BLOCK],
                   "device": device,
@@ -282,7 +280,8 @@ def test(data_path="dataset/milk.csv"):
                   "thetas_dims": [7, 8], "share_weights_in_stack": False, "hidden_layer_units": 256}
     model = NBeatsNet(**model_pars)
 
-    #### Model fit
+
+    log("#### Model fit   #########################################")
     compute_pars = {"batch_size": 100, "disable_plot": False,
                     "norm_contsant": norm_const,
                     "result_path": 'n_beats_test{}.png',
@@ -291,7 +290,7 @@ def test(data_path="dataset/milk.csv"):
     fit(model, data_pars, compute_pars)
 
 
-    #### Predict
+    log("#### Predict    ##########################################")
     ypred = predict(model, data_pars, compute_pars, out_pars)
     print(ypred)
 
@@ -302,6 +301,7 @@ def test(data_path="dataset/milk.csv"):
 
 
 if __name__ == '__main__':
+    VERBOSE = TRUE
     test()
 
 
