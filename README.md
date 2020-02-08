@@ -3,7 +3,7 @@
 ```
 Lightweight Functional interface to wrap access to Deep Learning, ML models
 and Hyper Params Search
-Logic follows Scikit Learn API and simple for easy extentions logic.
+Logic follows Scikit Learn API for easy extentions logic.
 Goal to facilitate Prototype to Semi-Prod code.
 
 
