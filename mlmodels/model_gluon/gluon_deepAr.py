@@ -50,11 +50,15 @@ def test2(data_path="dataset/", out_path="GLUON/gluon.png", reset=True):
     gluont_ds = get_dataset(**data_pars)
 
     ##Params
-    model_pars = {"num_hidden_dimensions": [10], "prediction_length": data_pars["prediction_length"],
-                  "context_length": 2 * data_pars["prediction_length"], "freq": data_pars["freq"]
-                  }
-    compute_pars = {"ctx": "cpu", "epochs": 1, "learning_rate": 1e-3, "hybridize": False,
-                    "num_batches_per_epoch": 100, 'num_samples': 100}
+    model_pars = {"prediction_length": data_pars["prediction_length"], "freq": data_pars["freq"],
+                  "num_layers": 2, "num_cells": 40, "cell_type": 'lstm', "dropout_rate": 0.1,
+                  "use_feat_dynamic_real": False, "use_feat_static_cat": False, "use_feat_static_real": False,
+                  "scaling": True, "num_parallel_samples": 100}
+    compute_pars = {"batch_size": 32, "clip_gradient": 100, "ctx": None, "epochs": 1, "init": "xavier",
+                    "learning_rate": 1e-3,
+                    "learning_rate_decay_factor": 0.5, "hybridize": False, "num_batches_per_epoch": 100,
+                    'num_samples': 100,
+                    "minimum_learning_rate": 5e-05, "patience": 10, "weight_decay": 1e-08}
 
     out_pars = {"plot_prob": True, "quantiles": [0.1, 0.5, 0.9]}
     out_pars["path"] = data_path + out_path
