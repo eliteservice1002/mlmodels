@@ -38,9 +38,6 @@ Let's [**Get Started!**](https://deepctr-doc.readthedocs.io/en/latest/Quick-Star
 
 
 """
-
-
-
 import pandas as pd
 from sklearn.metrics import log_loss, roc_auc_score
 from sklearn.model_selection import train_test_split
@@ -52,38 +49,9 @@ from deepctr.inputs import SparseFeat, DenseFeat,get_feature_names
 
 
 
-class Model()
-    # 4.Define Model,train,predict and evaluate
-    model = DeepFM(linear_feature_columns,dnn_feature_columns, task='binary')
-    model.compile("adam", "binary_crossentropy",
-                  metrics=['binary_crossentropy'], )
+"""
 
 
-
-def fit():
-
-    history = model.fit(train_model_input, train[target].values,
-                        batch_size=256, epochs=10, verbose=2, validation_split=0.2, )
-
-
-def get_data() :
-  pass
-
-
-def predict():
-    pred_ans = model.predict(test_model_input, batch_size=256)
-    print("test LogLoss", round(log_loss(test[target].values, pred_ans), 4))
-    print("test AUC", round(roc_auc_score(test[target].values, pred_ans), 4))
-
-
-
-
-
-
-
-####################################################################################################
-####################################################################################################
-if __name__ == "__main__":
     data = pd.read_csv('./criteo_sample.txt')
 
     sparse_features = ['C' + str(i) for i in range(1, 27)]
@@ -123,6 +91,224 @@ if __name__ == "__main__":
     pred_ans = model.predict(test_model_input, batch_size=256)
     print("test LogLoss", round(log_loss(test[target].values, pred_ans), 4))
     print("test AUC", round(roc_auc_score(test[target].values, pred_ans), 4))
+
+
+
+
+
+"""
+
+
+####################################################################################################
+# Helper functions
+def os_package_root_path(filepath, sublevel=0, path_add=""):
+    """
+       get the module package root folder
+    """
+    from pathlib import Path
+    path = Path(filepath).parent
+    for i in range(1, sublevel + 1):
+        path = path.parent
+
+    path = os.path.join(path.absolute(), path_add)
+    return path
+
+
+def log(*s, n=0, m=1):
+    sspace = "#" * n
+    sjump = "\n" * m
+    print(sjump, sspace, s, sspace, flush=True)
+
+
+####################################################################################################
+class Model()
+    def __init(self, model_pars=None, compute_pars=None)
+    # 4.Define Model,train,predict and evaluate
+    self.model = DeepFM(linear_feature_columns,dnn_feature_columns, task='binary')
+    self.model.compile("adam", "binary_crossentropy",
+                  metrics=['binary_crossentropy'], )
+
+
+
+
+
+
+
+
+
+
+
+
+####################################################################################################
+def get_dataset(**kw):
+    ##check whether dataset is of kind train or test
+    data_path = kw['train_data_path'] if  kw['train'] else kw['test_data_path']
+
+    #### read from csv file
+    if  kw.get("uri_type") == "pickle" :
+        df = pd.read_pickle(data_path)
+    else :
+        df = pd.read_csv(data_path)
+
+
+    return df
+
+
+
+def fit(model, session=None, data_pars=None, model_pars=None, compute_pars=None, out_pars=None, **kwargs):
+    ##loading dataset
+    """
+          Classe Model --> model,   model.model contains thte sub-model
+
+    """
+
+    return model
+
+
+# Model p redict
+def predict(model, data_pars, compute_pars=None, out_pars=None, **kwargs):
+    ##  Model is class
+    ## load test dataset
+        data_pars['train']=False
+        test_ds=get_dataset(**data_pars)
+
+
+    ## predict
+
+        ### output stats for forecast entry
+        if VERBOSE:
+             pass
+        dd = { "forecasts": forecasts, "tss" :tss    }
+        return dd
+
+
+def metrics(ypred, data_pars, compute_pars=None, out_pars=None, **kwargs):
+    ## load test dataset
+    test_ds = get_dataset(**data_pars)
+
+
+    return metrics_dict
+
+
+
+def save(model, path):
+    if os.path.exists(path):
+        
+
+
+def load(path):
+    if os.path.exists(path):
+            
+
+    model = Model_empty()
+    model.model = predictor_deserialized
+    #### Add back the model parameters...
+
+    
+    return model
+
+
+
+
+########################################################################################################################
+def get_params(choice=0, data_path="dataset/", **kw) :
+    if choice == 0 :
+        log("#### Path params   ################################################")
+        data_path = os_package_root_path(__file__, sublevel=2, path_add=data_path)
+        out_path = os.get_cwd() + "/deepctr_test/"
+        os.makedirs(out_path, exists_ok=True)
+        log(data_path, out_path)
+
+        train_data_path = data_path + "GLUON-GLUON-train.csv"
+        data_pars = {"train_data_path": train_data_path}
+
+        log("#### Model params   ################################################")
+        model_pars = {"prediction_length": 0}
+
+        compute_pars = {"batch_size": 32}
+
+        out_pars = {"plot_prob": True, "quantiles": [0.1, 0.5, 0.9]}
+        out_pars["path"] = data_path + out_path
+
+    return model_pars, data_pars, compute_pars, out_pars
+
+
+
+
+########################################################################################################################
+########################################################################################################################
+def test2(data_path="dataset/", out_path="GLUON/gluon.png", reset=True):
+    ###loading the command line arguments
+    # arg = load_arguments()
+
+    log("#### Loading params   ##############################################")
+    model_pars, data_pars, compute_pars, out_pars = get_params(choice=0, data_path=data_path)
+    model_uri = "model_gluon/gluon_deepar.py"
+
+    log("#### Loading dataset   ############################################")
+    gluont_ds = get_dataset(**data_pars)
+
+
+    log("#### Model init, fit   ############################################")
+    from mlmodels.models import module_load_full, fit, predict
+    module, model = module_load_full(model_uri, model_pars)
+    print(module, model)
+
+    model=fit(model, None, data_pars, model_pars, compute_pars)
+
+
+    log("#### Predict   ###################################################")
+    ypred = predict(model, data_pars, compute_pars, out_pars)
+    print(ypred)
+
+
+    log("###Get  metrics   ################################################")
+    metrics_val = metrics(model, data_pars, compute_pars, out_pars)
+
+
+    log("#### Plot   ######################################################")
+    plot_prob_forecasts(ypred, metrics_val, out_pars)
+    plot_predict(ypred, metrics_val, out_pars)
+
+
+
+def test(data_path="dataset/"):
+    ### Local test
+
+    log("#### Loading params   ##############################################")
+    model_pars, data_pars, compute_pars, out_pars = get_params(choice=0, data_path=data_path)
+
+
+    log("#### Loading dataset   #############################################")
+    gluont_ds = get_dataset(**data_pars)
+
+
+    log("#### Model init, fit   #############################################")
+    model = Model(model_pars, compute_pars)
+    #model=m.model    ### WE WORK WITH THE CLASS (not the attribute GLUON )
+    model=fit(model, data_pars, model_pars, compute_pars)
+
+
+    log("#### Predict   ####################################################")
+    ypred = predict(model, data_pars, compute_pars, out_pars)
+    print(ypred)
+
+
+    log("#### metrics   ####################################################")
+    metrics_val = metrics(ypred, data_pars, compute_pars, out_pars)
+
+
+    log("#### Plot   #######################################################")
+    plot_prob_forecasts(ypred, metrics_val, out_pars)
+    plot_predict(ypred, metrics_val, out_pars)
+
+
+
+if __name__ == '__main__':
+    VERBOSE = True
+    test()
+
+
 
 
 
