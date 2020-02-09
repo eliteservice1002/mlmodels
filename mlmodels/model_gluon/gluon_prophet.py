@@ -23,7 +23,7 @@ def get_params(choice=0, data_path="dataset/", **kw):
     if choice == 0:
         log("#### Path params   ################################################")
         data_path = os_package_root_path(__file__, sublevel=1, path_add=data_path)
-        out_path = os.getcwd() + "/GLUON/"
+        out_path = os.getcwd() + "/GLUON_prophet/"
         os.makedirs(out_path, exist_ok=True)
         log(data_path, out_path)
 
@@ -37,8 +37,9 @@ def get_params(choice=0, data_path="dataset/", **kw):
         log("## Model params   ################################################")
         model_pars = {"prediction_length": data_pars["prediction_length"], "freq": data_pars["freq"]}
         compute_pars = {}
-        out_pars = {"outpath": out_path, "plot_prob": True, "quantiles": [0.1, 0.5, 0.9]}
-        print(out_path)
+        outpath = out_path + "result"
+
+        out_pars = {"outpath": outpath, "plot_prob": True, "quantiles": [0.1, 0.5, 0.9]}
 
     return model_pars, data_pars, compute_pars, out_pars
 
@@ -99,12 +100,12 @@ def test(data_path="dataset/"):
 
 
     log("#### metrics   ################################################")
-    metrics_val = metrics(ypred, data_pars, compute_pars, out_pars)
+    metrics_val, item_metrics = metrics(ypred, data_pars, compute_pars, out_pars)
+    print(metrics_val)
 
-
-    log("#### Plot   ######################################################")
-    plot_prob_forecasts(ypred, metrics_val, out_pars)
-    plot_predict(ypred, metrics_val, out_pars)
+    log("#### Plot   #######################################################")
+    plot_prob_forecasts(ypred, out_pars)
+    plot_predict(item_metrics, out_pars)
 
 
 if __name__ == '__main__':
