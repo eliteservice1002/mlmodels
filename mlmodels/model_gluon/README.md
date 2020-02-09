@@ -1,6 +1,9 @@
-# Project Title
+# Time Series Modeling 
 
-One Paragraph of project description goes here
+This directory contains differnet models regarding time series models using GluonTS Toolkit.
+This gives an end to end api . For now we have created api for FFN , DeepAR and Prophet. 
+Different functionalities api can do -
+  1. 
 
 ## Getting Started
 
