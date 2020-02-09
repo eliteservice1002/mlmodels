@@ -130,7 +130,10 @@ def metrics(ypred, data_pars, compute_pars=None, out_pars=None, **kwargs):
 
 ###############################################################################################################
 ### different plots and output metric
-def plot_prob_forecasts(ts_entry, forecast_entry):
+def plot_prob_forecasts(ypred, metrics=None, out_pars=None):
+    forecast_entry = ypred["forecasts"][0]
+    ts_entry = ypred["tss"][0]
+
     plot_length = 150
     prediction_intervals = (50.0, 90.0)
     legend = ["observations", "median prediction"] + [f"{k}% prediction interval" for k in prediction_intervals][::-1]
@@ -143,7 +146,7 @@ def plot_prob_forecasts(ts_entry, forecast_entry):
     plt.show()
 
 
-def plot_predict(out_pars=None):
+def plot_predict(ypred, metrics=None, out_pars=None):
     item_metrics = out_pars['item_metrics']
     item_metrics.plot(x='MSIS', y='MASE', kind='scatter')
     plt.grid(which="both")
@@ -170,7 +173,7 @@ def load(path):
     if os.path.exists(path):
         predictor_deserialized = Predictor.deserialize(Path(path))    
 
-    model = model_empty()
+    model = Model_empty()
     model.model = predictor_deserialized
     #### Add back the model parameters...
 

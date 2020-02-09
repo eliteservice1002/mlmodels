@@ -61,6 +61,7 @@ def test2(data_path="dataset/", out_path="GLUON/gluon.png", reset=True):
 
     model = fit(model, None, data_pars, model_pars, compute_pars)
 
+
     log("#### Predict   ###################################################")
     ypred = predict(model, data_pars, compute_pars, out_pars)
     print(ypred)
@@ -68,39 +69,41 @@ def test2(data_path="dataset/", out_path="GLUON/gluon.png", reset=True):
     log("###Get  metrics   ################################################")
     metrics_val = metrics(model, data_pars, compute_pars, out_pars)
 
+
     log("#### Plot   ######################################################")
-    forecast_entry = ypred["forecast"][0]
-    ts_entry = ypred["tss"][0]
-    plot_prob_forecasts(ts_entry, forecast_entry)
-    plot_predict(out_pars)
+    plot_prob_forecasts(ypred, metrics_val, out_pars)
+    plot_predict(ypred, metrics_val, out_pars)
 
 
 def test(data_path="dataset/"):
-    ###loading the command line arguments
+    ### Local test
 
     log("#### Loading params   ##############################################")
     model_pars, data_pars, compute_pars, out_pars = get_params(choice=0, data_path=data_path)
 
-    log("##loading dataset   ##############################################")
+
+    log("#### Loading dataset   #############################################")
     gluont_ds = get_dataset(**data_pars)
+
 
     log("#### Model init, fit   ###########################################")
     model = Model(model_pars, compute_pars)
-    #  model=m.model
-    model = fit(model, data_pars, model_pars, compute_pars)
+    #model=m.model    ### WE WORK WITH THE CLASS (not the attribute GLUON )
+    model=fit(model, data_pars, model_pars, compute_pars)
+
 
     log("#### Predict   ###################################################")
     ypred = predict(model, data_pars, compute_pars, out_pars)
     print(ypred)
 
-    log("###Get  metrics   ################################################")
+
+    log("#### metrics   ################################################")
     metrics_val = metrics(ypred, data_pars, compute_pars, out_pars)
 
+
     log("#### Plot   ######################################################")
-    forecast_entry = ypred["forecasts"][0]
-    ts_entry = ypred["tss"][0]
-    plot_prob_forecasts(ts_entry, forecast_entry)
-    plot_predict(out_pars)
+    plot_prob_forecasts(ypred, metrics_val, out_pars)
+    plot_predict(ypred, metrics_val, out_pars)
 
 
 if __name__ == '__main__':
