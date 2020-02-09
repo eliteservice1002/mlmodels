@@ -23,7 +23,7 @@ class Model(object) :
 
            ##set up the model
            m = model_pars
-           self.model = SimpleFeedForwardEstimator(num_hidden_dimensions=m['prediction_length'],
+           self.model = SimpleFeedForwardEstimator(num_hidden_dimensions=m['num_hidden_dimensions'],
                                            prediction_length= m["prediction_length"],
                                            context_length= m["context_length"],
                                            freq=m["freq"],trainer=trainer)
@@ -37,7 +37,7 @@ def get_params(choice=0, data_path="dataset/", **kw):
     if choice == 0:
         log("#### Path params   ################################################")
         data_path = os_package_root_path(__file__, sublevel=1, path_add=data_path)
-        out_path = os.getcwd() + "/GLUON/"
+        out_path = os.getcwd() + "/GLUON_ffn/"
         os.makedirs(out_path, exist_ok=True)
         log(data_path, out_path)
 
@@ -59,7 +59,9 @@ def get_params(choice=0, data_path="dataset/", **kw):
         compute_pars = {"ctx":"cpu","epochs":5,"learning_rate":1e-3,"hybridize":False,
                       "num_batches_per_epoch":100,'num_samples':100}
 
-        out_pars = {"outpath": out_path, "plot_prob": True, "quantiles": [0.1, 0.5, 0.9]}
+        outpath=out_path+"result"
+
+        out_pars = {"outpath": outpath, "plot_prob": True, "quantiles": [0.1, 0.5, 0.9]}
 
     return model_pars, data_pars, compute_pars, out_pars
 
@@ -128,12 +130,12 @@ def test(data_path="dataset/"):
 
 
     log("#### metrics   ################################################")
-    metrics_val = metrics(ypred, data_pars, compute_pars, out_pars)
+    metrics_val, item_metrics = metrics(ypred, data_pars, compute_pars, out_pars)
+    print(metrics_val)
 
-
-    log("#### Plot   ######################################################")
-    plot_prob_forecasts(ypred, metrics_val, out_pars)
-    plot_predict(ypred, metrics_val, out_pars)
+    log("#### Plot   #######################################################")
+    plot_prob_forecasts(ypred, out_pars)
+    plot_predict(item_metrics, out_pars)
                         
 
 

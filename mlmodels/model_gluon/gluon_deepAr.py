@@ -4,7 +4,7 @@ from gluonts.model.deepar import DeepAREstimator
 
 
 from mlmodels.model_gluon.util import *
-
+import os
 
 ########################################################################################################################
 #### Model defintion
@@ -43,9 +43,9 @@ class Model(object) :
 def get_params(choice=0, data_path="dataset/", **kw) :
     if choice == 0 :
         log("#### Path params   ################################################")
-        data_path = os_package_root_path(__file__, sublevel=2, path_add=data_path)
-        out_path = os.get_cwd() + "/GLUON_test/"
-        os.makedirs(out_path, exists_ok=True)
+        data_path = os_package_root_path(__file__, sublevel=1, path_add=data_path)
+        out_path = os.getcwd() + "/GLUON_deepAR/"
+        os.makedirs(out_path, exist_ok=True)
         log(data_path, out_path)
 
         train_data_path = data_path + "GLUON-GLUON-train.csv"
@@ -67,8 +67,9 @@ def get_params(choice=0, data_path="dataset/", **kw) :
                         'num_samples': 100,
                         "minimum_learning_rate": 5e-05, "patience": 10, "weight_decay": 1e-08}
 
-        out_pars = {"plot_prob": True, "quantiles": [0.1, 0.5, 0.9]}
-        out_pars["path"] = data_path + out_path
+        outpath = out_path + "result"
+
+        out_pars = {"outpath": outpath, "plot_prob": True, "quantiles": [0.1, 0.5, 0.9]}
 
     return model_pars, data_pars, compute_pars, out_pars
 
@@ -133,12 +134,12 @@ def test(data_path="dataset/"):
 
 
     log("#### metrics   ####################################################")
-    metrics_val = metrics(ypred, data_pars, compute_pars, out_pars)
-
+    metrics_val,item_metrics = metrics(ypred, data_pars, compute_pars, out_pars)
+    print (metrics_val)
 
     log("#### Plot   #######################################################")
-    plot_prob_forecasts(ypred, metrics_val, out_pars)
-    plot_predict(ypred, metrics_val, out_pars)
+    plot_prob_forecasts(ypred,  out_pars)
+    plot_predict(item_metrics, out_pars)
 
 
 

@@ -65,7 +65,7 @@ def get_dataset(**kw):
 
 
 # Model fit
-def fit(model, session=None, data_pars=None, model_pars=None, compute_pars=None, out_pars=None, **kwargs):
+def fit(model, data_pars=None, model_pars=None, compute_pars=None, out_pars=None,session=None, **kwargs):
         ##loading dataset
         """
           Classe Model --> model,   model.model contains thte sub-model
@@ -120,14 +120,14 @@ def metrics(ypred, data_pars, compute_pars=None, out_pars=None, **kwargs):
 
     ## evaluate
     evaluator = Evaluator(quantiles=out_pars['quantiles'])
-    agg_metrics, _ = evaluator(iter(tss), iter(forecasts), num_series=len(test_ds))
+    agg_metrics,item_metrics = evaluator(iter(tss), iter(forecasts), num_series=len(test_ds))
     metrics_dict = json.dumps(agg_metrics, indent=4)
-    return metrics_dict
+    return metrics_dict,item_metrics
 
 
 ###############################################################################################################
 ### different plots and output metric
-def plot_prob_forecasts(ypred, metrics=None, out_pars=None):
+def plot_prob_forecasts(ypred,out_pars=None):
     forecast_entry = ypred["forecasts"][0]
     ts_entry = ypred["tss"][0]
 
@@ -143,8 +143,7 @@ def plot_prob_forecasts(ypred, metrics=None, out_pars=None):
     plt.show()
 
 
-def plot_predict(ypred, metrics=None, out_pars=None):
-    item_metrics = out_pars['item_metrics']
+def plot_predict(item_metrics, out_pars=None):
     item_metrics.plot(x='MSIS', y='MASE', kind='scatter')
     plt.grid(which="both")
     outpath = out_pars['outpath']
