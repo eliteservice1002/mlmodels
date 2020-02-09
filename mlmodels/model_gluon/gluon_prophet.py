@@ -11,6 +11,7 @@ class Model(object) :
         if model_pars is None and compute_pars is None :
             self.model = None
         else :
+            m = model_pars
             self.model = ProphetPredictor(prediction_length=m['prediction_length'],freq=m['freq'])
 
 

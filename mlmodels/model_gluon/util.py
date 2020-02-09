@@ -17,9 +17,6 @@ VERBOSE = False
 
 
 
-
-
-
 ####################################################################################################
 # Helper functions
 def os_package_root_path(filepath, sublevel=0, path_add=""):

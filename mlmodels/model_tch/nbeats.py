@@ -208,7 +208,7 @@ def plot_predict(x_test, y_test, p, data_pars, compute_pars, out_pars):
 
 ###############################################################################################################
 # save and load model helper function
-def save(model, optimiser, grad_step):
+def save(model, optimiser, grad_step,CHECKPOINT_NAME="mycheckpoint"):
     torch.save({
         'grad_step': grad_step,
         'model_state_dict': model.state_dict(),
@@ -227,34 +227,59 @@ def load(model, optimiser, CHECKPOINT_NAME = 'nbeats-fiting-checkpoint.th'):
     return 0
 
 
+
 #############################################################################################################
+def get_params(choice=0, data_path="dataset/", **kw):
+    if choice == 0:
+        log("#### Path params   ################################################")
+        data_path = os_package_root_path(__file__, sublevel=1, path_add=data_path)
+        out_path = os.get_cwd() + "/nbeats_test/"
+        os.makedirs(out_path, exists_ok=True)
+        log(data_path, out_path)
+
+        data_pars = {"data_path": data_path, "forecast_length": 5, "backcast_length": 10}
+
+        log("## Model params   #########################################")
+        device = torch.device('cpu')
+        model_pars = {"stack_types": [NBeatsNet.GENERIC_BLOCK, NBeatsNet.GENERIC_BLOCK],
+                      "device": device,
+                      "nb_blocks_per_stack": 3, "forecast_length": 5, "backcast_length": 10,
+                      "thetas_dims": [7, 8], "share_weights_in_stack": False, "hidden_layer_units": 256}
+
+        compute_pars = {"batch_size": 100, "disable_plot": False,
+                        "norm_contsant": 1.0,
+                        "result_path": 'n_beats_test{}.png',
+                        "model_path": "mycheckpoint"}
+
+        out_pars = {"out_path": out_path + "/"}
+
+
+
+    return model_pars, data_pars, compute_pars, out_pars
+
+
+
+
 def test2(data_path="dataset/milk.csv", out_path="n_beats_test{}.png", reset=True):
     ###loading the command line arguments
     # arg = load_arguments()
-    data_path = os_package_root_path(__file__, sublevel=1, path_add=data_path)
-    print(data_path)
-    data_pars = {"data_path": data_path, "forecast_length": 5, "backcast_length": 10}
+    model_uri = "model_tch/nbeats.py"
 
-    ##loading dataset
-    x_train, y_train, x_test, y_test, norm_const = get_dataset(**data_pars)
 
-    ##Params
-    device = torch.device('cpu')
-    model_pars = {"stack_types": [NBeatsNet.GENERIC_BLOCK, NBeatsNet.GENERIC_BLOCK], "device": device,
-                  "nb_blocks_per_stack": 3, "forecast_length": 5, "backcast_length": 10,
-                  "thetas_dims": [7, 8], "share_weights_in_stack": False, "hidden_layer_units": 256}
+    log("#### Loading params   #######################################")
+    model_pars, data_pars, compute_pars, out_pars = get_params(choice=0, data_path=data_path)
 
-    out_pars = {"path": data_path + out_path}
-    compute_pars = {}
 
     log("############ Model preparation   #########################")
     from mlmodels.models import module_load_full, fit, predict
-    module, model = module_load_full("nbeats-fiting-checkpoint.th", model_pars)
+    module, model = module_load_full(model_uri, model_pars)
     print(module, model)
+
 
     log("############ Model fit   ##################################")
     sess = fit(model, module, data_pars=data_pars, out_pars=out_pars, compute_pars={})
     print("fit success", sess)
+
 
     log("############ Prediction  ##################################")
     preds = predict(model, module, sess, data_pars=data_pars,
@@ -262,53 +287,39 @@ def test2(data_path="dataset/milk.csv", out_path="n_beats_test{}.png", reset=Tru
     print(preds)
 
 
+
 def test(data_path="dataset/milk.csv"):
     ###loading the command line arguments
-    data_path = os_package_root_path(__file__, sublevel=1, path_add=data_path)
-    out_path = os.get_cwd() + "/nbeats_test/"
-    os.makedirs(out_path, exists_ok=True)
-    log(data_path, out_path)
+
+    log("#### Loading params   #######################################")
+    model_pars, data_pars, compute_pars, out_pars = get_params(choice=0, data_path=data_path)
 
 
-    log("## Model params   #########################################")
-    device = torch.device('cpu')
-    model_pars = {"stack_types": [NBeatsNet.GENERIC_BLOCK, NBeatsNet.GENERIC_BLOCK],
-                  "device": device,
-                  "nb_blocks_per_stack": 3, "forecast_length": 5, "backcast_length": 10,
-                  "thetas_dims": [7, 8], "share_weights_in_stack": False, "hidden_layer_units": 256}
-
-    compute_pars = {"batch_size": 100, "disable_plot": False,
-                    "norm_contsant": norm_const,
-                    "result_path": 'n_beats_test{}.png',
-                    "model_path": CHECKPOINT_NAME}
-    out_pars = {"out_path": "./"}
-
-
-    log("#### Loading dataset  ######################################")
+    log("#### Loading dataset  #######################################")
     x_train, y_train, x_test, y_test, norm_const = get_dataset(**data_pars)
 
 
-    log("#### Model setup   #########################################")
+    log("#### Model setup   ##########################################")
     model = NBeatsNet(**model_pars)
 
 
-    log("#### Model fit   #########################################")
+    log("#### Model fit   ############################################")
     fit(model, data_pars, compute_pars)
 
 
-    log("#### Predict    ##########################################")
+    log("#### Predict    #############################################")
     ypred = predict(model, data_pars, compute_pars, out_pars)
     print(ypred)
 
 
-    log("#### Plot     ############################################")
+    log("#### Plot     ###############################################")
     plot_predict(ypred, data_pars, compute_pars, out_pars)
 
 
 
 
 if __name__ == '__main__':
-    VERBOSE = TRUE
+    VERBOSE = True
     test()
 
 
