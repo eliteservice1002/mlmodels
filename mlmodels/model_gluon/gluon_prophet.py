@@ -6,16 +6,12 @@ from gluonts.model.prophet import ProphetPredictor
 ######################################################################################################
 #### Model defintion
 class Model(object) :
-    def __init__(self, model_pars, compute_pars) :
-    ## load trainer
-
-        m = model_pars
-
-
-
-        self.model = ProphetPredictor(prediction_length=m['prediction_length'],freq=m['freq'])
-
-
+    def __init__(self, model_pars=None, compute_pars=None) :
+        ## Empty model for Seaialization
+        if model_pars=None and compute_pars is None :
+            self.model = None
+        else :
+            self.model = ProphetPredictor(prediction_length=m['prediction_length'],freq=m['freq'])
 
 
 
@@ -80,29 +76,28 @@ def test(data_path="dataset/"):
     log("##loading dataset   ##############################################")
     gluont_ds = get_dataset(**data_pars)
 
+
     log("## Model params   ################################################")
-
-
-
     model_pars = {"prediction_length": data_pars["prediction_length"],"freq":data_pars["freq"]}
-
     compute_pars = {}
-
     out_pars = {"outpath": out_path, "plot_prob": True, "quantiles": [0.1, 0.5, 0.9]}
-
     print (out_path)
+
 
     log("#### Model init, fit   ###########################################")
     m=Model(model_pars, compute_pars)
-    model=m.model
+    #  model=m.model
     model=fit(model,data_pars, model_pars, compute_pars)
+
 
     log("#### Predict   ###################################################")
     ypred = predict(model, data_pars, compute_pars, out_pars)
     print(ypred)
 
+
     log("###Get  metrics   ################################################")
     metrics_val = metrics(ypred, data_pars, compute_pars, out_pars)
+
 
     log("#### Plot   ######################################################")
     forecast_entry = ypred["forecasts"][0]

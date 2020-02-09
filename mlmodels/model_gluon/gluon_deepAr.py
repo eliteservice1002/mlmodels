@@ -1,41 +1,45 @@
 from gluonts.trainer import Trainer
-from mlmodels.model_gluon.util import *
 from gluonts.model.deepar import DeepAREstimator
+
+
+
+from mlmodels.model_gluon.util import *
 
 
 ######################################################################################################
 #### Model defintion
 class Model(object) :
-    def __init__(self, model_pars, compute_pars) :
-    ## load trainer
-        self.compute_pars=compute_pars
-        m=self.compute_pars
-        trainer = Trainer(batch_size=m['batch_size'],clip_gradient=m['clip_gradient'],ctx=m["ctx"], epochs=m["epochs"],
+    def __init__(self, model_pars=None, compute_pars=None) :
+        ## Empty model for Seaialization
+        if model_pars=None and compute_pars is None :
+            self.model = None
+
+        else :    
+          self.compute_pars=compute_pars
+          self.model_pars = model_pars
+
+          m=self.compute_pars
+          trainer = Trainer(batch_size=m['batch_size'],clip_gradient=m['clip_gradient'],ctx=m["ctx"], epochs=m["epochs"],
                           learning_rate=m["learning_rate"],init=m['init'],learning_rate_decay_factor=m['learning_rate_decay_factor'],
                           minimum_learning_rate=m['minimum_learning_rate'],hybridize=m["hybridize"], num_batches_per_epoch=m["num_batches_per_epoch"],
                           patience=m['patience'],weight_decay=m['weight_decay']
                           )
 
-        ##set up the model
-        self.model_pars = model_pars
-        m = self.model_pars
-
-
-
-        self.model = DeepAREstimator(prediction_length=m['prediction_length'],freq=m['freq'],num_layers=m['num_layers'],num_cells= m["num_cells"],
+          ##set up the model
+          m = self.model_pars
+          self.model = DeepAREstimator(prediction_length=m['prediction_length'],freq=m['freq'],num_layers=m['num_layers'],num_cells= m["num_cells"],
                                 cell_type= m["cell_type"], dropout_rate=m["dropout_rate"],use_feat_dynamic_real=m["use_feat_dynamic_real"],
                                 use_feat_static_cat=m ['use_feat_static_cat'],use_feat_static_real=m['use_feat_static_real'],
                                 scaling=m['scaling'] ,num_parallel_samples=m['num_parallel_samples'],trainer=trainer)
 
 
 
-
-
+######################################################################################################
 def test2(data_path="dataset/", out_path="GLUON/gluon.png", reset=True):
     ###loading the command line arguments
     # arg = load_arguments()
     data_path = os_package_root_path(__file__, sublevel=2, path_add=data_path)
-    out_path = os.get_cwd() + "/GLUON/"
+    out_path = os.get_cwd() + "/GLUON_test/"
     os.makedirs(out_path, exists_ok=True)
     log(data_path, out_path)
 
@@ -65,7 +69,7 @@ def test2(data_path="dataset/", out_path="GLUON/gluon.png", reset=True):
 
     log("############ Model preparation   #########################")
     from mlmodels.models import module_load_full, fit, predict
-    module, model = module_load_full("model_gluon/gluon_ffn.py", model_pars)
+    module, model = module_load_full("model_gluon/gluon_deepar.py", model_pars)
     print(module, model)
 
     log("#### Predict   ###################################################")
@@ -82,10 +86,11 @@ def test2(data_path="dataset/", out_path="GLUON/gluon.png", reset=True):
     plot_predict(out_pars)
 
 
+
 def test(data_path="dataset/"):
     ###loading the command line arguments
     data_path = os_package_root_path(__file__, sublevel=1, path_add=data_path)
-    out_path = os.getcwd() + "/GLUON/"
+    out_path = os.getcwd() + "/GLUON_test/"
     os.makedirs(out_path, exist_ok=True)
     log(data_path, out_path)
 
@@ -100,9 +105,6 @@ def test(data_path="dataset/"):
     gluont_ds = get_dataset(**data_pars)
 
     log("## Model params   ################################################")
-
-
-
     model_pars = {"prediction_length": data_pars["prediction_length"],"freq":data_pars["freq"],
                   "num_layers":2,"num_cells":40,"cell_type":'lstm',"dropout_rate": 0.1,
                   "use_feat_dynamic_real":False,"use_feat_static_cat":False,"use_feat_static_real":False,
@@ -116,17 +118,21 @@ def test(data_path="dataset/"):
 
     print (out_path)
 
+
     log("#### Model init, fit   ###########################################")
-    m=Model(model_pars, compute_pars)
-    model=m.model
+    model = Model(model_pars, compute_pars)
+    #model=m.model    ### WE WORK WITH THE CLASS (not the attribute GLUON )
     model=fit(model,data_pars, model_pars, compute_pars)
+
 
     log("#### Predict   ###################################################")
     ypred = predict(model, data_pars, compute_pars, out_pars)
     print(ypred)
 
+
     log("###Get  metrics   ################################################")
     metrics_val = metrics(ypred, data_pars, compute_pars, out_pars)
+
 
     log("#### Plot   ######################################################")
     forecast_entry = ypred["forecasts"][0]

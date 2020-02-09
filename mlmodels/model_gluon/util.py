@@ -68,41 +68,48 @@ def get_dataset(**kw):
 
 
 # Model fit
-def fit(model, data_pars, model_pars=None, compute_pars=None, out_pars=None, **kwargs):
-    ##loading dataset
-    gluont_ds = get_dataset(**data_pars)
-    predictor = model.train(gluont_ds)
-    return predictor
+def fit(model, session=None, data_pars=None, model_pars=None, compute_pars=None, out_pars=None, **kwargs):
+        ##loading dataset
+        """
+          Classe Model --> model,   model.model contains thte sub-model
+
+        """
+        model_gluon = model.model
+        gluont_ds = get_dataset( **data_pars )
+        model.model = model_gluon.train( gluont_ds )
+        return model
 
 
-# Model predict
+# Model p redict
 def predict(model, data_pars, compute_pars=None, out_pars=None, **kwargs):
+    ##  Model is class
     ## load test dataset
-    data_pars['train'] = False
-    test_ds = get_dataset(**data_pars)
+        data_pars['train']=False
+        test_ds=get_dataset(**data_pars)
+
 
     ## predict
-    forecast_it, ts_it = make_evaluation_predictions(
-        dataset=test_ds,  # test dataset
-        predictor=model,  # predictor
-        num_samples=compute_pars['num_samples'],  # number of sample paths we want for evaluation
-    )
+        forecast_it, ts_it = make_evaluation_predictions(
+            dataset=test_ds,  # test dataset
+            predictor=model.model,  # predictor
+            num_samples=compute_pars['num_samples'],  # number of sample paths we want for evaluation
+        )
 
-    ##convert generator to list
-    forecasts, tss = list(forecast_it), list(ts_it)
-    forecast_entry, ts_entry = forecasts[0], tss[0]
+        ##convert generator to list
+        forecasts,tss = list(forecast_it), list(ts_it)
+        forecast_entry, ts_entry = forecasts[0], tss[0]
 
-    ### output stats for forecast entry
-    if VERBOSE:
-        print(f"Number of sample paths: {forecast_entry.num_samples}")
-        print(f"Dimension of samples: {forecast_entry.samples.shape}")
-        print(f"Start date of the forecast window: {forecast_entry.start_date}")
-        print(f"Frequency of the time series: {forecast_entry.freq}")
-        print(f"Mean of the future window:\n {forecast_entry.mean}")
-        print(f"0.5-quantile (median) of the future window:\n {forecast_entry.quantile(0.5)}")
+        ### output stats for forecast entry
+        if VERBOSE:
+            print(f"Number of sample paths: {forecast_entry.num_samples}")
+            print(f"Dimension of samples: {forecast_entry.samples.shape}")
+            print(f"Start date of the forecast window: {forecast_entry.start_date}")
+            print(f"Frequency of the time series: {forecast_entry.freq}")
+            print(f"Mean of the future window:\n {forecast_entry.mean}")
+            print(f"0.5-quantile (median) of the future window:\n {forecast_entry.quantile(0.5)}")
 
-    dd = {"forecasts": forecasts, "tss": tss}
-    return dd
+        dd = { "forecasts": forecasts, "tss" :tss    }
+        return dd
 
 
 def metrics(ypred, data_pars, compute_pars=None, out_pars=None, **kwargs):
@@ -148,51 +155,28 @@ def plot_predict(out_pars=None):
 
 ###############################################################################################################
 # save and load model helper function
+class Model_empty(object) :
+    def __init__(self, model_pars=None, compute_pars=None) :
+        ## Empty model for Seaialization
+        self.model = None
+
+
 def save(model, path):
     if os.path.exists(path):
-        model.serialize(Path(path))
+        model.model.serialize(Path(path))
 
 
 def load(path):
     if os.path.exists(path):
-        predictor_deserialized = Predictor.deserialize(Path(path))
-    return predictor_deserialized
+        predictor_deserialized = Predictor.deserialize(Path(path))    
+
+    model = model_empty()
+    model.model = predictor_deserialized
+    #### Add back the model parameters...
+
+    
+    return model
 
 
-   # Model fit
-def fit(model,data_pars, model_pars=None, compute_pars=None, out_pars=None, **kwargs):
-        ##loading dataset
-        gluont_ds = get_dataset( **data_pars )
-        predictor = model.train( gluont_ds )
-        return predictor
 
 
-    # Model p redict
-def predict(model, data_pars, compute_pars=None, out_pars=None, **kwargs):
-    ## load test dataset
-        data_pars['train']=False
-        test_ds=get_dataset(**data_pars)
-
-
-    ## predict
-        forecast_it, ts_it = make_evaluation_predictions(
-            dataset=test_ds,  # test dataset
-            predictor=model,  # predictor
-            num_samples=compute_pars['num_samples'],  # number of sample paths we want for evaluation
-        )
-
-        ##convert generator to list
-        forecasts,tss = list(forecast_it), list(ts_it)
-        forecast_entry, ts_entry = forecasts[0], tss[0]
-
-        ### output stats for forecast entry
-        if VERBOSE:
-            print(f"Number of sample paths: {forecast_entry.num_samples}")
-            print(f"Dimension of samples: {forecast_entry.samples.shape}")
-            print(f"Start date of the forecast window: {forecast_entry.start_date}")
-            print(f"Frequency of the time series: {forecast_entry.freq}")
-            print(f"Mean of the future window:\n {forecast_entry.mean}")
-            print(f"0.5-quantile (median) of the future window:\n {forecast_entry.quantile(0.5)}")
-
-        dd = { "forecasts": forecasts, "tss" :tss    }
-        return dd

@@ -12,23 +12,21 @@ VERBOSE = False
 ######################################################################################################
 #### Model defintion
 class Model(object) :
-  def __init__(self, model_pars, compute_pars) :
-    ## load trainer
-    m = compute_pars
-    trainer = Trainer(ctx=m["ctx"], epochs=m["epochs"], learning_rate=m["learning_rate"],
+    def __init__(self, model_pars=None, compute_pars=None) :
+        ## Empty model for Seaialization
+        if model_pars=None and compute_pars is None :
+           self.model = None
+        else :
+           m = compute_pars
+           trainer = Trainer(ctx=m["ctx"], epochs=m["epochs"], learning_rate=m["learning_rate"],
                       hybridize=m["hybridize"], num_batches_per_epoch=m["num_batches_per_epoch"])
 
-    ##set up the model
-    m = model_pars
-    self.model = SimpleFeedForwardEstimator(num_hidden_dimensions=m['prediction_length'],
+           ##set up the model
+           m = model_pars
+           self.model = SimpleFeedForwardEstimator(num_hidden_dimensions=m['prediction_length'],
                                            prediction_length= m["prediction_length"],
                                            context_length= m["context_length"],
                                            freq=m["freq"],trainer=trainer)         
-
-
-
-
-
 
 
 
@@ -115,7 +113,7 @@ def test(data_path="dataset/"):
 
     log("#### Model init, fit   ###########################################")
     m = Model( model_pars, compute_pars )
-    model=m.model
+    # model=m.model
     model = fit(model, data_pars, model_pars, compute_pars)
 
 
