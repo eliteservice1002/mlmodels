@@ -47,7 +47,7 @@ def log(*s, n=0, m=1):
 
 ####################################################################################################
 class Model(object) :
-    def __init__(self, model_pars=None, compute_pars=None, data_pars) :
+    def __init__(self, model_pars=None, compute_pars=None, data_pars=None) :
 
         if model_pars is None and compute_pars is None :
             self.model = None
@@ -217,8 +217,6 @@ def test2(data_path="dataset/", out_path="keras/keras.png", reset=True):
 
 
     log("#### Plot   ######################################################")
-    plot_prob_forecasts(ypred, metrics_val, out_pars)
-    plot_predict(ypred, metrics_val, out_pars)
 
 
 
