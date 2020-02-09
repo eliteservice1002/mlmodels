@@ -14,7 +14,7 @@ VERBOSE = False
 class Model(object) :
     def __init__(self, model_pars=None, compute_pars=None) :
         ## Empty model for Seaialization
-        if model_pars=None and compute_pars is None :
+        if model_pars is None and compute_pars is None :
            self.model = None
         else :
            m = compute_pars
@@ -26,7 +26,38 @@ class Model(object) :
            self.model = SimpleFeedForwardEstimator(num_hidden_dimensions=m['prediction_length'],
                                            prediction_length= m["prediction_length"],
                                            context_length= m["context_length"],
-                                           freq=m["freq"],trainer=trainer)         
+                                           freq=m["freq"],trainer=trainer)
+
+
+
+
+
+########################################################################################################################
+def get_params(choice=0, data_path="dataset/", **kw):
+    if choice == 0:
+        log("#### Path params   ################################################")
+        data_path = os_package_root_path(__file__, sublevel=1, path_add=data_path)
+        out_path = os.getcwd() + "/GLUON/"
+        os.makedirs(out_path, exist_ok=True)
+        log(data_path, out_path)
+
+        train_data_path = data_path + "GLUON-GLUON-train.csv"
+        test_data_path = data_path + "GLUON-test.csv"
+        start = pd.Timestamp("01-01-1750", freq='1H')
+        data_pars = {"train_data_path": train_data_path, "test_data_path": test_data_path, "train": False,
+                     'prediction_length': 48, 'freq': '1H', "start": start, "num_series": 245,
+                     "save_fig": "./series.png"}
+
+        log("#### Model params   ###################################################")
+        model_pars = {"num_hidden_dimensions": [10], "prediction_length": data_pars["prediction_length"],
+                      "context_length":2*data_pars["prediction_length"],"freq":data_pars["freq"]
+                     }
+        compute_pars = {"ctx":"cpu","epochs":5,"learning_rate":1e-3,"hybridize":False,
+                      "num_batches_per_epoch":100,'num_samples':100}
+
+        out_pars = {"outpath": out_path, "plot_prob": True, "quantiles": [0.1, 0.5, 0.9]}
+
+    return model_pars, data_pars, compute_pars, out_pars
 
 
 
@@ -34,45 +65,32 @@ class Model(object) :
 def test2(data_path="dataset/", out_path="GLUON/gluon.png", reset=True):
     ###loading the command line arguments
     # arg = load_arguments()
-    data_path = os_package_root_path(__file__, sublevel=1, path_add=data_path)
-    out_path = os.get_cwd() + "/GLUON/"
-    os.makedirs(out_path, exists_ok=True)
-    log(data_path, out_path)
+
+    log("#### Loading params   ##############################################")
+    model_pars, data_pars, compute_pars, out_pars = get_params(choice=0, data_path=data_path)
+    model_uri = "model_gluon/gluon_ffn.py"
 
 
-    train_data_path = data_path + "GLUON-GLUON-train.csv"
-    test_data_path = data_path + "GLUON-test.csv"
-    start = pd.Timestamp("01-01-1750", freq='1H')
-    data_pars = {"train_data_path": train_data_path, "test_data_path": test_data_path, "train": False,
-                 'prediction_length': 48, 'freq': '1H', "start": start, "num_series": 245,
-                 "save_fig": "./series.png"}
-
-    ##loading dataset
+    log("#### Loading dataset   #############################################")
     gluont_ds = get_dataset(**data_pars)
 
-    ##Params
-    model_pars = {"num_hidden_dimensions": [10], "prediction_length": data_pars["prediction_length"],
-                  "context_length": 2 * data_pars["prediction_length"], "freq": data_pars["freq"]
-                  }
-    compute_pars = {"ctx": "cpu", "epochs": 5, "learning_rate": 1e-3, "hybridize": False,
-                    "num_batches_per_epoch": 100, 'num_samples': 100}
 
-
-    out_pars = {"plot_prob": True, "quantiles": [0.1, 0.5, 0.9]}
-    out_pars["path"]= data_path + out_path
-
-
-    log("############ Model preparation   #########################")
+    log("#### Model init, fit   ###########################################")
     from mlmodels.models import module_load_full, fit, predict
-    module, model = module_load_full("model_gluon/gluon_ffn.py", model_pars)
+    module, model = module_load_full(model_uri, model_pars)
     print(module, model)
+
+    model=fit(model, None, data_pars, model_pars, compute_pars)
+
 
     log("#### Predict   ###################################################")
     ypred = predict(model, data_pars, compute_pars, out_pars)
     print(ypred)
 
+
     log("###Get  metrics   ################################################")
     metrics_val = metrics(model, data_pars, compute_pars, out_pars)
+
 
     log("#### Plot   ######################################################")
     forecast_entry = ypred["forecast"][0]
@@ -82,49 +100,27 @@ def test2(data_path="dataset/", out_path="GLUON/gluon.png", reset=True):
 
 
 
+
 def test(data_path="dataset/"):
     ###loading the command line arguments
-    data_path = os_package_root_path(__file__, sublevel=1, path_add=data_path)
-    out_path = os.getcwd() + "/GLUON/"
-    os.makedirs(out_path, exist_ok= True)
-    log(data_path, out_path)
-   
-    train_data_path = data_path+"GLUON-GLUON-train.csv"
-    test_data_path  = data_path+"GLUON-test.csv"
-    start = pd.Timestamp("01-01-1750", freq='1H')
-    data_pars = {"train_data_path":train_data_path,"test_data_path":test_data_path,"train":False,
-                 'prediction_length': 48,'freq': '1H',"start":start,"num_series":245,
-                 "save_fig":"./series.png"}
 
+    log("#### Loading params   ##############################################")
+    model_pars, data_pars, compute_pars, out_pars = get_params(choice=0, data_path=data_path)
 
     log("##loading dataset   ##############################################")
     gluont_ds = get_dataset(**data_pars)
 
-    
-    log("## Model params   ################################################")
-    model_pars = {"num_hidden_dimensions": [10], "prediction_length": data_pars["prediction_length"],
-                  "context_length":2*data_pars["prediction_length"],"freq":data_pars["freq"]
-                 }
-    compute_pars = {"ctx":"cpu","epochs":5,"learning_rate":1e-3,"hybridize":False,
-                  "num_batches_per_epoch":100,'num_samples':100}
-
-    out_pars = {"outpath": out_path, "plot_prob": True, "quantiles": [0.1, 0.5, 0.9]}
-
-
     log("#### Model init, fit   ###########################################")
-    m = Model( model_pars, compute_pars )
-    # model=m.model
+    model = Model(model_pars, compute_pars)
+    #  model=m.model
     model = fit(model, data_pars, model_pars, compute_pars)
 
-
     log("#### Predict   ###################################################")
-    ypred    = predict(model, data_pars, compute_pars, out_pars)
+    ypred = predict(model, data_pars, compute_pars, out_pars)
     print(ypred)
 
-            
     log("###Get  metrics   ################################################")
-    metrics_val = metrics(ypred, data_pars, compute_pars,out_pars)
-    
+    metrics_val = metrics(ypred, data_pars, compute_pars, out_pars)
 
     log("#### Plot   ######################################################")
     forecast_entry = ypred["forecasts"][0]
