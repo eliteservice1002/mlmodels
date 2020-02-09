@@ -135,7 +135,7 @@ def fit_simple(net, optimiser, data_generator, on_save_callback, device, data_pa
             break
     return net, optimiser
 
-def predict(model, data_pars, compute_pars={}, out_pars=None, **kw):
+def predict(model, data_pars, compute_pars=None, out_pars=None, **kw):
     data_pars["train_split_ratio"] = 1
 
     x_test, y_test, _, _, _ = get_dataset(**data_pars)
@@ -277,7 +277,7 @@ def test2(data_path="dataset/milk.csv", out_path="n_beats_test{}.png", reset=Tru
 
 
     log("############ Model fit   ##################################")
-    sess = fit(model, module, data_pars=data_pars, out_pars=out_pars, compute_pars={})
+    model, sess= fit(model, module, data_pars=data_pars, out_pars=out_pars, compute_pars={})
     print("fit success", sess)
 
 
@@ -304,7 +304,7 @@ def test(data_path="dataset/milk.csv"):
 
 
     log("#### Model fit   ############################################")
-    fit(model, data_pars, compute_pars)
+    model, optimiser = fit(model, data_pars, compute_pars)
 
 
     log("#### Predict    #############################################")
