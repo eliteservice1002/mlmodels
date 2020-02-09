@@ -2,7 +2,11 @@
 
 This directory contains differnet models regarding time series models using GluonTS Toolkit.
 This gives an end to end api . For now we have created api for FFN , DeepAR and Prophet. 
-Different functionalities api can do -
+Different functionalities api can do 
+* Bullet list
+              * Nested bullet
+                  * Sub-nested bullet etc
+          * Bullet list item 2
   1. 
 
 ## Getting Started
