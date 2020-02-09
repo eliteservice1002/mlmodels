@@ -265,28 +265,34 @@ def test2(data_path="dataset/milk.csv", out_path="n_beats_test{}.png", reset=Tru
 def test(data_path="dataset/milk.csv"):
     ###loading the command line arguments
     data_path = os_package_root_path(__file__, sublevel=1, path_add=data_path)
-    print(data_path)
-
-    log("## Loading dataset  ######################################")
-    data_pars = {"data_path": data_path, "forecast_length": 5, "backcast_length": 10, "train_split_ratio": 0.8}
-    x_train, y_train, x_test, y_test, norm_const = get_dataset(**data_pars)
+    out_path = os.get_cwd() + "/nbeats_test/"
+    os.makedirs(out_path, exists_ok=True)
+    log(data_path, out_path)
 
 
-    log("## Model setup   #########################################")
+    log("## Model params   #########################################")
     device = torch.device('cpu')
     model_pars = {"stack_types": [NBeatsNet.GENERIC_BLOCK, NBeatsNet.GENERIC_BLOCK],
                   "device": device,
                   "nb_blocks_per_stack": 3, "forecast_length": 5, "backcast_length": 10,
                   "thetas_dims": [7, 8], "share_weights_in_stack": False, "hidden_layer_units": 256}
-    model = NBeatsNet(**model_pars)
 
-
-    log("#### Model fit   #########################################")
     compute_pars = {"batch_size": 100, "disable_plot": False,
                     "norm_contsant": norm_const,
                     "result_path": 'n_beats_test{}.png',
                     "model_path": CHECKPOINT_NAME}
     out_pars = {"out_path": "./"}
+
+
+    log("#### Loading dataset  ######################################")
+    x_train, y_train, x_test, y_test, norm_const = get_dataset(**data_pars)
+
+
+    log("#### Model setup   #########################################")
+    model = NBeatsNet(**model_pars)
+
+
+    log("#### Model fit   #########################################")
     fit(model, data_pars, compute_pars)
 
 
@@ -294,7 +300,8 @@ def test(data_path="dataset/milk.csv"):
     ypred = predict(model, data_pars, compute_pars, out_pars)
     print(ypred)
 
-    #### Plot
+
+    log("#### Plot     ############################################")
     plot_predict(ypred, data_pars, compute_pars, out_pars)
 
 
