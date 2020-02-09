@@ -57,11 +57,11 @@ class Model(object) :
             m = model_pars
             c = compute_pars
 
-   		    img_rows = 28
-		    img_cols = 28
-            # img_rows, img_cols = data_pars["img_rows"], data_pars["img_cols"]
+   		    rows = 28
+		    cols = 28
+            # rows, cols = data_pars["rows"], data_pars["cols"]
 
-			num_classes = m["num_classes"]
+			nclasses = m["nclasses"]
 			input_shape = m["input_shape"]
 
 			model = Sequential()
@@ -73,7 +73,7 @@ class Model(object) :
 			model.add(Flatten())
 			model.add(Dense(128, activation='relu'))
 			model.add(Dropout(0.5))
-			model.add(Dense(num_classes, activation='softmax'))
+			model.add(Dense(nclasses, activation='softmax'))
 
 			model.compile(loss=keras.losses.categorical_crossentropy,
 			              optimizer=keras.optimizers.Adadelta(), metrics=metrics)
@@ -93,26 +93,26 @@ def get_dataset( data_params, **kw):
 
 		(x_train, y_train), (x_test, y_test) = mnist.load_data()
 		
-        img_rows, img_cols = data_pars["img_rows"], data_pars["img_cols"]
+        rows, cols = data_pars["rows"], data_pars["cols"]
 
 
 		# decide on input shape (depends on backend)
 		if K.image_data_format() == 'channels_first':
-		    x_train = x_train.reshape(x_train.shape[0], 1, img_rows, img_cols)
-		    x_test = x_test.reshape(x_test.shape[0], 1, img_rows, img_cols)
-		    input_shape = (1, img_rows, img_cols)
+		    x_train = x_train.reshape(x_train.shape[0], 1, rows, cols)
+		    x_test = x_test.reshape(x_test.shape[0], 1, rows, cols)
+		    input_shape = (1, rows, cols)
 		else:
-		    x_train = x_train.reshape(x_train.shape[0], img_rows, img_cols, 1)
-		    x_test = x_test.reshape(x_test.shape[0], img_rows, img_cols, 1)
-		    input_shape = (img_rows, img_cols, 1)
+		    x_train = x_train.reshape(x_train.shape[0], rows, cols, 1)
+		    x_test = x_test.reshape(x_test.shape[0], rows, cols, 1)
+		    input_shape = (rows, cols, 1)
 
 		x_train = x_train.astype('float32')
 		x_test = x_test.astype('float32')
 		x_train /= 255
 		x_test /= 255
 
-		y_train = keras.utils.to_categorical(y_train, num_classes)
-		y_test = keras.utils.to_categorical(y_test, num_classes)
+		y_train = keras.utils.to_categorical(y_train, nclasses)
+		y_test = keras.utils.to_categorical(y_test, nclasses)
 
         return x_train, y_train, x_test, y_test
 
@@ -121,18 +121,16 @@ def get_dataset( data_params, **kw):
 def fit(model, data_pars=None, model_pars=None, compute_pars=None, out_pars=None,session=None, **kwargs):
 	# def fit(self,batch_size,epochs):
         data_pars['istrain'] = 1
-
         x_train, y_train, x_test, ytest = get_dataset(data_pars)
 
 		mtmp =model.model.fit(x_train, y_train,
-		      	batch_size=batch_size,	epochs=epochs,verbose=1, validation_data=(x_test, y_test))
+		                      batch_size=batch_size,	epochs=epochs,verbose=1, validation_data=(x_test, y_test))
 	    model.model = mtmp
 	    return model
 
 
 
 def predict(model, data_pars, compute_pars=None, out_pars=None, **kwargs):
-
         X = get_dataset(data_pars)
 
 		ypred = model.predict( X , batch_size = batch_size,verbose = 1 )
@@ -161,22 +159,22 @@ def get_params(choice=0, data_path="dataset/", **kw) :
 
         train_data_path = data_path + "keras-keras-train.csv"
         test_data_path = data_path + "keras-test.csv"
-        start = pd.Timestamp("01-01-1750", freq='1H')
+
+
         data_pars = {"train_data_path": train_data_path, "test_data_path": test_data_path, "train": False,
-                     'prediction_length': 48, 'freq': '1H', "start": start, "num_series": 245,
+                     'prediction_length': 48,
                      "save_fig": "./series.png"}
 
         log("#### Model params   ################################################")
-        model_pars = {"prediction_length": data_pars["prediction_length"], "freq": data_pars["freq"],
-                      "num_layers": 2, "num_cells": 40, "cell_type": 'lstm', "dropout_rate": 0.1,
-                      "use_feat_dynamic_real": False, "use_feat_static_cat": False, "use_feat_static_real": False,
-                      "scaling": True, "num_parallel_samples": 100}
+        model_pars = {  "nlayers": 2, "ncells": 40, "cell_type": 'lstm', "dropout_rate": 0.1,
+                        "scaling": True, "nparallel_samples": 100}
 
-        compute_pars = {"batch_size": 32, "clip_gradient": 100, "ctx": None, "epochs": 1, "init": "xavier",
-                        "learning_rate": 1e-3,
-                        "learning_rate_decay_factor": 0.5, "hybridize": False, "num_batches_per_epoch": 100,
-                        'num_samples': 100,
-                        "minimum_learning_rate": 5e-05, "patience": 10, "weight_decay": 1e-08}
+
+        compute_pars = { "batch_size": 32, "clip_gradient": 100, "ctx": None, "epochs": 1, "init": "xavier",
+                         "learning_rate": 1e-3,
+                         "learning_rate_decay_factor": 0.5, "hybridize": False, "nbatches_per_epoch": 100,
+                         'nsamples': 100, "minimum_learning_rate": 5e-05, "patience": 10, "weight_decay": 1e-08}
+
 
         outpath = out_path + "result"
 
@@ -216,7 +214,9 @@ def test2(data_path="dataset/", out_path="keras/keras.png", reset=True):
     metrics_val = metrics(model, data_pars, compute_pars, out_pars)
 
 
-    log("#### Plot   ######################################################")
+    log("#### Save   #######################################################")
+    save(model, out_pars["save_path"])
+    model2 = load(out_pars["save_path"])
 
 
 
@@ -232,8 +232,7 @@ def test(data_path="dataset/"):
 
 
     log("#### Model init, fit   #############################################")
-    model = Model(model_pars, compute_pars)
-    #model=m.model    ### WE WORK WITH THE CLASS (not the attribute keras )
+    model = Model(model_pars, compute_pars, data_pars)
     model=fit(model, data_pars, model_pars, compute_pars)
 
 
