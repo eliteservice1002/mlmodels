@@ -46,14 +46,16 @@ def get_params(choice=0, data_path="dataset/", **kw) :
         data_path = os_package_root_path(__file__, sublevel=1, path_add=data_path)
         out_path = os.getcwd() + "/GLUON_deepAR/"
         os.makedirs(out_path, exist_ok=True)
-        log(data_path, out_path)
+        model_path = os.getcwd() + "/GLUON/model_deepAR/"
+        os.makedirs(model_path, exist_ok=True)
+        log(data_path, out_path,model_path)
 
         train_data_path = data_path + "GLUON-GLUON-train.csv"
         test_data_path = data_path + "GLUON-test.csv"
         start = pd.Timestamp("01-01-1750", freq='1H')
         data_pars = {"train_data_path": train_data_path, "test_data_path": test_data_path, "train": False,
                      'prediction_length': 48, 'freq': '1H', "start": start, "num_series": 245,
-                     "save_fig": "./series.png"}
+                     "save_fig": "./series.png","modelpath":model_path}
 
         log("#### Model params   ################################################")
         model_pars = {"prediction_length": data_pars["prediction_length"], "freq": data_pars["freq"],
@@ -95,6 +97,9 @@ def test2(data_path="dataset/", out_path="GLUON/gluon.png", reset=True):
 
     model=fit(model, None, data_pars, model_pars, compute_pars)
 
+    log("#### save the trained model  #############################################")
+    save(model, data_pars["modelpath"])
+
 
     log("#### Predict   ###################################################")
     ypred = predict(model, data_pars, compute_pars, out_pars)
@@ -127,6 +132,8 @@ def test(data_path="dataset/"):
     #model=m.model    ### WE WORK WITH THE CLASS (not the attribute GLUON )
     model=fit(model, data_pars, model_pars, compute_pars)
 
+    log ("#### save the trained model  #############################################")
+    save(model,data_pars["modelpath"])
 
     log("#### Predict   ####################################################")
     ypred = predict(model, data_pars, compute_pars, out_pars)
