@@ -82,52 +82,44 @@ class Model():
 
 
 ####################################################################################################
-def get_dataset(**kw):
-    ##check whether dataset is of kind train or test
-    data_path = kw['train_data_path']
+def _preprocess_criteo(df, **kw) :
+    hash_feature = kw.get('hash_feature')
+    sparse_col = ['C' + str(i) for i in range(1, 27)]
+    dense_col = ['I' + str(i) for i in range(1, 14)]
+    df[sparse_col] = df[sparse_col].fillna('-1', )
+    df[dense_col] = df[dense_col].fillna(0, )
+    target = ["label"]
 
-    #### read from csv file
-    if kw.get("uri_type") == "pickle":
-        data = pd.read_pickle(data_path)
-        target = ""
-    else:
-        data = pd.read_csv(data_path)
-
-    if "criteo_sample" in data_path:
-        hash_feature = kw.get('hash_feature')
+    # set hashing space for each sparse field,and record dense feature field name
+    if hash_feature:
+        # Transformation for dense features
+        mms = MinMaxScaler(feature_range=(0, 1))
+        df[dense_col] = mms.fit_transform(df[dense_col])
         sparse_col = ['C' + str(i) for i in range(1, 27)]
         dense_col = ['I' + str(i) for i in range(1, 14)]
-        data[sparse_col] = data[sparse_col].fillna('-1', )
-        data[dense_col] = data[dense_col].fillna(0, )
-        target = ["label"]
 
-        # set hashing space for each sparse field,and record dense feature field name
-        if hash_feature:
-            # Transformation for dense features
-            mms = MinMaxScaler(feature_range=(0, 1))
-            data[dense_col] = mms.fit_transform(data[dense_col])
-            sparse_col = ['C' + str(i) for i in range(1, 27)]
-            dense_col = ['I' + str(i) for i in range(1, 14)]
+        fixlen_cols = [SparseFeat(feat, vocabulary_size=1000, embedding_dim=4, use_hash=True,
+                                  dtype='string')  # since the input is string
+                       for feat in sparse_col] + [DenseFeat(feat, 1, )
+                                                  for feat in dense_col]
+    else:
+        for feat in sparse_col:
+            lbe = LabelEncoder()
+            df[feat] = lbe.fit_transform(df[feat])
+        mms = MinMaxScaler(feature_range=(0, 1))
+        df[dense_col] = mms.fit_transform(df[dense_col])
+        fixlen_cols = [SparseFeat(feat, vocabulary_size=df[feat].nunique(), embedding_dim=4)
+                       for i, feat in enumerate(sparse_col)] + [DenseFeat(feat, 1, )
+                                                                for feat in dense_col]
+    linear_cols = fixlen_cols
+    dnn_cols = fixlen_cols
+    train, test = train_test_split(df, test_size=0.2)
 
-            fixlen_cols = [SparseFeat(feat, vocabulary_size=1000, embedding_dim=4, use_hash=True,
-                                                 dtype='string')  # since the input is string
-                                      for feat in sparse_col] + [DenseFeat(feat, 1, )
-                                                                      for feat in dense_col]
-        else:
-            for feat in sparse_col:
-                lbe = LabelEncoder()
-                data[feat] = lbe.fit_transform(data[feat])
-            mms = MinMaxScaler(feature_range=(0, 1))
-            data[dense_col] = mms.fit_transform(data[dense_col])
-            fixlen_cols = [SparseFeat(feat, vocabulary_size=data[feat].nunique(), embedding_dim=4)
-                                      for i, feat in enumerate(sparse_col)] + [DenseFeat(feat, 1, )
-                                                                                    for feat in dense_col]
-        linear_cols = fixlen_cols
-        dnn_cols = fixlen_cols
+    return df, linear_cols, dnn_cols, train, test, target
 
-        train, test = train_test_split(data, test_size=0.2)
 
-    elif "movielens_sample" in data_path:
+
+def _preprocess_movielens(df, **kw):
         multiple_value = kw.get('multiple_value')
         sparse_col = ["movie_id", "user_id", "gender", "age", "occupation", "zip"]
         target = ['rating']
@@ -135,13 +127,13 @@ def get_dataset(**kw):
         # 1.Label Encoding for sparse features,and do simple Transformation for dense features
         for feat in sparse_col:
             lbe = LabelEncoder()
-            data[feat] = lbe.fit_transform(data[feat])
+            df[feat] = lbe.fit_transform(df[feat])
         if not multiple_value:
             # 2.count #unique features for each sparse field
-            fixlen_cols = [SparseFeat(feat, data[feat].nunique(), embedding_dim=4)  for feat in sparse_col]
+            fixlen_cols = [SparseFeat(feat, df[feat].nunique(), embedding_dim=4)  for feat in sparse_col]
             linear_cols = fixlen_cols
             dnn_cols    = fixlen_cols
-            train, test = train_test_split(data, test_size=0.2) 
+            train, test = train_test_split(df, test_size=0.2)
 
         else:
             hash_feature = kw.get('hash_feature', False)
@@ -156,12 +148,12 @@ def get_dataset(**kw):
 
                 # preprocess the sequence feature
                 key2index = {}
-                genres_list = list(map(split, data['genres'].values))
+                genres_list = list(map(split, df['genres'].values))
                 genres_length = np.array(list(map(len, genres_list)))
                 max_len = max(genres_length)
                 # Notice : padding=`post`
                 genres_list = pad_sequences(genres_list, maxlen=max_len, padding='post', )
-                fixlen_cols = [SparseFeat(feat, data[feat].nunique(), embedding_dim=4)  for feat in sparse_col]
+                fixlen_cols = [SparseFeat(feat, df[feat].nunique(), embedding_dim=4)  for feat in sparse_col]
 
                 use_weighted_sequence = False
                 if use_weighted_sequence:
@@ -177,14 +169,14 @@ def get_dataset(**kw):
                 dnn_cols = fixlen_cols + varlen_cols
 
                 # generate input data for model
-                model_input = {name: data[name] for name in sparse_col}  #
+                model_input = {name: df[name] for name in sparse_col}  #
                 model_input["genres"] = genres_list
-                model_input["genres_weight"] = np.random.randn(data.shape[0], max_len, 1)
+                model_input["genres_weight"] = np.random.randn(df.shape[0], max_len, 1)
 
             else:
-                data[sparse_col] = data[sparse_col].astype(str)
+                df[sparse_col] = df[sparse_col].astype(str)
                 # 1.Use hashing encoding on the fly for sparse features,and process sequence features
-                genres_list = list(map(lambda x: x.split('|'), data['genres'].values))
+                genres_list = list(map(lambda x: x.split('|'), df['genres'].values))
                 genres_length = np.array(list(map(len, genres_list)))
                 max_len = max(genres_length)
 
@@ -194,7 +186,7 @@ def get_dataset(**kw):
                 # 2.set hashing space for each sparse field and generate feature config for sequence feature
 
                 fixlen_cols = [
-                    SparseFeat(feat, data[feat].nunique() * 5, embedding_dim=4, use_hash=True, dtype='string')
+                    SparseFeat(feat, df[feat].nunique() * 5, embedding_dim=4, use_hash=True, dtype='string')
                     for feat in sparse_col]
                 varlen_cols = [
                     VarLenSparseFeat(
@@ -206,12 +198,35 @@ def get_dataset(**kw):
                 feature_names = get_feature_names(linear_cols + dnn_cols)
 
                 # 3.generate input data for model
-                model_input = {name: data[name] for name in feature_names}
+                model_input = {name: df[name] for name in feature_names}
                 model_input['genres'] = genres_list
 
             train, test = model_input, model_input
 
-    return data, linear_cols, dnn_cols, train, test, target
+        return df, linear_cols, dnn_cols, train, test, target
+
+
+
+
+def get_dataset(**kw):
+    ##check whether dataset is of kind train or test
+    data_path = kw['train_data_path']
+
+    #### read from csv file
+    if kw.get("uri_type") == "pickle":
+        df = pd.read_pickle(data_path)
+        target = ""
+    else:
+        df = pd.read_csv(data_path)
+
+    if "criteo_sample" in data_path:
+        df, linear_cols, dnn_cols, train, test, target = _preprocess_criteo(df, **kw)
+
+    elif "movielens_sample" in data_path:
+        df, linear_cols, dnn_cols, train, test, target = _preprocess_movielens(df, **kw)
+
+
+    return df, linear_cols, dnn_cols, train, test, target
 
 
 def fit(model, session=None, data_pars=None, model_pars=None, compute_pars=None, out_pars=None, **kwargs):
@@ -288,7 +303,7 @@ def load(path):
     if os.path.exists(path):
         print("exist")
     model = Model_empty()
-    model.model = predictor_deserialized
+    # model.model = model0
     #### Add back the model parameters...
     return model
 
@@ -305,7 +320,7 @@ def path_setup(out_folder="", sublevel=1, data_path="dataset/"):
 def get_params(choice=0, data_path="dataset/", **kw):
     if choice == 0:
         log("#### Path params   ###################################################")
-        data_path, out_path = path_setup(out_folder="/deepctr_test/", data_path=data_path) 
+        data_path, out_path = path_setup(out_folder="/deepctr_test/", data_path=data_path)
 
         train_data_path = data_path + "criteo_sample.txt"
         data_pars = {"train_data_path": train_data_path}
