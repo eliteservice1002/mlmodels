@@ -221,18 +221,20 @@ def fit(model, session=None, data_pars=None, model_pars=None, compute_pars=None,
 
     """
     data, linear_cols, dnn_cols, train, test, target = get_dataset(**data_pars)
-
     multiple_value = data_pars.get('multiple_value', None)
+
+    m = compute_pars
+
     if multiple_value is None:
         feature_names = get_feature_names(linear_cols + dnn_cols, )
         train_model_input = {name: train[name] for name in feature_names}
         model.model.fit(train_model_input, train[target].values,
-                        batch_size=compute_pars['batch_size'], epochs=compute_pars['epochs'], verbose=2,
-                        validation_split=compute_pars['validation_split'], )
+                        batch_size=m['batch_size'], epochs=m['epochs'], verbose=2,
+                        validation_split=m['validation_split'], )
     else:
         model.model.fit(train, data[target].values,
-                        batch_size=compute_pars['batch_size'], epochs=compute_pars['epochs'], verbose=2,
-                        validation_split=compute_pars['validation_split'], )
+                        batch_size=m['batch_size'], epochs=m['epochs'], verbose=2,
+                        validation_split=m['validation_split'], )
 
     return model
 
@@ -251,10 +253,6 @@ def predict(model, data_pars, compute_pars=None, out_pars=None, **kwargs):
         pred_ans = model.model.predict(test_model_input, batch_size=256)
     else:
         pred_ans = None
-
-        ### output stats for forecast entry
-    #     if VERBOSE:
-    #          pass
 
     return pred_ans
 
@@ -311,7 +309,7 @@ def get_params(choice=0, data_path="dataset/", **kw):
         log("#### Model params   ################################################")
         model_pars = {"optimization": "adam", "cost": "binary_crossentropy"}
         compute_pars = {"task": "binary", "batch_size": 256, "epochs": 10, "validation_split": 0.2}
-        out_pars = {"plot_prob": True, "quantiles": [0.1, 0.5, 0.9], "path" : out_path  }
+        out_pars = { "path" : out_path  }
 
 
     elif choice == 1:
@@ -324,7 +322,7 @@ def get_params(choice=0, data_path="dataset/", **kw):
         log("#### Model params   ################################################")
         model_pars = {"optimization": "adam", "cost": "binary_crossentropy"}
         compute_pars = {"task": "binary", "batch_size": 256, "epochs": 10, "validation_split": 0.2}
-        out_pars = {"plot_prob": True, "quantiles": [0.1, 0.5, 0.9], "path" : out_path  }
+        out_pars = { "path" : out_path  }
 
 
     elif choice == 2:
@@ -337,7 +335,7 @@ def get_params(choice=0, data_path="dataset/", **kw):
         log("#### Model params   ################################################")
         model_pars = {"optimization": "adam", "cost": "mse"}
         compute_pars = {"task": "regression", "batch_size": 256, "epochs": 10, "validation_split": 0.2}
-        out_pars = {"plot_prob": True, "quantiles": [0.1, 0.5, 0.9], "path" : out_path  }
+        out_pars = { "path" : out_path  }
 
 
     elif choice == 3:
@@ -350,7 +348,7 @@ def get_params(choice=0, data_path="dataset/", **kw):
         log("#### Model params   ################################################")
         model_pars = {"optimization": "adam", "cost": "mse"}
         compute_pars = {"task": "regression", "batch_size": 256, "epochs": 10, "validation_split": 0.2}
-        out_pars = {"plot_prob": True, "quantiles": [0.1, 0.5, 0.9], "path" : out_path  }
+        out_pars = { "path" : out_path  }
 
 
     elif choice == 4:
@@ -363,7 +361,7 @@ def get_params(choice=0, data_path="dataset/", **kw):
         log("#### Model params   ################################################")
         model_pars = {"optimization": "adam", "cost": "mse"}
         compute_pars = {"task": "regression", "batch_size": 256, "epochs": 10, "validation_split": 0.2}
-        out_pars = {"plot_prob": True, "quantiles": [0.1, 0.5, 0.9], "path" : out_path  }
+        out_pars = { "path" : out_path  }
 
     return model_pars, data_pars, compute_pars, out_pars
 
@@ -377,27 +375,32 @@ def test(data_path="dataset/", params_choice=0):
     model_pars, data_pars, compute_pars, out_pars = get_params(choice=params_choice, data_path=data_path)
     print(model_pars, data_pars, compute_pars, out_pars)
 
+
     log("#### Loading dataset   #############################################")
     dataset = get_dataset(**data_pars)
 
+
     log("#### Model init, fit   #############################################")
     model = Model(model_pars=model_pars, compute_pars=compute_pars, dataset=dataset)
-    # model=m.model    ### WE WORK WITH THE CLASS (not the attribute GLUON )
     model = fit(model, data_pars=data_pars, model_pars=model_pars, compute_pars=compute_pars)
 
-    log("#### Predict   ####################################################")
 
+    log("#### Predict   ####################################################")
     ypred = predict(model, data_pars, compute_pars, out_pars)
+
 
     log("#### metrics   ####################################################")
     metrics_val = metrics(ypred, data_pars, compute_pars, out_pars)
     print(metrics_val)
 
+
     log("#### Plot   #######################################################")
 
 
-#     plot_prob_forecasts(ypred, metrics_val, out_pars)
-#     plot_predict(ypred, metrics_val, out_pars)
+    log("#### Save/Load   ##################################################")
+    save(model, out_pars['path'] + "/model" )
+    model2 =   load(out_pars['path'] + "/model" )
+    print(model2)
 
 
 
