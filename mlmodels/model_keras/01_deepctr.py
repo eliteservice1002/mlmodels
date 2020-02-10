@@ -1,20 +1,14 @@
 """"
-
-https://github.com/shenweichen/DeepCTR
-
-
 # DeepCTR
-
+https://github.com/shenweichen/DeepCTR
 https://deepctr-doc.readthedocs.io/en/latest/Examples.html#classification-criteo
 
 
-DeepCTR is a **Easy-to-use**,**Modular** and **Extendible** package of deep-learning based CTR models along with lots of core components layers which can be used to easily build custom models.It is compatible with **tensorflow 1.4+ and 2.0+**.You can use any complex model with `model.fit()`and `model.predict()` .
-
-Let's [**Get Started!**](https://deepctr-doc.readthedocs.io/en/latest/Quick-Start.html)([Chinese Introduction](https://zhuanlan.zhihu.com/p/53231955))
+DeepCTR is a **Easy-to-use**,**Modular** and **Extendible** package of deep-learning based CTR models 
+along with lots of core components layers which can be used to easily build custom models.It is compatible with **tensorflow 1.4+ and 2.0+**.You can use any complex model with `model.fit()`and `model.predict()` .
 
 
 ## Models List
-
 |                 Model                  | Paper                                                                                                                                                           |
 | :------------------------------------: | :-------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 |  Convolutional Click Prediction Model  | [CIKM 2015][A Convolutional Click Prediction Model](http://ir.ia.ac.cn/bitstream/173211/12337/1/A%20Convolutional%20Click%20Prediction%20Model.pdf)             |
@@ -35,68 +29,21 @@ Let's [**Get Started!**](https://deepctr-doc.readthedocs.io/en/latest/Quick-Star
 |     Deep Session Interest Network      | [IJCAI 2019][Deep Session Interest Network for Click-Through Rate Prediction ](https://arxiv.org/abs/1905.06482)                                                |
 |                FiBiNET                 | [RecSys 2019][FiBiNET: Combining Feature Importance and Bilinear feature Interaction for Click-Through Rate Prediction](https://arxiv.org/pdf/1905.09433.pdf)   |
 
-
-
 """
 import os
 
 import numpy as np
 import pandas as pd
-from deepctr.inputs import SparseFeat, VarLenSparseFeat, DenseFeat, get_feature_names
-from deepctr.models import DeepFM
+
 from sklearn.metrics import log_loss, roc_auc_score, mean_squared_error
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder, MinMaxScaler
+
 from tensorflow.python.keras.preprocessing.sequence import pad_sequences
 
-"""
 
-
-    data = pd.read_csv('./criteo_sample.txt')
-
-    sparse_features = ['C' + str(i) for i in range(1, 27)]
-    dense_features = ['I' + str(i) for i in range(1, 14)]
-
-    data[sparse_features] = data[sparse_features].fillna('-1', )
-    data[dense_features] = data[dense_features].fillna(0, )
-    target = ['label']
-
-    # 1.do simple Transformation for dense features
-    mms = MinMaxScaler(feature_range=(0, 1))
-    data[dense_features] = mms.fit_transform(data[dense_features])
-
-    # 2.set hashing space for each sparse field,and record dense feature field name
-
-    fixlen_feature_columns = [SparseFeat(feat, vocabulary_size=1000,embedding_dim=4, use_hash=True, dtype='string')  # since the input is string
-                              for feat in sparse_features] + [DenseFeat(feat, 1, )
-                          for feat in dense_features]
-
-    linear_feature_columns = fixlen_feature_columns
-    dnn_feature_columns = fixlen_feature_columns
-    feature_names = get_feature_names(linear_feature_columns + dnn_feature_columns, )
-
-    # 3.generate input data for model
-
-    train, test = train_test_split(data, test_size=0.2)
-
-    train_model_input = {name:train[name] for name in feature_names}
-    test_model_input = {name:test[name] for name in feature_names}
-
-
-    # 4.Define Model,train,predict and evaluate
-    model = DeepFM(linear_feature_columns,dnn_feature_columns, task='binary')
-    model.compile("adam", "binary_crossentropy",
-                  metrics=['binary_crossentropy'], )
-
-    pred_ans = model.predict(test_model_input, batch_size=256)
-    print("test LogLoss", round(log_loss(test[target].values, pred_ans), 4))
-    print("test AUC", round(roc_auc_score(test[target].values, pred_ans), 4))
-
-
-
-
-
-"""
+from deepctr.inputs import SparseFeat, VarLenSparseFeat, DenseFeat, get_feature_names
+from deepctr.models import DeepFM
 
 
 ####################################################################################################
@@ -121,13 +68,15 @@ def log(*s, n=0, m=1):
     print(sjump, sspace, s, sspace, flush=True)
 
 
+
+
 ####################################################################################################
 class Model():
     def __init__(self, model_pars=None, compute_pars=None, **kwargs):
         # 4.Define Model,train,predict and evaluate
-        _, linear_feature_columns, dnn_feature_columns, _, _, _ = kwargs.get('dataset')
+        _, linear_cols, dnn_cols, _, _, _ = kwargs.get('dataset')
 
-        self.model = DeepFM(linear_feature_columns, dnn_feature_columns, task=compute_pars['task'])
+        self.model = DeepFM(linear_cols, dnn_cols, task=compute_pars['task'])
         self.model.compile(model_pars["optimization"], model_pars["cost"],
                            metrics=['binary_crossentropy'], )
 
@@ -145,52 +94,52 @@ def get_dataset(**kw):
         data = pd.read_csv(data_path)
         if "criteo_sample.txt" in data_path:
             hash_feature = kw.get('hash_feature')
-            sparse_features = ['C' + str(i) for i in range(1, 27)]
-            dense_features = ['I' + str(i) for i in range(1, 14)]
-            data[sparse_features] = data[sparse_features].fillna('-1', )
-            data[dense_features] = data[dense_features].fillna(0, )
+            sparse_col = ['C' + str(i) for i in range(1, 27)]
+            dense_col = ['I' + str(i) for i in range(1, 14)]
+            data[sparse_col] = data[sparse_col].fillna('-1', )
+            data[dense_col] = data[dense_col].fillna(0, )
             target = ["label"]
 
             # set hashing space for each sparse field,and record dense feature field name
             if hash_feature:
                 # Transformation for dense features
                 mms = MinMaxScaler(feature_range=(0, 1))
-                data[dense_features] = mms.fit_transform(data[dense_features])
-                sparse_features = ['C' + str(i) for i in range(1, 27)]
-                dense_features = ['I' + str(i) for i in range(1, 14)]
+                data[dense_col] = mms.fit_transform(data[dense_col])
+                sparse_col = ['C' + str(i) for i in range(1, 27)]
+                dense_col = ['I' + str(i) for i in range(1, 14)]
 
-                fixlen_feature_columns = [SparseFeat(feat, vocabulary_size=1000, embedding_dim=4, use_hash=True,
+                fixlen_cols = [SparseFeat(feat, vocabulary_size=1000, embedding_dim=4, use_hash=True,
                                                      dtype='string')  # since the input is string
-                                          for feat in sparse_features] + [DenseFeat(feat, 1, )
-                                                                          for feat in dense_features]
+                                          for feat in sparse_col] + [DenseFeat(feat, 1, )
+                                                                          for feat in dense_col]
             else:
-                for feat in sparse_features:
+                for feat in sparse_col:
                     lbe = LabelEncoder()
                     data[feat] = lbe.fit_transform(data[feat])
                 mms = MinMaxScaler(feature_range=(0, 1))
-                data[dense_features] = mms.fit_transform(data[dense_features])
-                fixlen_feature_columns = [SparseFeat(feat, vocabulary_size=data[feat].nunique(), embedding_dim=4)
-                                          for i, feat in enumerate(sparse_features)] + [DenseFeat(feat, 1, )
-                                                                                        for feat in dense_features]
-            linear_feature_columns = fixlen_feature_columns
-            dnn_feature_columns = fixlen_feature_columns
+                data[dense_col] = mms.fit_transform(data[dense_col])
+                fixlen_cols = [SparseFeat(feat, vocabulary_size=data[feat].nunique(), embedding_dim=4)
+                                          for i, feat in enumerate(sparse_col)] + [DenseFeat(feat, 1, )
+                                                                                        for feat in dense_col]
+            linear_cols = fixlen_cols
+            dnn_cols = fixlen_cols
 
             train, test = train_test_split(data, test_size=0.2)
         elif "movielens_sample.txt" in data_path:
             multiple_value = kw.get('multiple_value')
-            sparse_features = ["movie_id", "user_id",
+            sparse_col = ["movie_id", "user_id",
                                "gender", "age", "occupation", "zip"]
             target = ['rating']
             # 1.Label Encoding for sparse features,and do simple Transformation for dense features
-            for feat in sparse_features:
+            for feat in sparse_col:
                 lbe = LabelEncoder()
                 data[feat] = lbe.fit_transform(data[feat])
             if not multiple_value:
                 # 2.count #unique features for each sparse field
-                fixlen_feature_columns = [SparseFeat(feat, data[feat].nunique(), embedding_dim=4)
-                                          for feat in sparse_features]
-                linear_feature_columns = fixlen_feature_columns
-                dnn_feature_columns = fixlen_feature_columns
+                fixlen_cols = [SparseFeat(feat, data[feat].nunique(), embedding_dim=4)
+                                          for feat in sparse_col]
+                linear_cols = fixlen_cols
+                dnn_cols = fixlen_cols
 
                 train, test = train_test_split(data, test_size=0.2)
             else:
@@ -212,28 +161,28 @@ def get_dataset(**kw):
                     # Notice : padding=`post`
                     genres_list = pad_sequences(genres_list, maxlen=max_len, padding='post', )
 
-                    fixlen_feature_columns = [SparseFeat(feat, data[feat].nunique(), embedding_dim=4)
-                                              for feat in sparse_features]
+                    fixlen_cols = [SparseFeat(feat, data[feat].nunique(), embedding_dim=4)
+                                              for feat in sparse_col]
 
                     use_weighted_sequence = False
                     if use_weighted_sequence:
-                        varlen_feature_columns = [VarLenSparseFeat(SparseFeat('genres', vocabulary_size=len(
+                        varlen_cols = [VarLenSparseFeat(SparseFeat('genres', vocabulary_size=len(
                             key2index) + 1, embedding_dim=4), maxlen=max_len, combiner='mean',
                                                                    weight_name='genres_weight')]  # Notice : value 0 is for padding for sequence input feature
                     else:
-                        varlen_feature_columns = [VarLenSparseFeat(SparseFeat('genres', vocabulary_size=len(
+                        varlen_cols = [VarLenSparseFeat(SparseFeat('genres', vocabulary_size=len(
                             key2index) + 1, embedding_dim=4), maxlen=max_len, combiner='mean',
                                                                    weight_name=None)]  # Notice : value 0 is for padding for sequence input feature
 
-                    linear_feature_columns = fixlen_feature_columns + varlen_feature_columns
-                    dnn_feature_columns = fixlen_feature_columns + varlen_feature_columns
+                    linear_cols = fixlen_cols + varlen_cols
+                    dnn_cols = fixlen_cols + varlen_cols
 
                     # generate input data for model
-                    model_input = {name: data[name] for name in sparse_features}  #
+                    model_input = {name: data[name] for name in sparse_col}  #
                     model_input["genres"] = genres_list
                     model_input["genres_weight"] = np.random.randn(data.shape[0], max_len, 1)
                 else:
-                    data[sparse_features] = data[sparse_features].astype(str)
+                    data[sparse_col] = data[sparse_col].astype(str)
                     # 1.Use hashing encoding on the fly for sparse features,and process sequence features
                     genres_list = list(map(lambda x: x.split('|'), data['genres'].values))
                     genres_length = np.array(list(map(len, genres_list)))
@@ -244,17 +193,17 @@ def get_dataset(**kw):
 
                     # 2.set hashing space for each sparse field and generate feature config for sequence feature
 
-                    fixlen_feature_columns = [
+                    fixlen_cols = [
                         SparseFeat(feat, data[feat].nunique() * 5, embedding_dim=4, use_hash=True, dtype='string')
-                        for feat in sparse_features]
-                    varlen_feature_columns = [
+                        for feat in sparse_col]
+                    varlen_cols = [
                         VarLenSparseFeat(
                             SparseFeat('genres', vocabulary_size=100, embedding_dim=4, use_hash=True, dtype="string"),
                             maxlen=max_len, combiner='mean',
                         )]  # Notice : value 0 is for padding for sequence input feature
-                    linear_feature_columns = fixlen_feature_columns + varlen_feature_columns
-                    dnn_feature_columns = fixlen_feature_columns + varlen_feature_columns
-                    feature_names = get_feature_names(linear_feature_columns + dnn_feature_columns)
+                    linear_cols = fixlen_cols + varlen_cols
+                    dnn_cols = fixlen_cols + varlen_cols
+                    feature_names = get_feature_names(linear_cols + dnn_cols)
 
                     # 3.generate input data for model
                     model_input = {name: data[name] for name in feature_names}
@@ -262,7 +211,7 @@ def get_dataset(**kw):
 
                 train, test = model_input, model_input
 
-    return data, linear_feature_columns, dnn_feature_columns, train, test, target
+    return data, linear_cols, dnn_cols, train, test, target
 
 
 def fit(model, session=None, data_pars=None, model_pars=None, compute_pars=None, out_pars=None, **kwargs):
@@ -271,11 +220,11 @@ def fit(model, session=None, data_pars=None, model_pars=None, compute_pars=None,
           Classe Model --> model,   model.model contains thte sub-model
 
     """
-    data, linear_feature_columns, dnn_feature_columns, train, test, target = get_dataset(**data_pars)
+    data, linear_cols, dnn_cols, train, test, target = get_dataset(**data_pars)
 
     multiple_value = data_pars.get('multiple_value', None)
     if multiple_value is None:
-        feature_names = get_feature_names(linear_feature_columns + dnn_feature_columns, )
+        feature_names = get_feature_names(linear_cols + dnn_cols, )
         train_model_input = {name: train[name] for name in feature_names}
         model.model.fit(train_model_input, train[target].values,
                         batch_size=compute_pars['batch_size'], epochs=compute_pars['epochs'], verbose=2,
@@ -292,8 +241,8 @@ def fit(model, session=None, data_pars=None, model_pars=None, compute_pars=None,
 def predict(model, data_pars, compute_pars=None, out_pars=None, **kwargs):
     ##  Model is class
     ## load test dataset
-    data, linear_feature_columns, dnn_feature_columns, train, test, target = get_dataset(**data_pars)
-    feature_names = get_feature_names(linear_feature_columns + dnn_feature_columns, )
+    data, linear_cols, dnn_cols, train, test, target = get_dataset(**data_pars)
+    feature_names = get_feature_names(linear_cols + dnn_cols, )
     test_model_input = {name: test[name] for name in feature_names}
 
     multiple_value = data_pars.get('multiple_value', None)
@@ -312,7 +261,7 @@ def predict(model, data_pars, compute_pars=None, out_pars=None, **kwargs):
 
 def metrics(ypred, data_pars, compute_pars=None, out_pars=None, **kwargs):
     ## load test dataset
-    _, linear_feature_columns, dnn_feature_columns, _, test, target = get_dataset(**data_pars)
+    _, linear_cols, dnn_cols, _, test, target = get_dataset(**data_pars)
 
     if compute_pars.get("task") == "binary":
         metrics_dict = {"LogLoss": round(log_loss(test[target].values, ypred), 4),
@@ -343,222 +292,89 @@ def load(path):
 
 
 ########################################################################################################################
+def path_setup(out_folder="", sublevel=1, data_path="dataset/"):
+        data_path = os_package_root_path(__file__, sublevel=sublevel, path_add=data_path)
+        out_path = os.getcwd() + "/" + out_folder
+        os.makedirs(out_path, exist_ok=True)
+        log(data_path, out_path)
+        return data_path, out_path
+
+
 def get_params(choice=0, data_path="dataset/", **kw):
     if choice == 0:
         log("#### Path params   ################################################")
-        data_path = os_package_root_path(__file__, sublevel=1, path_add=data_path)
-        out_path = os.getcwd() + "/deepctr_test/"
-        os.makedirs(out_path, exist_ok=True)
-        log(data_path, out_path)
+        data_path, out_path = path_setup(out_folder="/deepctr_test/", data_path=data_path) 
 
         train_data_path = data_path + "criteo_sample.txt"
         data_pars = {"train_data_path": train_data_path}
 
         log("#### Model params   ################################################")
         model_pars = {"optimization": "adam", "cost": "binary_crossentropy"}
-
         compute_pars = {"task": "binary", "batch_size": 256, "epochs": 10, "validation_split": 0.2}
+        out_pars = {"plot_prob": True, "quantiles": [0.1, 0.5, 0.9], "path" : out_path  }
 
-        out_pars = {"plot_prob": True, "quantiles": [0.1, 0.5, 0.9]}
-        out_pars["path"] = data_path + out_path
+
     elif choice == 1:
         log("#### Path params   ################################################")
-        data_path = os_package_root_path(__file__, sublevel=1, path_add=data_path)
-        out_path = os.getcwd() + "/deepctr_test/"
-        os.makedirs(out_path, exist_ok=True)
-        log(data_path, out_path)
+        data_path, out_path = path_setup(out_folder="/deepctr_test/", data_path=data_path) 
 
         train_data_path = data_path + "criteo_sample.txt"
         data_pars = {"train_data_path": train_data_path, "hash_feature": True}
 
         log("#### Model params   ################################################")
         model_pars = {"optimization": "adam", "cost": "binary_crossentropy"}
-
         compute_pars = {"task": "binary", "batch_size": 256, "epochs": 10, "validation_split": 0.2}
+        out_pars = {"plot_prob": True, "quantiles": [0.1, 0.5, 0.9], "path" : out_path  }
 
-        out_pars = {"plot_prob": True, "quantiles": [0.1, 0.5, 0.9]}
-        out_pars["path"] = data_path + out_path
+
     elif choice == 2:
         log("#### Path params   ################################################")
-        data_path = os_package_root_path(__file__, sublevel=1, path_add=data_path)
-        out_path = os.getcwd() + "/deepctr_test/"
-        os.makedirs(out_path, exist_ok=True)
-        log(data_path, out_path)
+        data_path, out_path = path_setup(out_folder="/deepctr_test/", data_path=data_path) 
 
         train_data_path = data_path + "movielens_sample.txt"
         data_pars = {"train_data_path": train_data_path}
 
         log("#### Model params   ################################################")
         model_pars = {"optimization": "adam", "cost": "mse"}
-
         compute_pars = {"task": "regression", "batch_size": 256, "epochs": 10, "validation_split": 0.2}
+        out_pars = {"plot_prob": True, "quantiles": [0.1, 0.5, 0.9], "path" : out_path  }
 
-        out_pars = {"plot_prob": True, "quantiles": [0.1, 0.5, 0.9]}
-        out_pars["path"] = data_path + out_path
+
     elif choice == 3:
         log("#### Path params   ################################################")
-        data_path = os_package_root_path(__file__, sublevel=1, path_add=data_path)
-        out_path = os.getcwd() + "/deepctr_test/"
-        os.makedirs(out_path, exist_ok=True)
-        log(data_path, out_path)
+        data_path, out_path = path_setup(out_folder="/deepctr_test/", data_path=data_path) 
 
         train_data_path = data_path + "movielens_sample.txt"
         data_pars = {"train_data_path": train_data_path, "multiple_value": True}
 
         log("#### Model params   ################################################")
         model_pars = {"optimization": "adam", "cost": "mse"}
-
         compute_pars = {"task": "regression", "batch_size": 256, "epochs": 10, "validation_split": 0.2}
+        out_pars = {"plot_prob": True, "quantiles": [0.1, 0.5, 0.9], "path" : out_path  }
 
-        out_pars = {"plot_prob": True, "quantiles": [0.1, 0.5, 0.9]}
-        out_pars["path"] = data_path + out_path
+
     elif choice == 4:
         log("#### Path params   ################################################")
-        data_path = os_package_root_path(__file__, sublevel=1, path_add=data_path)
-        out_path = os.getcwd() + "/deepctr_test/"
-        os.makedirs(out_path, exist_ok=True)
-        log(data_path, out_path)
+        data_path, out_path = path_setup(out_folder="/deepctr_test/", data_path=data_path) 
 
         train_data_path = data_path + "movielens_sample.txt"
         data_pars = {"train_data_path": train_data_path, "multiple_value": True, "hash_feature": True}
 
         log("#### Model params   ################################################")
         model_pars = {"optimization": "adam", "cost": "mse"}
-
         compute_pars = {"task": "regression", "batch_size": 256, "epochs": 10, "validation_split": 0.2}
-
-        out_pars = {"plot_prob": True, "quantiles": [0.1, 0.5, 0.9]}
-        out_pars["path"] = data_path + out_path
+        out_pars = {"plot_prob": True, "quantiles": [0.1, 0.5, 0.9], "path" : out_path  }
 
     return model_pars, data_pars, compute_pars, out_pars
 
 
 ########################################################################################################################
 ########################################################################################################################
-def test4(data_path="dataset/"):
+def test(data_path="dataset/", params_choice=0):
     ### Local test
 
     log("#### Loading params   ##############################################")
-    model_pars, data_pars, compute_pars, out_pars = get_params(choice=4, data_path=data_path)
-    print(model_pars, data_pars, compute_pars, out_pars)
-
-    log("#### Loading dataset   #############################################")
-    dataset = get_dataset(**data_pars)
-
-    log("#### Model init, fit   #############################################")
-    model = Model(model_pars=model_pars, compute_pars=compute_pars, dataset=dataset)
-    # model=m.model    ### WE WORK WITH THE CLASS (not the attribute GLUON )
-    model = fit(model, data_pars=data_pars, model_pars=model_pars, compute_pars=compute_pars)
-
-    log("#### Predict   ####################################################")
-
-    ypred = predict(model, data_pars, compute_pars, out_pars)
-
-    log("#### metrics   ####################################################")
-    metrics_val = metrics(ypred, data_pars, compute_pars, out_pars)
-    print(metrics_val)
-
-    log("#### Plot   #######################################################")
-
-
-#     plot_prob_forecasts(ypred, metrics_val, out_pars)
-#     plot_predict(ypred, metrics_val, out_pars)
-
-
-def test3(data_path="dataset/"):
-    ### Local test
-
-    log("#### Loading params   ##############################################")
-    model_pars, data_pars, compute_pars, out_pars = get_params(choice=3, data_path=data_path)
-    print(model_pars, data_pars, compute_pars, out_pars)
-
-    log("#### Loading dataset   #############################################")
-    dataset = get_dataset(**data_pars)
-
-    log("#### Model init, fit   #############################################")
-    model = Model(model_pars=model_pars, compute_pars=compute_pars, dataset=dataset)
-    # model=m.model    ### WE WORK WITH THE CLASS (not the attribute GLUON )
-    model = fit(model, data_pars=data_pars, model_pars=model_pars, compute_pars=compute_pars)
-
-    log("#### Predict   ####################################################")
-
-    ypred = predict(model, data_pars, compute_pars, out_pars)
-
-    log("#### metrics   ####################################################")
-    metrics_val = metrics(ypred, data_pars, compute_pars, out_pars)
-    print(metrics_val)
-
-    log("#### Plot   #######################################################")
-
-
-#     plot_prob_forecasts(ypred, metrics_val, out_pars)
-#     plot_predict(ypred, metrics_val, out_pars)
-
-
-def test2(data_path="dataset/"):
-    ### Local test
-
-    log("#### Loading params   ##############################################")
-    model_pars, data_pars, compute_pars, out_pars = get_params(choice=2, data_path=data_path)
-    print(model_pars, data_pars, compute_pars, out_pars)
-
-    log("#### Loading dataset   #############################################")
-    dataset = get_dataset(**data_pars)
-
-    log("#### Model init, fit   #############################################")
-    model = Model(model_pars=model_pars, compute_pars=compute_pars, dataset=dataset)
-    # model=m.model    ### WE WORK WITH THE CLASS (not the attribute GLUON )
-    model = fit(model, data_pars=data_pars, model_pars=model_pars, compute_pars=compute_pars)
-
-    log("#### Predict   ####################################################")
-
-    ypred = predict(model, data_pars, compute_pars, out_pars)
-
-    log("#### metrics   ####################################################")
-    metrics_val = metrics(ypred, data_pars, compute_pars, out_pars)
-    print(metrics_val)
-
-    log("#### Plot   #######################################################")
-
-
-#     plot_prob_forecasts(ypred, metrics_val, out_pars)
-#     plot_predict(ypred, metrics_val, out_pars)
-
-def test1(data_path="dataset/"):
-    ### Local test
-
-    log("#### Loading params   ##############################################")
-    model_pars, data_pars, compute_pars, out_pars = get_params(choice=1, data_path=data_path)
-    print(model_pars, data_pars, compute_pars, out_pars)
-
-    log("#### Loading dataset   #############################################")
-    dataset = get_dataset(**data_pars)
-
-    log("#### Model init, fit   #############################################")
-    model = Model(model_pars=model_pars, compute_pars=compute_pars, dataset=dataset)
-    # model=m.model    ### WE WORK WITH THE CLASS (not the attribute GLUON )
-    model = fit(model, data_pars=data_pars, model_pars=model_pars, compute_pars=compute_pars)
-
-    log("#### Predict   ####################################################")
-
-    ypred = predict(model, data_pars, compute_pars, out_pars)
-
-    log("#### metrics   ####################################################")
-    metrics_val = metrics(ypred, data_pars, compute_pars, out_pars)
-    print(metrics_val)
-
-    log("#### Plot   #######################################################")
-
-
-#     plot_prob_forecasts(ypred, metrics_val, out_pars)
-#     plot_predict(ypred, metrics_val, out_pars)
-
-
-def test(data_path="dataset/"):
-    ### Local test
-
-    log("#### Loading params   ##############################################")
-    model_pars, data_pars, compute_pars, out_pars = get_params(choice=0, data_path=data_path)
+    model_pars, data_pars, compute_pars, out_pars = get_params(choice=params_choice, data_path=data_path)
     print(model_pars, data_pars, compute_pars, out_pars)
 
     log("#### Loading dataset   #############################################")
@@ -587,8 +403,69 @@ def test(data_path="dataset/"):
 
 if __name__ == '__main__':
     VERBOSE = True
-    test()
-    test1()
-    test2()
-    test3()
-    test4()
+    test(0)
+    test(1)
+    test(2)
+    test(3)
+    test(4)
+
+
+
+
+
+
+
+
+
+
+
+
+
+"""
+
+
+    data = pd.read_csv('./criteo_sample.txt')
+
+    sparse_col = ['C' + str(i) for i in range(1, 27)]
+    dense_col = ['I' + str(i) for i in range(1, 14)]
+
+    data[sparse_col] = data[sparse_col].fillna('-1', )
+    data[dense_col] = data[dense_col].fillna(0, )
+    target = ['label']
+
+    # 1.do simple Transformation for dense features
+    mms = MinMaxScaler(feature_range=(0, 1))
+    data[dense_col] = mms.fit_transform(data[dense_col])
+
+    # 2.set hashing space for each sparse field,and record dense feature field name
+
+    fixlen_cols = [SparseFeat(feat, vocabulary_size=1000,embedding_dim=4, use_hash=True, dtype='string')  # since the input is string
+                              for feat in sparse_col] + [DenseFeat(feat, 1, )
+                          for feat in dense_col]
+
+    linear_cols = fixlen_cols
+    dnn_cols = fixlen_cols
+    feature_names = get_feature_names(linear_cols + dnn_cols, )
+
+    # 3.generate input data for model
+
+    train, test = train_test_split(data, test_size=0.2)
+
+    train_model_input = {name:train[name] for name in feature_names}
+    test_model_input = {name:test[name] for name in feature_names}
+
+
+    # 4.Define Model,train,predict and evaluate
+    model = DeepFM(linear_cols,dnn_cols, task='binary')
+    model.compile("adam", "binary_crossentropy",
+                  metrics=['binary_crossentropy'], )
+
+    pred_ans = model.predict(test_model_input, batch_size=256)
+    print("test LogLoss", round(log_loss(test[target].values, pred_ans), 4))
+    print("test AUC", round(roc_auc_score(test[target].values, pred_ans), 4))
+
+
+
+
+
+"""

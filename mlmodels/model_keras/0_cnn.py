@@ -117,7 +117,6 @@ def get_dataset( data_params, **kw):
         return x_train, y_train, x_test, y_test
 
 
-
 def fit(model, data_pars=None, model_pars=None, compute_pars=None, out_pars=None,session=None, **kwargs):
 	# def fit(self,batch_size,epochs):
         data_pars['istrain'] = 1
@@ -127,7 +126,6 @@ def fit(model, data_pars=None, model_pars=None, compute_pars=None, out_pars=None
 		                      batch_size=batch_size,	epochs=epochs,verbose=1, validation_data=(x_test, y_test))
 	    model.model = mtmp
 	    return model
-
 
 
 def predict(model, data_pars, compute_pars=None, out_pars=None, **kwargs):
@@ -148,7 +146,7 @@ def metrics(ypred, data_pars, compute_pars=None, out_pars=None, **kwargs):
 			
 			
 
-########################################################################################################################
+###################################################################################################
 def get_params(choice=0, data_path="dataset/", **kw) :
     if choice == 0 :
         log("#### Path params   ################################################")
