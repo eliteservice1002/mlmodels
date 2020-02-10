@@ -368,11 +368,11 @@ def get_params(choice=0, data_path="dataset/", **kw):
 
 ########################################################################################################################
 ########################################################################################################################
-def test(data_path="dataset/", params_choice=0):
+def test(data_path="dataset/", pars_choice=0):
     ### Local test
 
     log("#### Loading params   ##############################################")
-    model_pars, data_pars, compute_pars, out_pars = get_params(choice=params_choice, data_path=data_path)
+    model_pars, data_pars, compute_pars, out_pars = get_params(choice=pars_choice, data_path=data_path)
     print(model_pars, data_pars, compute_pars, out_pars)
 
 
@@ -406,11 +406,11 @@ def test(data_path="dataset/", params_choice=0):
 
 if __name__ == '__main__':
     VERBOSE = True
-    test(0)
-    test(1)
-    test(2)
-    test(3)
-    test(4)
+    test(pars_choice= 0)
+    test(pars_choice= 1)
+    test(pars_choice= 2)
+    test(pars_choice= 3)
+    test(pars_choice= 4)
 
 
 
