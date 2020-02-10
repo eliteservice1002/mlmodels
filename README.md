@@ -2,14 +2,13 @@
 
 ```
 Lightweight Functional interface to wrap access to Deep Learning, ML models
-and Hyper Params Search
+and Hyper Params Search.
 Logic follows Scikit Learn API for easy extentions logic.
 Goal to facilitate Prototype to Semi-Prod code.
 
 
-#### Docs here:   https://mlmodels.readthedocs.io/en/latest/
+#### Docs here:   https://mlmodels.readthedocs.io/en/latest/  (incomplete docs)
 #### Pypi here :  https://pypi.org/project/mlmodels/
-
 
 #################################################################################################
 Install as editable package   ONLY dev branch
@@ -19,6 +18,11 @@ git clone https://github.com/arita37/mlmodels.git mlmodels
 cd mlmodels
 git checkout dev     
 pip install -e .  --no-deps  
+
+
+### Test, in CLI type :
+ml_models
+ml_optim    
 
 
 ####  dependencies
@@ -31,12 +35,6 @@ sqlalchemy>=1.3.8
 tensorflow>=1.14.0
 pytorch>=0.4.0
 optuna
-
-
-### Test, in CLI type :
-ml_models
-ml_optim    
-
 
 
 #################################################################################################
@@ -55,14 +53,13 @@ ml_models --do
 
 ml_optim   :  mlmodels/optim.py
               Lightweight Functional interface to wrap Hyper-parameter Optimization
-
+              
 ml_optim --do
    test      :  Test the hyperparameter optimization for a specific model
    test_all  :  TODO, Test all
    search    :  search for the best hyperparameters of a specific model
 
-
-ml_test    :  A lot of tests
+ml_test      :  A lot of tests
 
 
 ##################################################################################################
@@ -88,7 +85,7 @@ ml_models  --model_uri model_tch/mlp.py  --do test
 ml_optim --do test
 
 
-#### for normal optimization search method
+#### For normal optimization search method
 ml_optim --do search --ntrials 1  --config_file optim_config.json --optim_method normal
 ml_optim --do search --ntrials 1  --config_file optim_config.json --optim_method prune  ###### for pruning method
 
@@ -123,10 +120,7 @@ ml_optim --modelname model_tf.1_lstm.py  --do search
       def load()                        : load the trained model
 
 
-
   Template is available in mlmodels/template/model_XXXX.py
-
-
 
 
 
@@ -138,64 +132,52 @@ models.py
    fit(model, module, session, data_pars, out_pars   )
    metrics(model, module, session, data_pars, out_pars)
    predict(model, module, session, data_pars, out_pars)
-   save()
-   load()
-
+   save(model, path)
+   load(model)
 
 
 optim.py
-   optim(modelname="model_tf.1_lstm.py",  model_pars= {}, data_pars = {}, compute_pars={"method": "normal/prune"}, save_folder="/mymodel/", log_folder="", ntrials=2) 
+   optim(modelname="model_tf.1_lstm.py",  model_pars= {}, data_pars = {}, compute_pars={"method": "normal/prune"}
+       , save_folder="/mymodel/", log_folder="", ntrials=2) 
 
-   optim_optuna(modelname="model_tf.1_lstm.py", model_pars= {}, data_pars = {}, compute_pars={"method" : "normal/prune"}, save_folder="/mymodel/", log_folder="", ntrials=2) 
+   optim_optuna(modelname="model_tf.1_lstm.py", model_pars= {}, data_pars = {}, compute_pars={"method" : "normal/prune"},
+                save_folder="/mymodel/", log_folder="", ntrials=2) 
 
 
 ### Generic parameters :
    Define in models_config.json
-   model_params      :  model definition 
-   compute_pars      :  Relative to  the compute
-   data_pars         :  Relative to the data
-   out_pars          :  Relative to out
+   model_params      :  Relative to model definition 
+   compute_pars      :  Relative to  the compute process
+   data_pars         :  Relative to the input data
+   out_pars          :  Relative to outout data
 
-
-
-
-
-
-
+   Sometimes, data_pars is required to setup the model (ie CNN with image size...)
+   
 
 
 
 ####################################################################################################
 ######### Code sample  #############################################################################
 from mlmodels.models import module_load, data_loader, create_model, fit, predict, stats
+from mlmodels.models import load #Load model weights
 
-model_pars = { "learning_rate": 0.001, "num_layers": 1,
+#### Training
+model_pars   =  {  "num_layers": 1,
                   "size": ncol_input, "size_layer": 128, "output_size": ncol_output, "timestep": 4,
-                  "epoch": 2,}
-data_pars = {}
+                }
+data_pars    =  {}
+compute_pars =  { "learning_rate": 0.001, }
 
-module = models.module_load( model_uri="model_tf.1_lstm.py" )  #Load file definition
-model =  models.model_create(module, model_pars)    # Create Model instance
-sess =   models.fit(model, module, data_pars)       # fit the model
-dict_stats = models.metrics( model, sess, ["loss"])     # get stats
-
+module        =  module_load( model_uri="model_tf.1_lstm.py" )  #Load file definition
+model         =  model_create(module, model_pars)    # Create Model instance
+model, sess   =  fit(model, module, data_pars)       # fit the model
+metrics_val   =  metrics( model, sess, ["loss"])     # get stats
 model.save( "myfolder/", model, module, sess,)
 
 
-model = module.load(folder)    #Create Model instance
-module.predict(model, module, data_pars)     # predict pipeline
-
-
-
-#df = data_loader(data_pars)
-
-# module, model = module_load_full("model_tf.1_lstm.py", dict_pars= model_pars)  # Net
-
-
-
-
-
-
+#### Inference
+model = load(folder)    #Create Model instance
+ypred = module.predict(model, module, data_pars, compute_pars)     # predict pipeline
 
 
 
@@ -258,6 +240,10 @@ https://readthedocs.org/projects/dsa/builds/9658212/
 #########Conda install    ##################################################
 conda create -n py36_tf13 python=3.6.5  -y
 source activate py36_tf13
+
+
+pip install tensorflow=1.13.1
+pip install  ipykernel spyder-kernels=0.* -y
 conda install  -c anaconda  tensorflow=1.13.1
 conda install -c anaconda scikit-learn pandas matplotlib seaborn -y
 conda install -c anaconda  ipykernel spyder-kernels=0.* -y
