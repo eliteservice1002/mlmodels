@@ -221,23 +221,6 @@ coltext : for raw text columns
 
 
 
-#########
-Auto formatting
-isort -rc .
-black --line-length 100
-
-
-
-
-###### Auto Doc
-https://pypi.org/project/publish-sphinx-docs/
-
-
-#### Doc creations
-https://readthedocs.org/projects/dsa/builds/9658212/
-
-
-
 #########Conda install    ##################################################
 conda create -n py36_tf13 python=3.6.5  -y
 source activate py36_tf13
