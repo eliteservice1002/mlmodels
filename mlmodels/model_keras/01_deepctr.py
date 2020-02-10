@@ -39,14 +39,13 @@ from sklearn.metrics import log_loss, roc_auc_score, mean_squared_error
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder, MinMaxScaler
 
-from tensorflow.python.keras.preprocessing.sequence import pad_sequences
+from keras.preprocessing.sequence import pad_sequences
+from keras.models import save_model, load_model
 
-from tensorflow.python.keras.models import save_model, load_model
 from deepctr.layers import custom_objects
-
-
 from deepctr.inputs import SparseFeat, VarLenSparseFeat, DenseFeat, get_feature_names
 from deepctr.models import DeepFM
+
 
 
 ####################################################################################################
