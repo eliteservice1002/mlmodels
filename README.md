@@ -4,7 +4,7 @@
 Lightweight Functional interface to wrap access to Deep Learning, ML models
 and Hyper Params Search.
 Logic follows Scikit Learn API for easy extentions logic.
-Goal to facilitate Prototype to Semi-Prod code.
+**Goal to facilitate Prototype script code to Semi-Prod code in a minimal amount of code refactoring ... **
 
 
 #### Docs here:   https://mlmodels.readthedocs.io/en/latest/  (incomplete docs)
