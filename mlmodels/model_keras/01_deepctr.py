@@ -92,124 +92,126 @@ def get_dataset(**kw):
         target = ""
     else:
         data = pd.read_csv(data_path)
-        if "criteo_sample.txt" in data_path:
-            hash_feature = kw.get('hash_feature')
+
+    if "criteo_sample" in data_path:
+        hash_feature = kw.get('hash_feature')
+        sparse_col = ['C' + str(i) for i in range(1, 27)]
+        dense_col = ['I' + str(i) for i in range(1, 14)]
+        data[sparse_col] = data[sparse_col].fillna('-1', )
+        data[dense_col] = data[dense_col].fillna(0, )
+        target = ["label"]
+
+        # set hashing space for each sparse field,and record dense feature field name
+        if hash_feature:
+            # Transformation for dense features
+            mms = MinMaxScaler(feature_range=(0, 1))
+            data[dense_col] = mms.fit_transform(data[dense_col])
             sparse_col = ['C' + str(i) for i in range(1, 27)]
             dense_col = ['I' + str(i) for i in range(1, 14)]
-            data[sparse_col] = data[sparse_col].fillna('-1', )
-            data[dense_col] = data[dense_col].fillna(0, )
-            target = ["label"]
 
-            # set hashing space for each sparse field,and record dense feature field name
-            if hash_feature:
-                # Transformation for dense features
-                mms = MinMaxScaler(feature_range=(0, 1))
-                data[dense_col] = mms.fit_transform(data[dense_col])
-                sparse_col = ['C' + str(i) for i in range(1, 27)]
-                dense_col = ['I' + str(i) for i in range(1, 14)]
+            fixlen_cols = [SparseFeat(feat, vocabulary_size=1000, embedding_dim=4, use_hash=True,
+                                                 dtype='string')  # since the input is string
+                                      for feat in sparse_col] + [DenseFeat(feat, 1, )
+                                                                      for feat in dense_col]
+        else:
+            for feat in sparse_col:
+                lbe = LabelEncoder()
+                data[feat] = lbe.fit_transform(data[feat])
+            mms = MinMaxScaler(feature_range=(0, 1))
+            data[dense_col] = mms.fit_transform(data[dense_col])
+            fixlen_cols = [SparseFeat(feat, vocabulary_size=data[feat].nunique(), embedding_dim=4)
+                                      for i, feat in enumerate(sparse_col)] + [DenseFeat(feat, 1, )
+                                                                                    for feat in dense_col]
+        linear_cols = fixlen_cols
+        dnn_cols = fixlen_cols
 
-                fixlen_cols = [SparseFeat(feat, vocabulary_size=1000, embedding_dim=4, use_hash=True,
-                                                     dtype='string')  # since the input is string
-                                          for feat in sparse_col] + [DenseFeat(feat, 1, )
-                                                                          for feat in dense_col]
-            else:
-                for feat in sparse_col:
-                    lbe = LabelEncoder()
-                    data[feat] = lbe.fit_transform(data[feat])
-                mms = MinMaxScaler(feature_range=(0, 1))
-                data[dense_col] = mms.fit_transform(data[dense_col])
-                fixlen_cols = [SparseFeat(feat, vocabulary_size=data[feat].nunique(), embedding_dim=4)
-                                          for i, feat in enumerate(sparse_col)] + [DenseFeat(feat, 1, )
-                                                                                        for feat in dense_col]
+        train, test = train_test_split(data, test_size=0.2)
+
+    elif "movielens_sample" in data_path:
+        multiple_value = kw.get('multiple_value')
+        sparse_col = ["movie_id", "user_id",
+                           "gender", "age", "occupation", "zip"]
+        target = ['rating']
+        # 1.Label Encoding for sparse features,and do simple Transformation for dense features
+        for feat in sparse_col:
+            lbe = LabelEncoder()
+            data[feat] = lbe.fit_transform(data[feat])
+        if not multiple_value:
+            # 2.count #unique features for each sparse field
+            fixlen_cols = [SparseFeat(feat, data[feat].nunique(), embedding_dim=4)
+                                      for feat in sparse_col]
             linear_cols = fixlen_cols
             dnn_cols = fixlen_cols
 
             train, test = train_test_split(data, test_size=0.2)
-        elif "movielens_sample.txt" in data_path:
-            multiple_value = kw.get('multiple_value')
-            sparse_col = ["movie_id", "user_id",
-                               "gender", "age", "occupation", "zip"]
-            target = ['rating']
-            # 1.Label Encoding for sparse features,and do simple Transformation for dense features
-            for feat in sparse_col:
-                lbe = LabelEncoder()
-                data[feat] = lbe.fit_transform(data[feat])
-            if not multiple_value:
-                # 2.count #unique features for each sparse field
+        else:
+            hash_feature = kw.get('hash_feature', False)
+            if not hash_feature:
+                def split(x):
+                    key_ans = x.split('|')
+                    for key in key_ans:
+                        if key not in key2index:
+                            # Notice : input value 0 is a special "padding",so we do not use 0 to encode valid feature for sequence input
+                            key2index[key] = len(key2index) + 1
+                    return list(map(lambda x: key2index[x], key_ans))
+
+                # preprocess the sequence feature
+                key2index = {}
+                genres_list = list(map(split, data['genres'].values))
+                genres_length = np.array(list(map(len, genres_list)))
+                max_len = max(genres_length)
+                # Notice : padding=`post`
+                genres_list = pad_sequences(genres_list, maxlen=max_len, padding='post', )
+
                 fixlen_cols = [SparseFeat(feat, data[feat].nunique(), embedding_dim=4)
                                           for feat in sparse_col]
-                linear_cols = fixlen_cols
-                dnn_cols = fixlen_cols
 
-                train, test = train_test_split(data, test_size=0.2)
-            else:
-                hash_feature = kw.get('hash_feature', False)
-                if not hash_feature:
-                    def split(x):
-                        key_ans = x.split('|')
-                        for key in key_ans:
-                            if key not in key2index:
-                                # Notice : input value 0 is a special "padding",so we do not use 0 to encode valid feature for sequence input
-                                key2index[key] = len(key2index) + 1
-                        return list(map(lambda x: key2index[x], key_ans))
-
-                    # preprocess the sequence feature
-                    key2index = {}
-                    genres_list = list(map(split, data['genres'].values))
-                    genres_length = np.array(list(map(len, genres_list)))
-                    max_len = max(genres_length)
-                    # Notice : padding=`post`
-                    genres_list = pad_sequences(genres_list, maxlen=max_len, padding='post', )
-
-                    fixlen_cols = [SparseFeat(feat, data[feat].nunique(), embedding_dim=4)
-                                              for feat in sparse_col]
-
-                    use_weighted_sequence = False
-                    if use_weighted_sequence:
-                        varlen_cols = [VarLenSparseFeat(SparseFeat('genres', vocabulary_size=len(
-                            key2index) + 1, embedding_dim=4), maxlen=max_len, combiner='mean',
-                                                                   weight_name='genres_weight')]  # Notice : value 0 is for padding for sequence input feature
-                    else:
-                        varlen_cols = [VarLenSparseFeat(SparseFeat('genres', vocabulary_size=len(
-                            key2index) + 1, embedding_dim=4), maxlen=max_len, combiner='mean',
-                                                                   weight_name=None)]  # Notice : value 0 is for padding for sequence input feature
-
-                    linear_cols = fixlen_cols + varlen_cols
-                    dnn_cols = fixlen_cols + varlen_cols
-
-                    # generate input data for model
-                    model_input = {name: data[name] for name in sparse_col}  #
-                    model_input["genres"] = genres_list
-                    model_input["genres_weight"] = np.random.randn(data.shape[0], max_len, 1)
+                use_weighted_sequence = False
+                if use_weighted_sequence:
+                    varlen_cols = [VarLenSparseFeat(SparseFeat('genres', vocabulary_size=len(
+                        key2index) + 1, embedding_dim=4), maxlen=max_len, combiner='mean',
+                                                               weight_name='genres_weight')]  # Notice : value 0 is for padding for sequence input feature
                 else:
-                    data[sparse_col] = data[sparse_col].astype(str)
-                    # 1.Use hashing encoding on the fly for sparse features,and process sequence features
-                    genres_list = list(map(lambda x: x.split('|'), data['genres'].values))
-                    genres_length = np.array(list(map(len, genres_list)))
-                    max_len = max(genres_length)
+                    varlen_cols = [VarLenSparseFeat(SparseFeat('genres', vocabulary_size=len(
+                        key2index) + 1, embedding_dim=4), maxlen=max_len, combiner='mean',
+                                                               weight_name=None)]  # Notice : value 0 is for padding for sequence input feature
 
-                    # Notice : padding=`post`
-                    genres_list = pad_sequences(genres_list, maxlen=max_len, padding='post', dtype=str, value=0)
+                linear_cols = fixlen_cols + varlen_cols
+                dnn_cols = fixlen_cols + varlen_cols
 
-                    # 2.set hashing space for each sparse field and generate feature config for sequence feature
+                # generate input data for model
+                model_input = {name: data[name] for name in sparse_col}  #
+                model_input["genres"] = genres_list
+                model_input["genres_weight"] = np.random.randn(data.shape[0], max_len, 1)
+            else:
+                data[sparse_col] = data[sparse_col].astype(str)
+                # 1.Use hashing encoding on the fly for sparse features,and process sequence features
+                genres_list = list(map(lambda x: x.split('|'), data['genres'].values))
+                genres_length = np.array(list(map(len, genres_list)))
+                max_len = max(genres_length)
 
-                    fixlen_cols = [
-                        SparseFeat(feat, data[feat].nunique() * 5, embedding_dim=4, use_hash=True, dtype='string')
-                        for feat in sparse_col]
-                    varlen_cols = [
-                        VarLenSparseFeat(
-                            SparseFeat('genres', vocabulary_size=100, embedding_dim=4, use_hash=True, dtype="string"),
-                            maxlen=max_len, combiner='mean',
-                        )]  # Notice : value 0 is for padding for sequence input feature
-                    linear_cols = fixlen_cols + varlen_cols
-                    dnn_cols = fixlen_cols + varlen_cols
-                    feature_names = get_feature_names(linear_cols + dnn_cols)
+                # Notice : padding=`post`
+                genres_list = pad_sequences(genres_list, maxlen=max_len, padding='post', dtype=str, value=0)
 
-                    # 3.generate input data for model
-                    model_input = {name: data[name] for name in feature_names}
-                    model_input['genres'] = genres_list
+                # 2.set hashing space for each sparse field and generate feature config for sequence feature
 
-                train, test = model_input, model_input
+                fixlen_cols = [
+                    SparseFeat(feat, data[feat].nunique() * 5, embedding_dim=4, use_hash=True, dtype='string')
+                    for feat in sparse_col]
+                varlen_cols = [
+                    VarLenSparseFeat(
+                        SparseFeat('genres', vocabulary_size=100, embedding_dim=4, use_hash=True, dtype="string"),
+                        maxlen=max_len, combiner='mean',
+                    )]  # Notice : value 0 is for padding for sequence input feature
+                linear_cols = fixlen_cols + varlen_cols
+                dnn_cols = fixlen_cols + varlen_cols
+                feature_names = get_feature_names(linear_cols + dnn_cols)
+
+                # 3.generate input data for model
+                model_input = {name: data[name] for name in feature_names}
+                model_input['genres'] = genres_list
+
+            train, test = model_input, model_input
 
     return data, linear_cols, dnn_cols, train, test, target
 
@@ -218,7 +220,6 @@ def fit(model, session=None, data_pars=None, model_pars=None, compute_pars=None,
     ##loading dataset
     """
           Classe Model --> model,   model.model contains thte sub-model
-
     """
     data, linear_cols, dnn_cols, train, test, target = get_dataset(**data_pars)
     multiple_value = data_pars.get('multiple_value', None)
@@ -264,6 +265,7 @@ def metrics(ypred, data_pars, compute_pars=None, out_pars=None, **kwargs):
     if compute_pars.get("task") == "binary":
         metrics_dict = {"LogLoss": round(log_loss(test[target].values, ypred), 4),
                         "AUC": round(roc_auc_score(test[target].values, ypred), 4)}
+
     elif compute_pars.get("task") == "regression":
         multiple_value = data_pars.get('multiple_value', None)
         if multiple_value is None:
@@ -284,8 +286,6 @@ def load(path):
     model = Model_empty()
     model.model = predictor_deserialized
     #### Add back the model parameters...
-
-
     return model
 
 
