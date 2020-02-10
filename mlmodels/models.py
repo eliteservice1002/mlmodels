@@ -364,6 +364,16 @@ def config_generate_template(template_type=None, to_path="ztest/new_model/"):
     shutil.copytree(os_root+"/template/", to_path)
 
 
+def model_list(folder=None) :
+  # Get all the model.py into folder  
+  folder = os_package_root_path() if folder is None else folder
+  # print(folder)
+  module_names = get_recursive_files(folder, r'/*model*/*.py' )                       
+  for t in module_names :
+     print(t.replace(folder, "").replace("\\", "."))
+    
+    
+    
 ####################################################################################################
 ############CLI Command ############################################################################
 def cli_load_arguments(config_file= None):
@@ -384,7 +394,8 @@ def cli_load_arguments(config_file= None):
     add("--config_mode", default="test", help="test/ prod /uat")
     add("--log_file", help="log.log")
     add("--do", default="test", help="test")
-
+    add("--folder", default=None, help="test")
+    
     ##### model pars
     add("--model_uri", default="model_tf/1_lstm.py",  help=".")
     add("--load_folder", default="ztest/",  help=".")
@@ -405,12 +416,6 @@ def cli_load_arguments(config_file= None):
     return arg
 
 
-def model_list() :
-  folder = os_package_root_path()
-  # print(folder)
-  module_names = get_recursive_files(folder, r'/*model*/*.py' )                       
-  for t in module_names :
-     print(t.replace(folder, "").replace("\\", "."))
 
 
 
@@ -419,7 +424,7 @@ def main():
     print(arg.do)
 
     if arg.do == "model_list"  :  #list all models in the repo
-       model_list()
+       model_list( arg.folder )
                     
                                  
     if arg.do == "testall"  :
