@@ -143,7 +143,8 @@ def get_dataset(**kw):
             linear_cols = fixlen_cols
             dnn_cols = fixlen_cols
 
-            train, test = train_test_split(data, test_size=0.2)
+            train, test = train_test_split(data, test_size=0.2) 
+
         else:
             hash_feature = kw.get('hash_feature', False)
             if not hash_feature:
@@ -183,6 +184,7 @@ def get_dataset(**kw):
                 model_input = {name: data[name] for name in sparse_col}  #
                 model_input["genres"] = genres_list
                 model_input["genres_weight"] = np.random.randn(data.shape[0], max_len, 1)
+
             else:
                 data[sparse_col] = data[sparse_col].astype(str)
                 # 1.Use hashing encoding on the fly for sparse features,and process sequence features
@@ -232,6 +234,7 @@ def fit(model, session=None, data_pars=None, model_pars=None, compute_pars=None,
         model.model.fit(train_model_input, train[target].values,
                         batch_size=m['batch_size'], epochs=m['epochs'], verbose=2,
                         validation_split=m['validation_split'], )
+
     else:
         model.model.fit(train, data[target].values,
                         batch_size=m['batch_size'], epochs=m['epochs'], verbose=2,
@@ -252,6 +255,7 @@ def predict(model, data_pars, compute_pars=None, out_pars=None, **kwargs):
     ## predict
     if multiple_value is None:
         pred_ans = model.model.predict(test_model_input, batch_size=256)
+        
     else:
         pred_ans = None
 
@@ -263,13 +267,13 @@ def metrics(ypred, data_pars, compute_pars=None, out_pars=None, **kwargs):
     _, linear_cols, dnn_cols, _, test, target = get_dataset(**data_pars)
 
     if compute_pars.get("task") == "binary":
-        metrics_dict = {"LogLoss": round(log_loss(test[target].values, ypred), 4),
-                        "AUC": round(roc_auc_score(test[target].values, ypred), 4)}
+        metrics_dict = {"LogLoss": log_loss(test[target].values, ypred),
+                        "AUC":     roc_auc_score(test[target].values, ypred) }
 
     elif compute_pars.get("task") == "regression":
         multiple_value = data_pars.get('multiple_value', None)
         if multiple_value is None:
-            metrics_dict = {"MSE": round(mean_squared_error(test[target].values, ypred), 4)}
+            metrics_dict = {"MSE": mean_squared_error(test[target].values, ypred)}
         else:
             metrics_dict = {}
     return metrics_dict
@@ -300,26 +304,26 @@ def path_setup(out_folder="", sublevel=1, data_path="dataset/"):
 
 def get_params(choice=0, data_path="dataset/", **kw):
     if choice == 0:
-        log("#### Path params   ################################################")
+        log("#### Path params   ###################################################")
         data_path, out_path = path_setup(out_folder="/deepctr_test/", data_path=data_path) 
 
         train_data_path = data_path + "criteo_sample.txt"
         data_pars = {"train_data_path": train_data_path}
 
-        log("#### Model params   ################################################")
+        log("#### Model params   #################################################")
         model_pars = {"optimization": "adam", "cost": "binary_crossentropy"}
         compute_pars = {"task": "binary", "batch_size": 256, "epochs": 10, "validation_split": 0.2}
         out_pars = { "path" : out_path  }
 
 
     elif choice == 1:
-        log("#### Path params   ################################################")
+        log("#### Path params   ##################################################")
         data_path, out_path = path_setup(out_folder="/deepctr_test/", data_path=data_path) 
 
         train_data_path = data_path + "criteo_sample.txt"
         data_pars = {"train_data_path": train_data_path, "hash_feature": True}
 
-        log("#### Model params   ################################################")
+        log("#### Model params   #################################################")
         model_pars = {"optimization": "adam", "cost": "binary_crossentropy"}
         compute_pars = {"task": "binary", "batch_size": 256, "epochs": 10, "validation_split": 0.2}
         out_pars = { "path" : out_path  }
@@ -339,7 +343,7 @@ def get_params(choice=0, data_path="dataset/", **kw):
 
 
     elif choice == 3:
-        log("#### Path params   ################################################")
+        log("#### Path params   ##################################################")
         data_path, out_path = path_setup(out_folder="/deepctr_test/", data_path=data_path) 
 
         train_data_path = data_path + "movielens_sample.txt"
@@ -352,7 +356,7 @@ def get_params(choice=0, data_path="dataset/", **kw):
 
 
     elif choice == 4:
-        log("#### Path params   ################################################")
+        log("#### Path params   #################################################")
         data_path, out_path = path_setup(out_folder="/deepctr_test/", data_path=data_path) 
 
         train_data_path = data_path + "movielens_sample.txt"
