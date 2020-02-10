@@ -129,20 +129,18 @@ def get_dataset(**kw):
 
     elif "movielens_sample" in data_path:
         multiple_value = kw.get('multiple_value')
-        sparse_col = ["movie_id", "user_id",
-                           "gender", "age", "occupation", "zip"]
+        sparse_col = ["movie_id", "user_id", "gender", "age", "occupation", "zip"]
         target = ['rating']
+
         # 1.Label Encoding for sparse features,and do simple Transformation for dense features
         for feat in sparse_col:
             lbe = LabelEncoder()
             data[feat] = lbe.fit_transform(data[feat])
         if not multiple_value:
             # 2.count #unique features for each sparse field
-            fixlen_cols = [SparseFeat(feat, data[feat].nunique(), embedding_dim=4)
-                                      for feat in sparse_col]
+            fixlen_cols = [SparseFeat(feat, data[feat].nunique(), embedding_dim=4)  for feat in sparse_col]
             linear_cols = fixlen_cols
-            dnn_cols = fixlen_cols
-
+            dnn_cols    = fixlen_cols
             train, test = train_test_split(data, test_size=0.2) 
 
         else:
@@ -163,9 +161,7 @@ def get_dataset(**kw):
                 max_len = max(genres_length)
                 # Notice : padding=`post`
                 genres_list = pad_sequences(genres_list, maxlen=max_len, padding='post', )
-
-                fixlen_cols = [SparseFeat(feat, data[feat].nunique(), embedding_dim=4)
-                                          for feat in sparse_col]
+                fixlen_cols = [SparseFeat(feat, data[feat].nunique(), embedding_dim=4)  for feat in sparse_col]
 
                 use_weighted_sequence = False
                 if use_weighted_sequence:
@@ -255,7 +251,7 @@ def predict(model, data_pars, compute_pars=None, out_pars=None, **kwargs):
     ## predict
     if multiple_value is None:
         pred_ans = model.model.predict(test_model_input, batch_size=256)
-        
+
     else:
         pred_ans = None
 
@@ -277,6 +273,10 @@ def metrics(ypred, data_pars, compute_pars=None, out_pars=None, **kwargs):
         else:
             metrics_dict = {}
     return metrics_dict
+
+
+def reset_model():
+    pass
 
 
 def save(model, path):
