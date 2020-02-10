@@ -102,3 +102,17 @@ venv.bak/
 
 # mypy
 .mypy_cache/
+/.idea/.gitignore
+/.idea/inspectionProfiles/profiles_settings.xml
+/.idea/misc.xml
+/.idea/mlmodels.iml
+/.idea/modules.xml
+/.idea/vcs.xml
+/mlmodels/mlmodels.sublime-project
+/mlmodels/mlmodels.sublime-workspace
+/zarchive/mlmodels-0.5.1-py3-none-any.whl
+/zarchive/mlmodels-0.5.1.tar.gz
+/zarchive/mlmodels-0.6.1-py3-none-any.whl
+/zarchive/mlmodels-0.6.1.tar.gz
+/zarchive/mlmodels-0.7.1-py3-none-any.whl
+/zarchive/mlmodels-0.7.1.tar.gz

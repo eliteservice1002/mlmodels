@@ -1,0 +1,4 @@
+,number,state,value,datetime_start,datetime_complete,params,params,params,params,params,params,params,system_attrs
+,,,,,,epoch,learning_rate,num_layers,output_size,size,size_layer,timestep,_number
+0,0,TrialState.COMPLETE,0.42761850127807033,2019-11-24 21:51:08.958646,2019-11-24 21:51:11.333086,2,0.012497987123844343,2,6,6,256,5,0
+1,1,TrialState.COMPLETE,0.5514122385245103,2019-11-24 21:51:11.333086,2019-11-24 21:51:12.660931,2,0.03387920235980968,4,6,6,128,5,1

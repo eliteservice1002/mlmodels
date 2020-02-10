@@ -1,0 +1,68 @@
+
+
+1)  How to generate Public doc
+    Make the github repo public
+
+
+2)  Load from https://readthedocs.org/projects/dsa/builds/9658123/
+
+
+3)  Read the DOCS
+   index.rst
+   conf.py
+
+
+4)  
+
+
+
+5)
+
+
+
+#########################################################################################
+As u cannot create readthedocs for private repos, here are the steps to view the docs after merging the pull request
+cd <clonedir>
+git clone git@github.com:arita37/da.git
+cd da
+virtualenv -p python3 daenv
+daenv/bin/activate
+pip install -r requirements.txt
+cd docs/
+make html
+open file in the browser as file:///<clonedir>/da/docs/build/html/index.html
+
+
+
+This is for your question about the branch.
+https://docs.readthedocs.io/en/stable/versions.html
+
+Actually dev is the default branch for the repo, so it will build fro this, but as it is a private repo, so will not work.
+
+
+
+
+
+
+git clone --no-single-branch --depth 50 https://github.com/arita37/dsa.git .
+git checkout --force origin/dev
+git clean -d -f -f
+python3.7 -mvirtualenv --system-site-packages --no-download /home/docs/checkouts/readthedocs.org/user_builds/dsa/envs/latest
+/home/docs/checkouts/readthedocs.org/user_builds/dsa/envs/latest/bin/python -m pip install --upgrade --cache-dir /home/docs/checkouts/readthedocs.org/user_builds/dsa/.cache/pip pip
+/home/docs/checkouts/readthedocs.org/user_builds/dsa/envs/latest/bin/python -m pip install --upgrade --cache-dir /home/docs/checkouts/readthedocs.org/user_builds/dsa/.cache/pip -I Pygments==2.3.1 setuptools==41.0.1 docutils==0.14 mock==1.0.1 pillow==5.4.1 alabaster>=0.7,<0.8,!=0.7.5 commonmark==0.8.1 recommonmark==0.5.0 sphinx<2 sphinx-rtd-theme<0.5 readthedocs-sphinx-ext<1.1
+/home/docs/checkouts/readthedocs.org/user_builds/dsa/envs/latest/bin/python -m pip install --exists-action=w --cache-dir /home/docs/checkouts/readthedocs.org/user_builds/dsa/.cache/pip -r requirements.txt
+/home/docs/checkouts/readthedocs.org/user_builds/dsa/envs/latest/bin/python /home/docs/checkouts/readthedocs.org/user_builds/dsa/checkouts/latest/setup.py install --force
+cat docs/source/conf.py
+python /home/docs/checkouts/readthedocs.org/user_builds/dsa/envs/latest/bin/sphinx-build -T -b readthedocs -d _build/doctrees-readthedocs -D language=en . _build/html
+python /home/docs/checkouts/readthedocs.org/user_builds/dsa/envs/latest/bin/sphinx-build -T -b readthedocssinglehtmllocalmedia -d _build/doctrees-readthedocssinglehtmllocalmedia -D language=en . _build/localmedia
+python /home/docs/checkouts/readthedocs.org/user_builds/dsa/envs/latest/bin/sphinx-build -b latex -D language=en -d _build/doctrees . _build/latex
+cat latexmkrc
+latexmk -r latexmkrc -pdf -f -dvi- -ps- -jobname=dsa -interaction=nonstopmode
+mv -f /home/docs/checkouts/readthedocs.org/user_builds/dsa/checkouts/latest/docs/source/_build/latex/dsa.pdf /home/docs/checkouts/readthedocs.org/user_builds/dsa/artifacts/latest/sphinx_pdf/dsa.pdf
+python /home/docs/checkouts/readthedocs.org/user_builds/dsa/envs/latest/bin/sphinx-build -T -b epub -d _build/doctrees-epub -D language=en . _build/epub
+mv -f /home/docs/checkouts/readthedocs.org/user_builds/dsa/checkouts/latest/docs/source/_build/epu
+
+
+
+
+

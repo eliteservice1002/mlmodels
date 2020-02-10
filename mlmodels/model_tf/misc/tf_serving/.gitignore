@@ -1,0 +1,7 @@
+*.pb
+*.ckpt
+**/__pycache__
+!*frozen_model.pb
+!*emotion.pb
+!*sentiment.pb
+*.DS_Store

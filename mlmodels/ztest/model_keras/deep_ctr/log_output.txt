@@ -1,0 +1,227 @@
+
+  ('#### Loading params   ##############################################',) 
+
+  ('#### Path params   ################################################',) 
+path:  /root/mlmodels/mlmodels/model_keras
+
+  ('/root/mlmodels/mlmodels/dataset/', '/root/mlmodels/mlmodels/model_keras/deepctr_test/') 
+
+  ('#### Model params   ################################################',) 
+{'optimization': 'adam', 'cost': 'binary_crossentropy'} {'train_data_path': '/root/mlmodels/mlmodels/dataset/criteo_sample.txt'} {'task': 'binary', 'batch_size': 256, 'epochs': 10, 'validation_split': 0.2} {'plot_prob': True, 'quantiles': [0.1, 0.5, 0.9], 'path': '/root/mlmodels/mlmodels/dataset//root/mlmodels/mlmodels/model_keras/deepctr_test/'}
+
+  ('#### Loading dataset   #############################################',) 
+
+  ('#### Model init, fit   #############################################',) 
+WARNING:tensorflow:From /usr/local/lib/python3.6/dist-packages/deepctr/layers/utils.py:156: calling reduce_sum (from tensorflow.python.ops.math_ops) with keep_dims is deprecated and will be removed in a future version.
+Instructions for updating:
+keep_dims is deprecated, use keepdims instead
+WARNING:tensorflow:From /usr/local/lib/python3.6/dist-packages/tensorflow/python/ops/init_ops.py:1184: calling VarianceScaling.__init__ (from tensorflow.python.ops.init_ops) with distribution=normal is deprecated and will be removed in a future version.
+Instructions for updating:
+`normal` is a deprecated alias for `truncated_normal`
+2020-02-10 11:19:32.050681: I tensorflow/core/platform/cpu_feature_guard.cc:141] Your CPU supports instructions that this TensorFlow binary was not compiled to use: AVX2 FMA
+2020-02-10 11:19:32.144908: I tensorflow/stream_executor/cuda/cuda_gpu_executor.cc:897] successful NUMA node read from SysFS had negative value (-1), but there must be at least one NUMA node, so returning NUMA node zero
+2020-02-10 11:19:32.145378: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1405] Found device 0 with properties: 
+name: Tesla V100-SXM2-16GB major: 7 minor: 0 memoryClockRate(GHz): 1.53
+pciBusID: 0000:00:1e.0
+totalMemory: 15.75GiB freeMemory: 3.20GiB
+2020-02-10 11:19:32.145398: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1484] Adding visible gpu devices: 0
+2020-02-10 11:19:32.693984: I tensorflow/core/common_runtime/gpu/gpu_device.cc:965] Device interconnect StreamExecutor with strength 1 edge matrix:
+2020-02-10 11:19:32.694021: I tensorflow/core/common_runtime/gpu/gpu_device.cc:971]      0 
+2020-02-10 11:19:32.694031: I tensorflow/core/common_runtime/gpu/gpu_device.cc:984] 0:   N 
+2020-02-10 11:19:32.694134: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1097] Created TensorFlow device (/job:localhost/replica:0/task:0/device:GPU:0 with 2895 MB memory) -> physical GPU (device: 0, name: Tesla V100-SXM2-16GB, pci bus id: 0000:00:1e.0, compute capability: 7.0)
+Train on 128 samples, validate on 32 samples
+Epoch 1/10
+ - 5s - loss: 0.7710 - binary_crossentropy: 0.7710 - val_loss: 0.7704 - val_binary_crossentropy: 0.7704
+Epoch 2/10
+ - 0s - loss: 0.7535 - binary_crossentropy: 0.7535 - val_loss: 0.7564 - val_binary_crossentropy: 0.7564
+Epoch 3/10
+ - 0s - loss: 0.7341 - binary_crossentropy: 0.7341 - val_loss: 0.7420 - val_binary_crossentropy: 0.7420
+Epoch 4/10
+ - 0s - loss: 0.7143 - binary_crossentropy: 0.7143 - val_loss: 0.7276 - val_binary_crossentropy: 0.7276
+Epoch 5/10
+ - 0s - loss: 0.6946 - binary_crossentropy: 0.6946 - val_loss: 0.7136 - val_binary_crossentropy: 0.7136
+Epoch 6/10
+ - 0s - loss: 0.6750 - binary_crossentropy: 0.6750 - val_loss: 0.7001 - val_binary_crossentropy: 0.7001
+Epoch 7/10
+ - 0s - loss: 0.6556 - binary_crossentropy: 0.6556 - val_loss: 0.6867 - val_binary_crossentropy: 0.6867
+Epoch 8/10
+ - 0s - loss: 0.6364 - binary_crossentropy: 0.6364 - val_loss: 0.6737 - val_binary_crossentropy: 0.6737
+Epoch 9/10
+ - 0s - loss: 0.6174 - binary_crossentropy: 0.6174 - val_loss: 0.6611 - val_binary_crossentropy: 0.6611
+Epoch 10/10
+ - 0s - loss: 0.5985 - binary_crossentropy: 0.5985 - val_loss: 0.6489 - val_binary_crossentropy: 0.6489
+
+  ('#### Predict   ####################################################',) 
+
+  ('#### metrics   ####################################################',) 
+{'LogLoss': 0.6115, 'AUC': 0.5882}
+
+  ('#### Plot   #######################################################',) 
+
+  ('#### Loading params   ##############################################',) 
+
+  ('#### Path params   ################################################',) 
+path:  /root/mlmodels/mlmodels/model_keras
+
+  ('/root/mlmodels/mlmodels/dataset/', '/root/mlmodels/mlmodels/model_keras/deepctr_test/') 
+
+  ('#### Model params   ################################################',) 
+{'optimization': 'adam', 'cost': 'binary_crossentropy'} {'train_data_path': '/root/mlmodels/mlmodels/dataset/criteo_sample.txt', 'hash_feature': True} {'task': 'binary', 'batch_size': 256, 'epochs': 10, 'validation_split': 0.2} {'plot_prob': True, 'quantiles': [0.1, 0.5, 0.9], 'path': '/root/mlmodels/mlmodels/dataset//root/mlmodels/mlmodels/model_keras/deepctr_test/'}
+
+  ('#### Loading dataset   #############################################',) 
+
+  ('#### Model init, fit   #############################################',) 
+Train on 128 samples, validate on 32 samples
+Epoch 1/10
+ - 6s - loss: 0.6737 - binary_crossentropy: 0.6737 - val_loss: 0.6679 - val_binary_crossentropy: 0.6679
+Epoch 2/10
+ - 0s - loss: 0.6612 - binary_crossentropy: 0.6612 - val_loss: 0.6601 - val_binary_crossentropy: 0.6601
+Epoch 3/10
+ - 0s - loss: 0.6471 - binary_crossentropy: 0.6471 - val_loss: 0.6521 - val_binary_crossentropy: 0.6521
+Epoch 4/10
+ - 0s - loss: 0.6326 - binary_crossentropy: 0.6326 - val_loss: 0.6441 - val_binary_crossentropy: 0.6441
+Epoch 5/10
+ - 0s - loss: 0.6180 - binary_crossentropy: 0.6180 - val_loss: 0.6362 - val_binary_crossentropy: 0.6362
+Epoch 6/10
+ - 0s - loss: 0.6034 - binary_crossentropy: 0.6034 - val_loss: 0.6286 - val_binary_crossentropy: 0.6286
+Epoch 7/10
+ - 0s - loss: 0.5890 - binary_crossentropy: 0.5890 - val_loss: 0.6212 - val_binary_crossentropy: 0.6212
+Epoch 8/10
+ - 0s - loss: 0.5747 - binary_crossentropy: 0.5747 - val_loss: 0.6142 - val_binary_crossentropy: 0.6142
+Epoch 9/10
+ - 0s - loss: 0.5605 - binary_crossentropy: 0.5605 - val_loss: 0.6076 - val_binary_crossentropy: 0.6076
+Epoch 10/10
+ - 0s - loss: 0.5464 - binary_crossentropy: 0.5464 - val_loss: 0.6014 - val_binary_crossentropy: 0.6014
+
+  ('#### Predict   ####################################################',) 
+
+  ('#### metrics   ####################################################',) 
+{'LogLoss': 0.6442, 'AUC': 0.5214}
+
+  ('#### Plot   #######################################################',) 
+
+  ('#### Loading params   ##############################################',) 
+
+  ('#### Path params   ################################################',) 
+path:  /root/mlmodels/mlmodels/model_keras
+
+  ('/root/mlmodels/mlmodels/dataset/', '/root/mlmodels/mlmodels/model_keras/deepctr_test/') 
+
+  ('#### Model params   ################################################',) 
+{'optimization': 'adam', 'cost': 'mse'} {'train_data_path': '/root/mlmodels/mlmodels/dataset/movielens_sample.txt'} {'task': 'regression', 'batch_size': 256, 'epochs': 10, 'validation_split': 0.2} {'plot_prob': True, 'quantiles': [0.1, 0.5, 0.9], 'path': '/root/mlmodels/mlmodels/dataset//root/mlmodels/mlmodels/model_keras/deepctr_test/'}
+
+  ('#### Loading dataset   #############################################',) 
+
+  ('#### Model init, fit   #############################################',) 
+Train on 128 samples, validate on 32 samples
+Epoch 1/10
+ - 3s - loss: 14.4928 - binary_crossentropy: 50.4116 - val_loss: 13.4390 - val_binary_crossentropy: 16.5867
+Epoch 2/10
+ - 0s - loss: 14.4130 - binary_crossentropy: 16.4690 - val_loss: 13.3642 - val_binary_crossentropy: 13.7480
+Epoch 3/10
+ - 0s - loss: 14.3141 - binary_crossentropy: 13.4696 - val_loss: 13.2813 - val_binary_crossentropy: 12.0439
+Epoch 4/10
+ - 0s - loss: 14.2047 - binary_crossentropy: 11.6721 - val_loss: 13.1912 - val_binary_crossentropy: 10.7945
+Epoch 5/10
+ - 0s - loss: 14.0859 - binary_crossentropy: 10.3558 - val_loss: 13.0939 - val_binary_crossentropy: 9.7918
+Epoch 6/10
+ - 0s - loss: 13.9580 - binary_crossentropy: 9.2981 - val_loss: 12.9896 - val_binary_crossentropy: 8.9434
+Epoch 7/10
+ - 0s - loss: 13.8210 - binary_crossentropy: 8.3997 - val_loss: 12.8780 - val_binary_crossentropy: 8.1986
+Epoch 8/10
+ - 0s - loss: 13.6743 - binary_crossentropy: 7.6073 - val_loss: 12.7583 - val_binary_crossentropy: 7.5247
+Epoch 9/10
+ - 0s - loss: 13.5176 - binary_crossentropy: 6.8890 - val_loss: 12.6302 - val_binary_crossentropy: 6.9036
+Epoch 10/10
+ - 0s - loss: 13.3502 - binary_crossentropy: 6.2242 - val_loss: 12.4931 - val_binary_crossentropy: 6.3218
+
+  ('#### Predict   ####################################################',) 
+
+  ('#### metrics   ####################################################',) 
+{'MSE': 12.4622}
+
+  ('#### Plot   #######################################################',) 
+
+  ('#### Loading params   ##############################################',) 
+
+  ('#### Path params   ################################################',) 
+path:  /root/mlmodels/mlmodels/model_keras
+
+  ('/root/mlmodels/mlmodels/dataset/', '/root/mlmodels/mlmodels/model_keras/deepctr_test/') 
+
+  ('#### Model params   ################################################',) 
+{'optimization': 'adam', 'cost': 'mse'} {'train_data_path': '/root/mlmodels/mlmodels/dataset/movielens_sample.txt', 'multiple_value': True} {'task': 'regression', 'batch_size': 256, 'epochs': 10, 'validation_split': 0.2} {'plot_prob': True, 'quantiles': [0.1, 0.5, 0.9], 'path': '/root/mlmodels/mlmodels/dataset//root/mlmodels/mlmodels/model_keras/deepctr_test/'}
+
+  ('#### Loading dataset   #############################################',) 
+
+  ('#### Model init, fit   #############################################',) 
+Train on 160 samples, validate on 40 samples
+Epoch 1/10
+ - 3s - loss: 14.3005 - binary_crossentropy: 48.8635 - val_loss: 13.4312 - val_binary_crossentropy: 16.1571
+Epoch 2/10
+ - 0s - loss: 14.2137 - binary_crossentropy: 15.9576 - val_loss: 13.3445 - val_binary_crossentropy: 13.2632
+Epoch 3/10
+ - 0s - loss: 14.1055 - binary_crossentropy: 12.9740 - val_loss: 13.2469 - val_binary_crossentropy: 11.5134
+Epoch 4/10
+ - 0s - loss: 13.9833 - binary_crossentropy: 11.1574 - val_loss: 13.1402 - val_binary_crossentropy: 10.2346
+Epoch 5/10
+ - 0s - loss: 13.8498 - binary_crossentropy: 9.8261 - val_loss: 13.0255 - val_binary_crossentropy: 9.2130
+Epoch 6/10
+ - 0s - loss: 13.7066 - binary_crossentropy: 8.7607 - val_loss: 12.9027 - val_binary_crossentropy: 8.3496
+Epoch 7/10
+ - 0s - loss: 13.5533 - binary_crossentropy: 7.8570 - val_loss: 12.7715 - val_binary_crossentropy: 7.5912
+Epoch 8/10
+ - 0s - loss: 13.3895 - binary_crossentropy: 7.0590 - val_loss: 12.6314 - val_binary_crossentropy: 6.9068
+Epoch 9/10
+ - 0s - loss: 13.2145 - binary_crossentropy: 6.3347 - val_loss: 12.4823 - val_binary_crossentropy: 6.2765
+Epoch 10/10
+ - 0s - loss: 13.0281 - binary_crossentropy: 5.6635 - val_loss: 12.3234 - val_binary_crossentropy: 5.6857
+
+  ('#### Predict   ####################################################',) 
+
+  ('#### metrics   ####################################################',) 
+{}
+
+  ('#### Plot   #######################################################',) 
+
+  ('#### Loading params   ##############################################',) 
+
+  ('#### Path params   ################################################',) 
+path:  /root/mlmodels/mlmodels/model_keras
+
+  ('/root/mlmodels/mlmodels/dataset/', '/root/mlmodels/mlmodels/model_keras/deepctr_test/') 
+
+  ('#### Model params   ################################################',) 
+{'optimization': 'adam', 'cost': 'mse'} {'train_data_path': '/root/mlmodels/mlmodels/dataset/movielens_sample.txt', 'multiple_value': True, 'hash_feature': True} {'task': 'regression', 'batch_size': 256, 'epochs': 10, 'validation_split': 0.2} {'plot_prob': True, 'quantiles': [0.1, 0.5, 0.9], 'path': '/root/mlmodels/mlmodels/dataset//root/mlmodels/mlmodels/model_keras/deepctr_test/'}
+
+  ('#### Loading dataset   #############################################',) 
+
+  ('#### Model init, fit   #############################################',) 
+Train on 160 samples, validate on 40 samples
+Epoch 1/10
+ - 4s - loss: 14.3008 - binary_crossentropy: 50.6639 - val_loss: 13.3940 - val_binary_crossentropy: 14.6238
+Epoch 2/10
+ - 0s - loss: 14.1733 - binary_crossentropy: 14.5516 - val_loss: 13.2761 - val_binary_crossentropy: 11.9558
+Epoch 3/10
+ - 0s - loss: 14.0335 - binary_crossentropy: 11.8039 - val_loss: 13.1506 - val_binary_crossentropy: 10.3418
+Epoch 4/10
+ - 0s - loss: 13.8846 - binary_crossentropy: 10.1328 - val_loss: 13.0175 - val_binary_crossentropy: 9.1507
+Epoch 5/10
+ - 0s - loss: 13.7271 - binary_crossentropy: 8.8974 - val_loss: 12.8756 - val_binary_crossentropy: 8.1808
+Epoch 6/10
+ - 0s - loss: 13.5596 - binary_crossentropy: 7.8907 - val_loss: 12.7241 - val_binary_crossentropy: 7.3472
+Epoch 7/10
+ - 0s - loss: 13.3816 - binary_crossentropy: 7.0241 - val_loss: 12.5627 - val_binary_crossentropy: 6.6052
+Epoch 8/10
+ - 0s - loss: 13.1922 - binary_crossentropy: 6.2496 - val_loss: 12.3905 - val_binary_crossentropy: 5.9261
+Epoch 9/10
+ - 0s - loss: 12.9903 - binary_crossentropy: 5.5372 - val_loss: 12.2062 - val_binary_crossentropy: 5.2899
+Epoch 10/10
+ - 0s - loss: 12.7746 - binary_crossentropy: 4.8667 - val_loss: 12.0088 - val_binary_crossentropy: 4.6830
+
+  ('#### Predict   ####################################################',) 
+
+  ('#### metrics   ####################################################',) 
+{}
+
+  ('#### Plot   #######################################################',) 

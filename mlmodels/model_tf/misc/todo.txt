@@ -1,0 +1,110 @@
+
+/home/ubuntu/proj/notebook contains many ipny notebook files.
+
+
+A)
+Create a script to scan folder recursively,
+and create files in this folder  /home/ubuntu/proj/notebook_script/
+
+
+Folder to be scan : /home/ubuntu/proj/notebook
+
+
+##### Pseudo code  ####################################
+list_files = file_scan(".ipny")
+
+for f in list_files
+  new_file = new_folder + f.filename
+
+  ### Convert , create folder if needed, and write on disk
+  ###  /home/ubuntu/proj/notebook_script/myfile.ipny   --->  /home/ubuntu/proj/notebook_script/myfile.py
+  convert_topython(f, new_file)
+
+
+
+
+B)  Check if the python script files are runnable code.
+  Suppose some files may take time to run...
+  Parsing the file with ast is fine.  
+
+import ast
+import codegen
+
+for f in file_list :
+ with open(f, "r") as f1 :
+   codesource = f1.read()
+   try :
+      p=ast.parse(codesource)
+   except Exception as e :
+      print(f, str(e))
+
+
+
+
+#################################################################################################### 
+############### Ressources  ########################################################################
+
+### Script to convert
+https://stackoverflow.com/questions/17077494/how-do-i-convert-a-ipython-notebook-into-a-python-file-via-commandline
+
+
+from IPython.nbformat import current as nbformat
+from IPython.nbconvert import PythonExporter
+def convert_topython() :
+  filepath = 'path/to/my_notebook.ipynb'
+  export_path = 'path/to/my_notebook.py'
+
+  with open(filepath) as fh:
+     nb = nbformat.reads_json(fh.read())
+
+  exporter = PythonExporter()
+
+  # source is a tuple of python source code
+  # meta contains metadata
+  source, meta = exporter.from_notebook_node(nb)
+
+  with open(export_path, 'w+') as fh:
+     fh.writelines(source)
+    
+
+
+
+
+##### File listing  ##################################
+def os_file_listall(dir1, pattern="*.*", dirlevel=1, onlyfolder=0):
+  '''
+   # DIRCWD=r"D:\_devs\Python01\project"
+   # aa= listallfile(DIRCWD, "*.ipny", 2)
+   # aa[0][30];   aa[2][30]
+  '''
+  import fnmatch; import os; import numpy as np;  matches = []
+  dir1 = dir1.rstrip(os.path.sep)
+  num_sep = dir1.count(os.path.sep)
+
+  if onlyfolder :
+   for root, dirs, files in os.walk(dir1):
+    num_sep_this = root.count(os.path.sep)
+    if num_sep + dirlevel <= num_sep_this: del dirs[:]
+    matches.append([]); matches.append([]); matches.append([]);   # Filename, DirName
+    for dirs in fnmatch.filter(dirs, pattern):
+      matches[0].append(os.path.splitext(dirs)[0])
+      matches[1].append(os.path.splitext(root)[0])
+      matches[2].append(os.path.join(root, dirs))
+   return np.array(matches)
+
+  for root, dirs, files in os.walk(dir1):
+    num_sep_this = root.count(os.path.sep)
+    if num_sep + dirlevel <= num_sep_this: del dirs[:]
+    matches.append([]); matches.append([]); matches.append([]);   # Filename, DirName
+    for files in fnmatch.filter(files, pattern):
+      matches[0].append(os.path.splitext(files)[0])
+      matches[1].append(os.path.splitext(files)[1])
+      matches[2].append(os.path.join(root, files))
+  return np.array(matches)
+
+
+
+
+
+
+

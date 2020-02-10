@@ -1,0 +1,51 @@
+{
+	"test": {
+
+		"model_pars": {
+			"learning_rate": 0.001,
+			"num_layers": 1,
+			"size": 6,
+			"size_layer": 128,
+			"output_size": 6,
+			"timestep": 4,
+			"epoch": 2
+		},
+
+		"data_pars": {
+			"data_path": "dataset/GOOG-year.csv",
+			"data_type": "pandas",
+			"size": [0, 0, 6],
+			"output_size": [0, 6]
+		},
+
+
+		"compute_pars": {
+			"distributed": "mpi",
+			"epoch": 10
+		},
+
+
+		"out_pars": {
+			"out_path": "dataset/",
+			"data_type": "pandas",
+			"size": [0, 0, 6],
+			"output_size": [0, 6]
+		}
+	},
+
+
+	"prod": {
+
+		"model_pars": {},
+
+		"data_pars": {}
+
+
+	}
+
+
+
+	
+	
+}
+

@@ -1,0 +1,26 @@
+Usage
+===================
+
+### Install
+install.sh
+
+
+### Run dsitributed code
+  run_distri.sh  4
+  
+  
+
+
+### Steup new model in 
+   models.py
+
+   
+### setup new dataset in 
+   data.py
+
+
+
+ 	2) Horovod is a wrapper for OpenMPI, so you can run horovod code with `mpirun` command.
+
+ 	3) Horovod code is fixed to work with CPUs or GPUs clusters, the changes happen in the library you use for training the model.(e.g: Pytorch)
+

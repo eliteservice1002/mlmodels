@@ -1,0 +1,2 @@
+model_checkpoint_path: "model_tf-1_lstm.ckpt"
+all_model_checkpoint_paths: "model_tf-1_lstm.ckpt"
