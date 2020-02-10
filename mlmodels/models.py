@@ -375,26 +375,30 @@ def cli_load_arguments(config_file= None):
       config_file = os.path.join(cur_path, "template/models_config.json")
     # print(config_file)
 
+    
     p = argparse.ArgumentParser()
-    p.add_argument("--config_file", default=config_file, help="Params File")
-    p.add_argument("--config_mode", default="test", help="test/ prod /uat")
-    p.add_argument("--log_file", help="log.log")
-    p.add_argument("--do", default="test", help="test")
+    def add(*w, **kw) :
+       p.add_argument(*w, **kw)
+    
+    add("--config_file", default=config_file, help="Params File")
+    add("--config_mode", default="test", help="test/ prod /uat")
+    add("--log_file", help="log.log")
+    add("--do", default="test", help="test")
 
     ##### model pars
-    p.add_argument("--model_uri", default="model_tf/1_lstm.py",  help=".")
-    p.add_argument("--load_folder", default="ztest/",  help=".")
+    add("--model_uri", default="model_tf/1_lstm.py",  help=".")
+    add("--load_folder", default="ztest/",  help=".")
 
 
     ##### data pars
-    p.add_argument("--dataname", default="dataset/google.csv",  help=".")
+    add("--dataname", default="dataset/google.csv",  help=".")
 
 
     ##### compute pars
 
 
     ##### out pars
-    p.add_argument("--save_folder", default="ztest/",  help=".")
+    add("--save_folder", default="ztest/",  help=".")
     
     arg = p.parse_args()
     # arg = load_config(arg, arg.config_file, arg.config_mode, verbose=0)
