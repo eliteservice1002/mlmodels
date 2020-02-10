@@ -41,6 +41,9 @@ from sklearn.preprocessing import LabelEncoder, MinMaxScaler
 
 from tensorflow.python.keras.preprocessing.sequence import pad_sequences
 
+from tensorflow.python.keras.models import save_model, load_model
+from deepctr.layers import custom_objects
+
 
 from deepctr.inputs import SparseFeat, VarLenSparseFeat, DenseFeat, get_feature_names
 from deepctr.models import DeepFM
@@ -71,7 +74,7 @@ def log(*s, n=0, m=1):
 
 
 ####################################################################################################
-class Model():
+class Model:
     def __init__(self, model_pars=None, compute_pars=None, **kwargs):
         # 4.Define Model,train,predict and evaluate
         _, linear_cols, dnn_cols, _, _, _ = kwargs.get('dataset')
@@ -211,6 +214,8 @@ def _preprocess_movielens(df, **kw):
 def get_dataset(**kw):
     ##check whether dataset is of kind train or test
     data_path = kw['train_data_path']
+    data_type = kw['dataset_type']
+
 
     #### read from csv file
     if kw.get("uri_type") == "pickle":
@@ -219,10 +224,10 @@ def get_dataset(**kw):
     else:
         df = pd.read_csv(data_path)
 
-    if "criteo_sample" in data_path:
+    if data_type == "criteo"::
         df, linear_cols, dnn_cols, train, test, target = _preprocess_criteo(df, **kw)
 
-    elif "movielens_sample" in data_path:
+    elif data_type == "movie_len":
         df, linear_cols, dnn_cols, train, test, target = _preprocess_movielens(df, **kw)
 
 
@@ -294,18 +299,31 @@ def reset_model():
     pass
 
 
+########################################################################################################################
+class Model_empty(object) :
+    def __init__(self, model_pars=None, compute_pars=None) :
+        ## Empty model for Seaialization
+        self.model = None
+
 def save(model, path):
-    if os.path.exists(path):
-        print("exist")
+  if not os.path.exists(os.path.dirname(path)):
+        print("model file path do not exist!")
+    else:
+        save_model(model.model, path)
 
 
 def load(path):
-    if os.path.exists(path):
-        print("exist")
-    model = Model_empty()
-    # model.model = model0
-    #### Add back the model parameters...
-    return model
+   if not os.path.exists(path):
+        print("model file do not exist!")
+
+   else:
+        model  = Model_empty()
+        model_keras = load_model(path, custom_objects)
+        model.model = model_keras 
+
+        #### Add back the model parameters...
+        return model
+
 
 
 ########################################################################################################################
@@ -323,7 +341,7 @@ def get_params(choice=0, data_path="dataset/", **kw):
         data_path, out_path = path_setup(out_folder="/deepctr_test/", data_path=data_path)
 
         train_data_path = data_path + "criteo_sample.txt"
-        data_pars = {"train_data_path": train_data_path}
+        data_pars = {"train_data_path": train_data_path, "dataset_type": "criteo"}
 
         log("#### Model params   #################################################")
         model_pars = {"optimization": "adam", "cost": "binary_crossentropy"}
@@ -336,7 +354,7 @@ def get_params(choice=0, data_path="dataset/", **kw):
         data_path, out_path = path_setup(out_folder="/deepctr_test/", data_path=data_path) 
 
         train_data_path = data_path + "criteo_sample.txt"
-        data_pars = {"train_data_path": train_data_path, "hash_feature": True}
+        data_pars = {"train_data_path": train_data_path, "hash_feature": True, "dataset_type": "criteo"}
 
         log("#### Model params   #################################################")
         model_pars = {"optimization": "adam", "cost": "binary_crossentropy"}
@@ -349,7 +367,7 @@ def get_params(choice=0, data_path="dataset/", **kw):
         data_path, out_path = path_setup(out_folder="/deepctr_test/", data_path=data_path) 
 
         train_data_path = data_path + "movielens_sample.txt"
-        data_pars = {"train_data_path": train_data_path}
+        data_pars = {"train_data_path": train_data_path, "dataset_type": "movie_len" }
 
         log("#### Model params   ################################################")
         model_pars = {"optimization": "adam", "cost": "mse"}
@@ -362,7 +380,7 @@ def get_params(choice=0, data_path="dataset/", **kw):
         data_path, out_path = path_setup(out_folder="/deepctr_test/", data_path=data_path) 
 
         train_data_path = data_path + "movielens_sample.txt"
-        data_pars = {"train_data_path": train_data_path, "multiple_value": True}
+        data_pars = {"train_data_path": train_data_path, "multiple_value": True, "dataset_type": "movie_len"}
 
         log("#### Model params   ################################################")
         model_pars = {"optimization": "adam", "cost": "mse"}
@@ -375,7 +393,7 @@ def get_params(choice=0, data_path="dataset/", **kw):
         data_path, out_path = path_setup(out_folder="/deepctr_test/", data_path=data_path) 
 
         train_data_path = data_path + "movielens_sample.txt"
-        data_pars = {"train_data_path": train_data_path, "multiple_value": True, "hash_feature": True}
+        data_pars = {"train_data_path": train_data_path, "multiple_value": True, "hash_feature": True, "dataset_type": "movie_len"}
 
         log("#### Model params   ################################################")
         model_pars = {"optimization": "adam", "cost": "mse"}
@@ -417,9 +435,10 @@ def test(data_path="dataset/", pars_choice=0):
 
 
     log("#### Save/Load   ##################################################")
-    save(model, out_pars['path'] + "/model" )
-    model2 =   load(out_pars['path'] + "/model" )
+    save(model, out_pars['path'] + f"/model_{pars_choice}.h5" )
+    model2 = load(out_pars['path'] + f"/model_{pars_choice}.h5" )
     print(model2)
+
 
 
 
