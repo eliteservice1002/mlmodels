@@ -34,19 +34,14 @@ import os
 
 import numpy as np
 import pandas as pd
-
+from deepctr.inputs import SparseFeat, VarLenSparseFeat, DenseFeat, get_feature_names
+from deepctr.layers import custom_objects
+from deepctr.models import DeepFM
+from keras.preprocessing.sequence import pad_sequences
 from sklearn.metrics import log_loss, roc_auc_score, mean_squared_error
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder, MinMaxScaler
-
-from keras.preprocessing.sequence import pad_sequences
-from keras.models import save_model, load_model
-
-
-from deepctr.layers import custom_objects
-from deepctr.inputs import SparseFeat, VarLenSparseFeat, DenseFeat, get_feature_names
-from deepctr.models import DeepFM
-
+from tensorflow.python.keras.models import save_model, load_model
 
 
 ####################################################################################################
@@ -57,7 +52,6 @@ def os_package_root_path(filepath, sublevel=0, path_add=""):
     """
     from pathlib import Path
     path = Path(os.path.realpath(filepath)).parent
-    print("path: ", path)
     for i in range(1, sublevel + 1):
         path = path.parent
 
@@ -71,28 +65,23 @@ def log(*s, n=0, m=1):
     print(sjump, sspace, s, sspace, flush=True)
 
 
-
-
 ####################################################################################################
 class Model:
     def __init__(self, model_pars=None, data_pars=None, compute_pars=None, **kwargs):
         # 4.Define Model
 
-        if model_pars.get['model_type'] = "" :
-
-
-
-        else :
-          _, linear_cols, dnn_cols, _, _, _ = kwargs.get('dataset')
-          self.model = DeepFM(linear_cols, dnn_cols, task=compute_pars['task'])
-  
+        if not model_pars.get('model_type'):
+            raise Exception("Missing model type when init model object!")
+        else:
+            _, linear_cols, dnn_cols, _, _, _ = kwargs.get('dataset')
+            self.model = DeepFM(linear_cols, dnn_cols, task=compute_pars['task'])
 
         self.model.compile(model_pars["optimization"], model_pars["cost"],
                            metrics=['binary_crossentropy'], )
 
 
 ####################################################################################################
-def _preprocess_criteo(df, **kw) :
+def _preprocess_criteo(df, **kw):
     hash_feature = kw.get('hash_feature')
     sparse_col = ['C' + str(i) for i in range(1, 27)]
     dense_col = ['I' + str(i) for i in range(1, 14)]
@@ -123,99 +112,100 @@ def _preprocess_criteo(df, **kw) :
                                                                 for feat in dense_col]
     linear_cols = fixlen_cols
     dnn_cols = fixlen_cols
-    train, test = train_test_split(df, test_size= kw['test_size'])
+    train, test = train_test_split(df, test_size=kw['test_size'])
 
     return df, linear_cols, dnn_cols, train, test, target
 
 
-
 def _preprocess_movielens(df, **kw):
-        multiple_value = kw.get('multiple_value')
-        sparse_col = ["movie_id", "user_id", "gender", "age", "occupation", "zip"]
-        target = ['rating']
+    multiple_value = kw.get('multiple_value')
+    sparse_col = ["movie_id", "user_id", "gender", "age", "occupation", "zip"]
+    target = ['rating']
 
-        # 1.Label Encoding for sparse features,and do simple Transformation for dense features
-        for feat in sparse_col:
-            lbe = LabelEncoder()
-            df[feat] = lbe.fit_transform(df[feat])
-        if not multiple_value:
-            # 2.count #unique features for each sparse field
-            fixlen_cols = [SparseFeat(feat, df[feat].nunique(), embedding_dim=4)  for feat in sparse_col]
-            linear_cols = fixlen_cols
-            dnn_cols    = fixlen_cols
-            train, test = train_test_split(df, test_size=0.2)
+    # 1.Label Encoding for sparse features,and do simple Transformation for dense features
+    for feat in sparse_col:
+        lbe = LabelEncoder()
+        df[feat] = lbe.fit_transform(df[feat])
+    if not multiple_value:
+        # 2.count #unique features for each sparse field
+        fixlen_cols = [SparseFeat(feat, df[feat].nunique(), embedding_dim=4) for feat in sparse_col]
+        linear_cols = fixlen_cols
+        dnn_cols = fixlen_cols
+        train, test = train_test_split(df, test_size=0.2)
+
+    else:
+        hash_feature = kw.get('hash_feature', False)
+        if not hash_feature:
+            def split(x):
+                key_ans = x.split('|')
+                for key in key_ans:
+                    if key not in key2index:
+                        # Notice : input value 0 is a special "padding",so we do not use 0 to encode valid feature for sequence input
+                        key2index[key] = len(key2index) + 1
+                return list(map(lambda x: key2index[x], key_ans))
+
+            # preprocess the sequence feature
+            key2index = {}
+            genres_list = list(map(split, df['genres'].values))
+            genres_length = np.array(list(map(len, genres_list)))
+            max_len = max(genres_length)
+            # Notice : padding=`post`
+            genres_list = pad_sequences(genres_list, maxlen=max_len, padding='post', )
+            fixlen_cols = [SparseFeat(feat, df[feat].nunique(), embedding_dim=4) for feat in
+                           sparse_col]
+
+            use_weighted_sequence = False
+            if use_weighted_sequence:
+                varlen_cols = [VarLenSparseFeat(SparseFeat('genres', vocabulary_size=len(
+                    key2index) + 1, embedding_dim=4), maxlen=max_len, combiner='mean',
+                                                weight_name='genres_weight')]  # Notice : value 0 is for padding for sequence input feature
+            else:
+                varlen_cols = [VarLenSparseFeat(SparseFeat('genres', vocabulary_size=len(
+                    key2index) + 1, embedding_dim=4), maxlen=max_len, combiner='mean',
+                                                weight_name=None)]  # Notice : value 0 is for padding for sequence input feature
+
+            linear_cols = fixlen_cols + varlen_cols
+            dnn_cols = fixlen_cols + varlen_cols
+
+            # generate input data for model
+            model_input = {name: df[name] for name in sparse_col}  #
+            model_input["genres"] = genres_list
+            model_input["genres_weight"] = np.random.randn(df.shape[0], max_len, 1)
 
         else:
-            hash_feature = kw.get('hash_feature', False)
-            if not hash_feature:
-                def split(x):
-                    key_ans = x.split('|')
-                    for key in key_ans:
-                        if key not in key2index:
-                            # Notice : input value 0 is a special "padding",so we do not use 0 to encode valid feature for sequence input
-                            key2index[key] = len(key2index) + 1
-                    return list(map(lambda x: key2index[x], key_ans))
+            df[sparse_col] = df[sparse_col].astype(str)
+            # 1.Use hashing encoding on the fly for sparse features,and process sequence features
+            genres_list = list(map(lambda x: x.split('|'), df['genres'].values))
+            genres_length = np.array(list(map(len, genres_list)))
+            max_len = max(genres_length)
 
-                # preprocess the sequence feature
-                key2index = {}
-                genres_list = list(map(split, df['genres'].values))
-                genres_length = np.array(list(map(len, genres_list)))
-                max_len = max(genres_length)
-                # Notice : padding=`post`
-                genres_list = pad_sequences(genres_list, maxlen=max_len, padding='post', )
-                fixlen_cols = [SparseFeat(feat, df[feat].nunique(), embedding_dim=4)  for feat in sparse_col]
+            # Notice : padding=`post`
+            genres_list = pad_sequences(genres_list, maxlen=max_len, padding='post', dtype=str,
+                                        value=0)
 
-                use_weighted_sequence = False
-                if use_weighted_sequence:
-                    varlen_cols = [VarLenSparseFeat(SparseFeat('genres', vocabulary_size=len(
-                        key2index) + 1, embedding_dim=4), maxlen=max_len, combiner='mean',
-                                                               weight_name='genres_weight')]  # Notice : value 0 is for padding for sequence input feature
-                else:
-                    varlen_cols = [VarLenSparseFeat(SparseFeat('genres', vocabulary_size=len(
-                        key2index) + 1, embedding_dim=4), maxlen=max_len, combiner='mean',
-                                                               weight_name=None)]  # Notice : value 0 is for padding for sequence input feature
+            # 2.set hashing space for each sparse field and generate feature config for sequence feature
 
-                linear_cols = fixlen_cols + varlen_cols
-                dnn_cols = fixlen_cols + varlen_cols
+            fixlen_cols = [
+                SparseFeat(feat, df[feat].nunique() * 5, embedding_dim=4, use_hash=True,
+                           dtype='string')
+                for feat in sparse_col]
+            varlen_cols = [
+                VarLenSparseFeat(
+                    SparseFeat('genres', vocabulary_size=100, embedding_dim=4, use_hash=True,
+                               dtype="string"),
+                    maxlen=max_len, combiner='mean',
+                )]  # Notice : value 0 is for padding for sequence input feature
+            linear_cols = fixlen_cols + varlen_cols
+            dnn_cols = fixlen_cols + varlen_cols
+            feature_names = get_feature_names(linear_cols + dnn_cols)
 
-                # generate input data for model
-                model_input = {name: df[name] for name in sparse_col}  #
-                model_input["genres"] = genres_list
-                model_input["genres_weight"] = np.random.randn(df.shape[0], max_len, 1)
+            # 3.generate input data for model
+            model_input = {name: df[name] for name in feature_names}
+            model_input['genres'] = genres_list
 
-            else:
-                df[sparse_col] = df[sparse_col].astype(str)
-                # 1.Use hashing encoding on the fly for sparse features,and process sequence features
-                genres_list = list(map(lambda x: x.split('|'), df['genres'].values))
-                genres_length = np.array(list(map(len, genres_list)))
-                max_len = max(genres_length)
+        train, test = model_input, model_input
 
-                # Notice : padding=`post`
-                genres_list = pad_sequences(genres_list, maxlen=max_len, padding='post', dtype=str, value=0)
-
-                # 2.set hashing space for each sparse field and generate feature config for sequence feature
-
-                fixlen_cols = [
-                    SparseFeat(feat, df[feat].nunique() * 5, embedding_dim=4, use_hash=True, dtype='string')
-                    for feat in sparse_col]
-                varlen_cols = [
-                    VarLenSparseFeat(
-                        SparseFeat('genres', vocabulary_size=100, embedding_dim=4, use_hash=True, dtype="string"),
-                        maxlen=max_len, combiner='mean',
-                    )]  # Notice : value 0 is for padding for sequence input feature
-                linear_cols = fixlen_cols + varlen_cols
-                dnn_cols = fixlen_cols + varlen_cols
-                feature_names = get_feature_names(linear_cols + dnn_cols)
-
-                # 3.generate input data for model
-                model_input = {name: df[name] for name in feature_names}
-                model_input['genres'] = genres_list
-
-            train, test = train_test_split(df, test_size= kw['test_size'])
-
-        return df, linear_cols, dnn_cols, train, test, target
-
-
+    return df, linear_cols, dnn_cols, train, test, target
 
 
 def get_dataset(**kw):
@@ -230,24 +220,23 @@ def get_dataset(**kw):
     else:
         df = pd.read_csv(data_path)
 
-
     if data_type == "criteo":
         df, linear_cols, dnn_cols, train, test, target = _preprocess_criteo(df, **kw)
 
     elif data_type == "movie_len":
         df, linear_cols, dnn_cols, train, test, target = _preprocess_movielens(df, **kw)
 
-    else :  ## Already define
+    else:  ## Already define
         linear_cols = kw['linear_cols']
-        dnn_cols    = kw['dnn_cols']
-        train, test = train_test_split(df, test_size= kw['test_size'])
-        target      = kw['target_col']         
- 
+        dnn_cols = kw['dnn_cols']
+        train, test = train_test_split(df, test_size=kw['test_size'])
+        target = kw['target_col']
 
     return df, linear_cols, dnn_cols, train, test, target
 
 
-def fit(model, session=None, data_pars=None, model_pars=None, compute_pars=None, out_pars=None, **kwargs):
+def fit(model, session=None, data_pars=None, model_pars=None, compute_pars=None, out_pars=None,
+        **kwargs):
     ##loading dataset
     """
           Classe Model --> model,   model.model contains thte sub-model
@@ -258,7 +247,7 @@ def fit(model, session=None, data_pars=None, model_pars=None, compute_pars=None,
     m = compute_pars
 
     if multiple_value is None:
-        feature_names = get_feature_names(linear_cols + dnn_cols, )
+        feature_names = get_feature_names(linear_cols + dnn_cols)
         train_model_input = {name: train[name] for name in feature_names}
         model.model.fit(train_model_input, train[target].values,
                         batch_size=m['batch_size'], epochs=m['epochs'], verbose=2,
@@ -297,7 +286,7 @@ def metrics(ypred, data_pars, compute_pars=None, out_pars=None, **kwargs):
 
     if compute_pars.get("task") == "binary":
         metrics_dict = {"LogLoss": log_loss(test[target].values, ypred),
-                        "AUC":     roc_auc_score(test[target].values, ypred) }
+                        "AUC": roc_auc_score(test[target].values, ypred)}
 
     elif compute_pars.get("task") == "regression":
         multiple_value = data_pars.get('multiple_value', None)
@@ -313,39 +302,39 @@ def reset_model():
 
 
 ########################################################################################################################
-class Model_empty(object) :
-    def __init__(self, model_pars=None, compute_pars=None) :
+class Model_empty(object):
+    def __init__(self, model_pars=None, compute_pars=None):
         ## Empty model for Seaialization
         self.model = None
 
+
 def save(model, path):
-  if not os.path.exists(os.path.dirname(path)):
+    if not os.path.exists(os.path.dirname(path)):
         print("model file path do not exist!")
     else:
         save_model(model.model, path)
 
 
 def load(path):
-   if not os.path.exists(path):
+    if not os.path.exists(path):
         print("model file do not exist!")
-
-   else:
-        model  = Model_empty()
+        return None
+    else:
+        model = Model_empty()
         model_keras = load_model(path, custom_objects)
-        model.model = model_keras 
+        model.model = model_keras
 
         #### Add back the model parameters...
         return model
 
 
-
 ########################################################################################################################
 def path_setup(out_folder="", sublevel=1, data_path="dataset/"):
-        data_path = os_package_root_path(__file__, sublevel=sublevel, path_add=data_path)
-        out_path = os.getcwd() + "/" + out_folder
-        os.makedirs(out_path, exist_ok=True)
-        log(data_path, out_path)
-        return data_path, out_path
+    data_path = os_package_root_path(__file__, sublevel=sublevel, path_add=data_path)
+    out_path = os.getcwd() + "/" + out_folder
+    os.makedirs(out_path, exist_ok=True)
+    log(data_path, out_path)
+    return data_path, out_path
 
 
 def get_params(choice=0, data_path="dataset/", **kw):
@@ -354,64 +343,71 @@ def get_params(choice=0, data_path="dataset/", **kw):
         data_path, out_path = path_setup(out_folder="/deepctr_test/", data_path=data_path)
 
         train_data_path = data_path + "criteo_sample.txt"
-        data_pars = {"train_data_path": train_data_path, "dataset_type": "criteo"}
+        data_pars = {"train_data_path": train_data_path, "dataset_type": "criteo", "test_size": 0.2}
 
         log("#### Model params   #################################################")
-        model_pars = {"optimization": "adam", "cost": "binary_crossentropy"}
+        model_pars = {"model_type": "DeepFM", "optimization": "adam", "cost": "binary_crossentropy"}
         compute_pars = {"task": "binary", "batch_size": 256, "epochs": 10, "validation_split": 0.2}
-        out_pars = { "path" : out_path  }
+        out_pars = {"path": out_path}
 
 
     elif choice == 1:
         log("#### Path params   ##################################################")
-        data_path, out_path = path_setup(out_folder="/deepctr_test/", data_path=data_path) 
+        data_path, out_path = path_setup(out_folder="/deepctr_test/", data_path=data_path)
 
         train_data_path = data_path + "criteo_sample.txt"
-        data_pars = {"train_data_path": train_data_path, "hash_feature": True, "dataset_type": "criteo"}
+        data_pars = {"train_data_path": train_data_path, "hash_feature": True,
+                     "dataset_type": "criteo", "test_size": 0.2}
 
         log("#### Model params   #################################################")
-        model_pars = {"optimization": "adam", "cost": "binary_crossentropy"}
+        model_pars = {"model_type": "DeepFM", "optimization": "adam", "cost": "binary_crossentropy"}
         compute_pars = {"task": "binary", "batch_size": 256, "epochs": 10, "validation_split": 0.2}
-        out_pars = { "path" : out_path  }
+        out_pars = {"path": out_path}
 
 
     elif choice == 2:
         log("#### Path params   ################################################")
-        data_path, out_path = path_setup(out_folder="/deepctr_test/", data_path=data_path) 
+        data_path, out_path = path_setup(out_folder="/deepctr_test/", data_path=data_path)
 
         train_data_path = data_path + "movielens_sample.txt"
-        data_pars = {"train_data_path": train_data_path, "dataset_type": "movie_len" }
+        data_pars = {"train_data_path": train_data_path, "dataset_type": "movie_len",
+                     "test_size": 0.2}
 
         log("#### Model params   ################################################")
-        model_pars = {"optimization": "adam", "cost": "mse"}
-        compute_pars = {"task": "regression", "batch_size": 256, "epochs": 10, "validation_split": 0.2}
-        out_pars = { "path" : out_path  }
+        model_pars = {"model_type": "DeepFM", "optimization": "adam", "cost": "mse"}
+        compute_pars = {"task": "regression", "batch_size": 256, "epochs": 10,
+                        "validation_split": 0.2}
+        out_pars = {"path": out_path}
 
 
     elif choice == 3:
         log("#### Path params   ##################################################")
-        data_path, out_path = path_setup(out_folder="/deepctr_test/", data_path=data_path) 
+        data_path, out_path = path_setup(out_folder="/deepctr_test/", data_path=data_path)
 
         train_data_path = data_path + "movielens_sample.txt"
-        data_pars = {"train_data_path": train_data_path, "multiple_value": True, "dataset_type": "movie_len"}
+        data_pars = {"train_data_path": train_data_path, "multiple_value": True,
+                     "dataset_type": "movie_len", "test_size": 0.2}
 
         log("#### Model params   ################################################")
-        model_pars = {"optimization": "adam", "cost": "mse"}
-        compute_pars = {"task": "regression", "batch_size": 256, "epochs": 10, "validation_split": 0.2}
-        out_pars = { "path" : out_path  }
+        model_pars = {"model_type": "DeepFM", "optimization": "adam", "cost": "mse"}
+        compute_pars = {"task": "regression", "batch_size": 256, "epochs": 10,
+                        "validation_split": 0.2}
+        out_pars = {"path": out_path}
 
 
     elif choice == 4:
         log("#### Path params   #################################################")
-        data_path, out_path = path_setup(out_folder="/deepctr_test/", data_path=data_path) 
+        data_path, out_path = path_setup(out_folder="/deepctr_test/", data_path=data_path)
 
         train_data_path = data_path + "movielens_sample.txt"
-        data_pars = {"train_data_path": train_data_path, "multiple_value": True, "hash_feature": True, "dataset_type": "movie_len"}
+        data_pars = {"train_data_path": train_data_path, "multiple_value": True,
+                     "hash_feature": True, "dataset_type": "movie_len", "test_size": 0.2}
 
         log("#### Model params   ################################################")
-        model_pars = {"optimization": "adam", "cost": "mse"}
-        compute_pars = {"task": "regression", "batch_size": 256, "epochs": 10, "validation_split": 0.2}
-        out_pars = { "path" : out_path  }
+        model_pars = {"model_type": "DeepFM", "optimization": "adam", "cost": "mse"}
+        compute_pars = {"task": "regression", "batch_size": 256, "epochs": 10,
+                        "validation_split": 0.2}
+        out_pars = {"path": out_path}
 
     return model_pars, data_pars, compute_pars, out_pars
 
@@ -422,58 +418,39 @@ def test(data_path="dataset/", pars_choice=0):
     ### Local test
 
     log("#### Loading params   ##############################################")
-    model_pars, data_pars, compute_pars, out_pars = get_params(choice=pars_choice, data_path=data_path)
+    model_pars, data_pars, compute_pars, out_pars = get_params(choice=pars_choice,
+                                                               data_path=data_path)
     print(model_pars, data_pars, compute_pars, out_pars)
-
 
     log("#### Loading dataset   #############################################")
     dataset = get_dataset(**data_pars)
-
 
     log("#### Model init, fit   #############################################")
     model = Model(model_pars=model_pars, compute_pars=compute_pars, dataset=dataset)
     model = fit(model, data_pars=data_pars, model_pars=model_pars, compute_pars=compute_pars)
 
-
     log("#### Predict   ####################################################")
     ypred = predict(model, data_pars, compute_pars, out_pars)
-
 
     log("#### metrics   ####################################################")
     metrics_val = metrics(ypred, data_pars, compute_pars, out_pars)
     print(metrics_val)
 
-
     log("#### Plot   #######################################################")
 
-
     log("#### Save/Load   ##################################################")
-    save(model, out_pars['path'] + f"/model_{pars_choice}.h5" )
-    model2 = load(out_pars['path'] + f"/model_{pars_choice}.h5" )
+    save(model, out_pars['path'] + f"/model_{pars_choice}.h5")
+    model2 = load(out_pars['path'] + f"/model_{pars_choice}.h5")
     print(model2)
-
-
 
 
 if __name__ == '__main__':
     VERBOSE = True
-    test(pars_choice= 0)
-    test(pars_choice= 1)
-    test(pars_choice= 2)
-    test(pars_choice= 3)
-    test(pars_choice= 4)
-
-
-
-
-
-
-
-
-
-
-
-
+    test(pars_choice=0)
+    test(pars_choice=1)
+    test(pars_choice=2)
+    test(pars_choice=3)
+    test(pars_choice=4)
 
 """
 
@@ -523,3 +500,4 @@ if __name__ == '__main__':
 
 
 """
+
