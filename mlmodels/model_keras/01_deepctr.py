@@ -42,6 +42,7 @@ from sklearn.preprocessing import LabelEncoder, MinMaxScaler
 from keras.preprocessing.sequence import pad_sequences
 from keras.models import save_model, load_model
 
+
 from deepctr.layers import custom_objects
 from deepctr.inputs import SparseFeat, VarLenSparseFeat, DenseFeat, get_feature_names
 from deepctr.models import DeepFM
@@ -74,11 +75,18 @@ def log(*s, n=0, m=1):
 
 ####################################################################################################
 class Model:
-    def __init__(self, model_pars=None, compute_pars=None, **kwargs):
-        # 4.Define Model,train,predict and evaluate
-        _, linear_cols, dnn_cols, _, _, _ = kwargs.get('dataset')
+    def __init__(self, model_pars=None, data_pars=None, compute_pars=None, **kwargs):
+        # 4.Define Model
 
-        self.model = DeepFM(linear_cols, dnn_cols, task=compute_pars['task'])
+        if model_pars.get['model_type'] = "" :
+
+
+
+        else :
+          _, linear_cols, dnn_cols, _, _, _ = kwargs.get('dataset')
+          self.model = DeepFM(linear_cols, dnn_cols, task=compute_pars['task'])
+  
+
         self.model.compile(model_pars["optimization"], model_pars["cost"],
                            metrics=['binary_crossentropy'], )
 
@@ -115,7 +123,7 @@ def _preprocess_criteo(df, **kw) :
                                                                 for feat in dense_col]
     linear_cols = fixlen_cols
     dnn_cols = fixlen_cols
-    train, test = train_test_split(df, test_size=0.2)
+    train, test = train_test_split(df, test_size= kw['test_size'])
 
     return df, linear_cols, dnn_cols, train, test, target
 
@@ -203,7 +211,7 @@ def _preprocess_movielens(df, **kw):
                 model_input = {name: df[name] for name in feature_names}
                 model_input['genres'] = genres_list
 
-            train, test = model_input, model_input
+            train, test = train_test_split(df, test_size= kw['test_size'])
 
         return df, linear_cols, dnn_cols, train, test, target
 
@@ -214,14 +222,14 @@ def get_dataset(**kw):
     ##check whether dataset is of kind train or test
     data_path = kw['train_data_path']
     data_type = kw['dataset_type']
-
+    test_size = kw['test_size']
 
     #### read from csv file
     if kw.get("uri_type") == "pickle":
         df = pd.read_pickle(data_path)
-        target = ""
     else:
         df = pd.read_csv(data_path)
+
 
     if data_type == "criteo"::
         df, linear_cols, dnn_cols, train, test, target = _preprocess_criteo(df, **kw)
@@ -229,6 +237,12 @@ def get_dataset(**kw):
     elif data_type == "movie_len":
         df, linear_cols, dnn_cols, train, test, target = _preprocess_movielens(df, **kw)
 
+    else :  ## Already define
+        linear_cols = kw['linear_cols']
+        dnn_cols    = kw['dnn_cols']
+        train, test = train_test_split(df, test_size= kw['test_size'])
+        target      = kw['target_col']         
+ 
 
     return df, linear_cols, dnn_cols, train, test, target
 
