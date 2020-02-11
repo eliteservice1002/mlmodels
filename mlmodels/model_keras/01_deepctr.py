@@ -231,7 +231,7 @@ def get_dataset(**kw):
         df = pd.read_csv(data_path)
 
 
-    if data_type == "criteo"::
+    if data_type == "criteo":
         df, linear_cols, dnn_cols, train, test, target = _preprocess_criteo(df, **kw)
 
     elif data_type == "movie_len":
